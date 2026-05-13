@@ -61,7 +61,7 @@ Si l'image est trop floue, retourne {"erreur": "image insuffisante", "conseil": 
 
   try {
     const response = await client.messages.create({
-      model: 'claude-opus-4-5',
+      model: 'claude-opus-4-7',
       max_tokens: 2048,
       messages: [{
         role: 'user',
@@ -83,10 +83,12 @@ Si l'image est trop floue, retourne {"erreur": "image insuffisante", "conseil": 
     return { success: true, data: enrichAnalysis(parsed, weight) };
 
   } catch (err) {
-    console.error('[FoodVision] Erreur:', err.message);
+    console.error('[FoodVision] Erreur:', err.status ?? '', err.message, err.error ?? '');
     if (err instanceof SyntaxError) {
       return { success: false, error: 'Analyse impossible. Essayez une photo plus nette et bien éclairée.' };
     }
+    if (err.status === 401) return { success: false, error: 'Clé API Anthropic invalide ou manquante.' };
+    if (err.status === 400) return { success: false, error: `Requête API invalide : ${err.message}` };
     return { success: false, error: 'Erreur lors de l\'analyse du plat.' };
   }
 }
@@ -109,7 +111,7 @@ Indique confiance="haute" seulement si les photos sont complémentaires et clair
     }));
 
     const response = await client.messages.create({
-      model: 'claude-opus-4-5',
+      model: 'claude-opus-4-7',
       max_tokens: 2048,
       messages: [{
         role: 'user',
@@ -144,7 +146,7 @@ Explique les changements dans le champ "conseil".`;
 
   try {
     const response = await client.messages.create({
-      model: 'claude-opus-4-5',
+      model: 'claude-opus-4-7',
       max_tokens: 1500,
       messages: [{ role: 'user', content: prompt }]
     });
