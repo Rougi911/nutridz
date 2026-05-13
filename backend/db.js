@@ -1,5 +1,6 @@
 const Database = require('better-sqlite3');
 const path = require('path');
+const fs = require('fs');
 
 const DB_PATH = process.env.NODE_ENV === 'production'
   ? '/opt/render/project/src/data/nutridz.db'
@@ -8,7 +9,10 @@ const DB_PATH = process.env.NODE_ENV === 'production'
 let db;
 
 function getDB() {
-  if (!db) db = new Database(DB_PATH);
+  if (!db) {
+    fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+    db = new Database(DB_PATH);
+  }
   return db;
 }
 
