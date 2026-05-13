@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "NutriDZ",
+    "slug": "nutridz",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1A6B3C"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "dz.nutridz.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "NutriDZ utilise votre caméra pour scanner les codes-barres et les étiquettes nutritionnelles.",
+        "NSPhotoLibraryUsageDescription": "NutriDZ accède à vos photos pour analyser les étiquettes nutritionnelles."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1A6B3C"
+      },
+      "package": "dz.nutridz.app",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE"
+      ]
+    },
+    "plugins": [
+      ["expo-camera", { "cameraPermission": "Autoriser NutriDZ à utiliser la caméra pour scanner." }],
+      ["expo-image-picker", { "photosPermission": "Autoriser NutriDZ à accéder aux photos." }]
+    ]
+  }
+}
