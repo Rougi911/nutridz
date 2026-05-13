@@ -64,7 +64,10 @@ app.use((err, req, res, next) => {
 
 // Init DB puis démarrage
 initDB()
-  .then(() => app.listen(PORT, () => console.log(`NutriDZ API v2 démarrée sur le port ${PORT}`)))
+  .then(() => app.listen(PORT, () => {
+    console.log(`NutriDZ API v2 démarrée sur le port ${PORT}`);
+    console.log(`CORS origines autorisées : ${allowedOrigins.join(', ')}`);
+  }))
   .catch(err => { console.error('Échec init DB:', err); process.exit(1); });
 
 module.exports = app;
