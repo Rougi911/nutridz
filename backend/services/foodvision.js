@@ -287,6 +287,7 @@ async function analyzeDishPhoto(base64Image, mediaType = 'image/jpeg', context =
   } catch (err) {
     const status = err.response?.status;
     console.error('[FoodVision/Clarifai] Erreur:', status, err.message);
+    console.error('Clarifai error response:', JSON.stringify(err.response?.data, null, 2));
     if (status === 401) return { success: false, error: 'Clé API Clarifai invalide ou manquante.' };
     if (status === 400) return { success: false, error: `Requête Clarifai invalide : ${err.message}` };
     return { success: false, error: "Erreur lors de l'analyse du plat." };
