@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const CLARIFAI_API_URL = 'https://api.clarifai.com/v2/models/food-item-recognition/outputs';
+const CLARIFAI_API_URL = 'https://api.clarifai.com/v2/models/food-item-recognition/versions/dde2543f774a4ef1b7e318dc0cfbba15/outputs';
 
 // ─── Base nutritionnelle locale (pour 100g) ───────────────────────────────────
 // portion = taille de portion typique en g (utilisée pour l'estimation des quantités)
@@ -218,9 +218,12 @@ function calcEffort(kcal, met, weightKg) {
 
 // ─── Appel Clarifai ───────────────────────────────────────────────────────────
 async function callClarifai(base64Image) {
+  // Strip le préfixe data URI si présent (ex: "data:image/jpeg;base64,...")
+  const clean = base64Image.includes(',') ? base64Image.split(',')[1] : base64Image;
+
   const res = await axios.post(
     CLARIFAI_API_URL,
-    { inputs: [{ data: { image: { base64: base64Image } } }] },
+    { inputs: [{ data: { image: { base64: clean } } }] },
     {
       headers: {
         'Authorization': `Key ${process.env.CLARIFAI_API_KEY}`,
