@@ -6,11 +6,11 @@ const auth = require('../middleware/auth');
 const router = express.Router();
 
 // GET /api/journal?date=2025-01-15
-router.get('/', auth, (req, res) => {
+router.get('/', auth, async (req, res) => {
   const date = req.query.date || new Date().toISOString().split('T')[0];
   const db = getDB();
 
-  const entries = db.prepare(`
+  const entries = await db.prepare(`
     SELECT je.*, p.name, p.brand, p.emoji, p.score, p.kcal_per100,
            p.glucides as p_glucides, p.proteines as p_proteines, p.lipides as p_lipides, p.fibres as p_fibres, p.additifs
     FROM journal_entries je
@@ -37,12 +37,12 @@ router.get('/', auth, (req, res) => {
 });
 
 // POST /api/journal — ajouter une entrée
-router.post('/', auth, (req, res) => {
+router.post('/', auth, async (req, res) => {
   const { product_id, grams, meal_type, date } = req.body;
   if (!product_id || !grams || !meal_type) return res.status(400).json({ error: 'Champs manquants' });
 
   const db = getDB();
-  const product = db.prepare('SELECT * FROM products WHERE id = ?').get(product_id);
+  const product = await db.prepare('SELECT * FROM products WHERE id = ?').get(product_id);
   if (!product) return res.status(404).json({ error: 'Produit non trouvé' });
 
   const ratio = grams / 100;
@@ -60,26 +60,26 @@ router.post('/', auth, (req, res) => {
     fibres: Math.round(product.fibres * ratio * 10) / 10
   };
 
-  db.prepare(`INSERT INTO journal_entries (id, user_id, date, meal_type, product_id, grams, kcal, glucides, proteines, lipides, fibres)
+  await db.prepare(`INSERT INTO journal_entries (id, user_id, date, meal_type, product_id, grams, kcal, glucides, proteines, lipides, fibres)
     VALUES (@id, @user_id, @date, @meal_type, @product_id, @grams, @kcal, @glucides, @proteines, @lipides, @fibres)`).run(entry);
 
   res.status(201).json(entry);
 });
 
 // DELETE /api/journal/:id
-router.delete('/:id', auth, (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   const db = getDB();
-  const result = db.prepare('DELETE FROM journal_entries WHERE id = ? AND user_id = ?').run(req.params.id, req.userId);
+  const result = await db.prepare('DELETE FROM journal_entries WHERE id = ? AND user_id = ?').run(req.params.id, req.userId);
   if (result.changes === 0) return res.status(404).json({ error: 'Entrée non trouvée' });
   res.json({ success: true });
 });
 
 // GET /api/journal/history?days=7
-router.get('/history', auth, (req, res) => {
+router.get('/history', auth, async (req, res) => {
   const days = parseInt(req.query.days) || 7;
   const db = getDB();
 
-  const rows = db.prepare(`
+  const rows = await db.prepare(`
     SELECT date, SUM(kcal) as kcal, SUM(glucides) as glucides,
            SUM(proteines) as proteines, SUM(lipides) as lipides
     FROM journal_entries

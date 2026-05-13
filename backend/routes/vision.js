@@ -17,13 +17,11 @@ const upload = multer({
 });
 
 // ─── POST /api/vision/analyze ─────────────────────────────────────────────────
-// Analyse une photo de plat
 router.post('/analyze', auth, upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Image manquante' });
 
-  // Récupérer le profil pour personnaliser les conseils
   const db = getDB();
-  const profile = db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(req.userId);
+  const profile = await db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(req.userId);
 
   const base64 = req.file.buffer.toString('base64');
   const context = {
@@ -38,9 +36,8 @@ router.post('/analyze', auth, upload.single('image'), async (req, res) => {
     return res.status(422).json({ error: result.error, conseil: result.conseil });
   }
 
-  // Sauvegarder l'analyse dans l'historique
   const analysisId = uuidv4();
-  db.prepare(`
+  await db.prepare(`
     INSERT OR IGNORE INTO dish_analyses
     (id, user_id, plat_identifie, kcal, data, created_at)
     VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
@@ -56,12 +53,11 @@ router.post('/analyze', auth, upload.single('image'), async (req, res) => {
 });
 
 // ─── POST /api/vision/analyze-multi ──────────────────────────────────────────
-// Analyse plusieurs photos du même plat
 router.post('/analyze-multi', auth, upload.array('images', 3), async (req, res) => {
   if (!req.files?.length) return res.status(400).json({ error: 'Images manquantes' });
 
   const db = getDB();
-  const profile = db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(req.userId);
+  const profile = await db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(req.userId);
 
   const images = req.files.map(f => ({
     base64: f.buffer.toString('base64'),
@@ -76,13 +72,12 @@ router.post('/analyze-multi', auth, upload.array('images', 3), async (req, res) 
 });
 
 // ─── POST /api/vision/refine ──────────────────────────────────────────────────
-// Affiner une analyse avec une correction textuelle
 router.post('/refine', auth, async (req, res) => {
   const { analysis_id, correction } = req.body;
   if (!analysis_id || !correction) return res.status(400).json({ error: 'Paramètres manquants' });
 
   const db = getDB();
-  const row = db.prepare('SELECT * FROM dish_analyses WHERE id = ? AND user_id = ?').get(analysis_id, req.userId);
+  const row = await db.prepare('SELECT * FROM dish_analyses WHERE id = ? AND user_id = ?').get(analysis_id, req.userId);
   if (!row) return res.status(404).json({ error: 'Analyse non trouvée' });
 
   const previousAnalysis = JSON.parse(row.data);
@@ -90,8 +85,7 @@ router.post('/refine', auth, async (req, res) => {
 
   if (!result.success) return res.status(422).json({ error: result.error });
 
-  // Mettre à jour l'analyse
-  db.prepare('UPDATE dish_analyses SET data = ?, kcal = ? WHERE id = ?').run(
+  await db.prepare('UPDATE dish_analyses SET data = ?, kcal = ? WHERE id = ?').run(
     JSON.stringify(result.data),
     result.data.totaux?.kcal || row.kcal,
     analysis_id
@@ -101,31 +95,27 @@ router.post('/refine', auth, async (req, res) => {
 });
 
 // ─── POST /api/vision/add-to-journal ─────────────────────────────────────────
-// Ajoute tous les aliments d'une analyse au journal
 router.post('/add-to-journal', auth, async (req, res) => {
   const { analysis_id, meal_type, date, selected_items } = req.body;
   if (!analysis_id || !meal_type) return res.status(400).json({ error: 'Paramètres manquants' });
 
   const db = getDB();
-  const row = db.prepare('SELECT * FROM dish_analyses WHERE id = ? AND user_id = ?').get(analysis_id, req.userId);
+  const row = await db.prepare('SELECT * FROM dish_analyses WHERE id = ? AND user_id = ?').get(analysis_id, req.userId);
   if (!row) return res.status(404).json({ error: 'Analyse non trouvée' });
 
   const analysis = JSON.parse(row.data);
   const today = date || new Date().toISOString().split('T')[0];
 
-  // Créer ou trouver les produits pour chaque aliment détecté
   const added = [];
   const aliments = selected_items
     ? analysis.aliments.filter((_, i) => selected_items.includes(i))
     : analysis.aliments;
 
   for (const aliment of aliments) {
-    // Chercher si le produit existe déjà
-    let product = db.prepare('SELECT * FROM products WHERE name LIKE ? LIMIT 1').get(`%${aliment.nom}%`);
+    let product = await db.prepare('SELECT * FROM products WHERE name LIKE ? LIMIT 1').get(`%${aliment.nom}%`);
 
-    // Sinon le créer à la volée
     if (!product) {
-      const result = db.prepare(`
+      const result = await db.prepare(`
         INSERT INTO products (name, brand, emoji, score, kcal_per100, glucides, proteines, lipides, fibres, sel, additifs, comment, category)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
@@ -137,7 +127,7 @@ router.post('/add-to-journal', auth, async (req, res) => {
         aliment.quantite_g > 0 ? Math.round(aliment.fibres / aliment.quantite_g * 100) : 0,
         0, '[]', `Estimé par analyse IA — ${analysis.plat_identifie}`, 'divers'
       );
-      product = db.prepare('SELECT * FROM products WHERE id = ?').get(result.lastInsertRowid);
+      product = await db.prepare('SELECT * FROM products WHERE id = ?').get(result.lastInsertRowid);
     }
 
     const ratio = aliment.quantite_g / 100;
@@ -155,7 +145,7 @@ router.post('/add-to-journal', auth, async (req, res) => {
       fibres: aliment.fibres || Math.round(product.fibres * ratio * 10) / 10
     };
 
-    db.prepare(`
+    await db.prepare(`
       INSERT INTO journal_entries (id, user_id, date, meal_type, product_id, grams, kcal, glucides, proteines, lipides, fibres)
       VALUES (@id, @user_id, @date, @meal_type, @product_id, @grams, @kcal, @glucides, @proteines, @lipides, @fibres)
     `).run(entry);
@@ -172,18 +162,18 @@ router.post('/add-to-journal', auth, async (req, res) => {
 });
 
 // ─── GET /api/vision/history ──────────────────────────────────────────────────
-router.get('/history', auth, (req, res) => {
+router.get('/history', auth, async (req, res) => {
   const db = getDB();
-  const rows = db.prepare(
+  const rows = await db.prepare(
     'SELECT id, plat_identifie, kcal, created_at FROM dish_analyses WHERE user_id = ? ORDER BY created_at DESC LIMIT 20'
   ).all(req.userId);
   res.json(rows);
 });
 
 // ─── GET /api/vision/:id ──────────────────────────────────────────────────────
-router.get('/:id', auth, (req, res) => {
+router.get('/:id', auth, async (req, res) => {
   const db = getDB();
-  const row = db.prepare('SELECT * FROM dish_analyses WHERE id = ? AND user_id = ?').get(req.params.id, req.userId);
+  const row = await db.prepare('SELECT * FROM dish_analyses WHERE id = ? AND user_id = ?').get(req.params.id, req.userId);
   if (!row) return res.status(404).json({ error: 'Non trouvé' });
   res.json({ id: row.id, ...JSON.parse(row.data), created_at: row.created_at });
 });

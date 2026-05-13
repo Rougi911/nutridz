@@ -8,10 +8,9 @@ const { extractNutritionFromImage, extractFromIngredientsText } = require('../se
 
 const router = express.Router();
 
-// Multer en mémoire (pas de fichier sur disque)
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 Mo max
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) cb(null, true);
     else cb(new Error('Seules les images sont acceptées'));
@@ -19,45 +18,29 @@ const upload = multer({
 });
 
 // ─── 1. Lookup code-barres ────────────────────────────────────────────────────
-// GET /api/scanner/barcode/:code
 router.get('/barcode/:code', auth, async (req, res) => {
   const { code } = req.params;
   const db = getDB();
 
-  // 1. Chercher dans notre base locale d'abord
-  const local = db.prepare('SELECT * FROM products WHERE barcode = ?').get(code);
+  const local = await db.prepare('SELECT * FROM products WHERE barcode = ?').get(code);
   if (local) {
-    return res.json({
-      source: 'local',
-      found: true,
-      product: formatProduct(local)
-    });
+    return res.json({ source: 'local', found: true, product: formatProduct(local) });
   }
 
-  // 2. Chercher sur OpenFoodFacts
   const offProduct = await lookupBarcode(code);
   if (offProduct) {
-    // Sauvegarder dans notre base pour les prochaines fois
-    const saved = saveProductToDB(db, offProduct);
-    return res.json({
-      source: 'openfoodfacts',
-      found: true,
-      product: saved
-    });
+    const saved = await saveProductToDB(db, offProduct);
+    return res.json({ source: 'openfoodfacts', found: true, product: saved });
   }
 
-  // 3. Produit inconnu — demander un scan OCR
   return res.json({
-    source: null,
-    found: false,
-    barcode: code,
+    source: null, found: false, barcode: code,
     message: 'Produit inconnu. Scannez la liste des ingrédients ou les valeurs nutritionnelles.',
     next_step: 'ocr'
   });
 });
 
 // ─── 2. OCR étiquette nutritionnelle ─────────────────────────────────────────
-// POST /api/scanner/ocr
 router.post('/ocr', auth, upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Image manquante' });
 
@@ -66,42 +49,28 @@ router.post('/ocr', auth, upload.single('image'), async (req, res) => {
   const barcode = req.body.barcode || null;
 
   const result = await extractNutritionFromImage(base64, mediaType);
-
-  if (!result.success) {
-    return res.status(422).json({ error: result.error });
-  }
+  if (!result.success) return res.status(422).json({ error: result.error });
 
   const data = result.data;
 
-  // Sauvegarder le produit si les données sont suffisantes
   if (data.kcal_per100 > 0 && data.name) {
     const db = getDB();
-    const product = saveProductToDB(db, {
-      ...data,
-      barcode: barcode || null
-    });
-
+    const product = await saveProductToDB(db, { ...data, barcode: barcode || null });
     return res.json({
-      source: 'ocr_claude',
-      found: true,
+      source: 'ocr_claude', found: true,
       confidence: data.confiance || 'moyenne',
-      product,
-      raw_ocr: data
+      product, raw_ocr: data
     });
   }
 
-  // Données insuffisantes — renvoyer quand même pour correction manuelle
   return res.json({
-    source: 'ocr_claude',
-    found: false,
-    confidence: 'faible',
+    source: 'ocr_claude', found: false, confidence: 'faible',
     partial_data: data,
     message: 'Données partielles extraites. Vous pouvez compléter manuellement.'
   });
 });
 
 // ─── 3. OCR ingrédients texte brut ───────────────────────────────────────────
-// POST /api/scanner/ingredients
 router.post('/ingredients', auth, async (req, res) => {
   const { text } = req.body;
   if (!text?.trim()) return res.status(400).json({ error: 'Texte des ingrédients manquant' });
@@ -113,7 +82,6 @@ router.post('/ingredients', auth, async (req, res) => {
 });
 
 // ─── 4. Sauvegarde manuelle d'un produit scanné ───────────────────────────────
-// POST /api/scanner/save
 router.post('/save', auth, async (req, res) => {
   const db = getDB();
   const data = req.body;
@@ -122,42 +90,38 @@ router.post('/save', auth, async (req, res) => {
     return res.status(400).json({ error: 'Nom et calories obligatoires' });
   }
 
-  const product = saveProductToDB(db, data);
+  const product = await saveProductToDB(db, data);
   res.status(201).json({ success: true, product });
 });
 
-// ─── 5. Recherche par nom (si barcode inconnu et pas d'image) ─────────────────
-// GET /api/scanner/search?q=couscous
+// ─── 5. Recherche par nom ─────────────────────────────────────────────────────
 router.get('/search', auth, async (req, res) => {
   const { q } = req.query;
   if (!q) return res.status(400).json({ error: 'Terme de recherche manquant' });
 
-  // D'abord dans notre base
   const db = getDB();
-  const local = db.prepare('SELECT * FROM products WHERE name LIKE ? OR brand LIKE ? LIMIT 5').all(`%${q}%`, `%${q}%`);
+  const local = await db.prepare('SELECT * FROM products WHERE name LIKE ? OR brand LIKE ? LIMIT 5').all(`%${q}%`, `%${q}%`);
 
   if (local.length >= 3) {
     return res.json({ source: 'local', results: local.map(formatProduct) });
   }
 
-  // Ensuite OpenFoodFacts
   const offResults = await searchByName(q, 8);
-  const saved = offResults.map(p => saveProductToDB(db, p));
+  const saved = await Promise.all(offResults.map(p => saveProductToDB(db, p)));
 
   res.json({ source: 'openfoodfacts', results: [...local.map(formatProduct), ...saved] });
 });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function saveProductToDB(db, data) {
-  // Vérifier si le produit existe déjà (par barcode)
+async function saveProductToDB(db, data) {
   if (data.barcode) {
-    const existing = db.prepare('SELECT * FROM products WHERE barcode = ?').get(data.barcode);
+    const existing = await db.prepare('SELECT * FROM products WHERE barcode = ?').get(data.barcode);
     if (existing) return formatProduct(existing);
   }
 
   try {
-    const result = db.prepare(`
+    const result = await db.prepare(`
       INSERT INTO products (name, brand, emoji, score, kcal_per100, glucides, proteines, lipides, fibres, sel, additifs, comment, category, barcode, image_url)
       VALUES (@name, @brand, @emoji, @score, @kcal_per100, @glucides, @proteines, @lipides, @fibres, @sel, @additifs, @comment, @category, @barcode, @image_url)
     `).run({
@@ -178,12 +142,11 @@ function saveProductToDB(db, data) {
       image_url: data.image_url || null
     });
 
-    const saved = db.prepare('SELECT * FROM products WHERE id = ?').get(result.lastInsertRowid);
+    const saved = await db.prepare('SELECT * FROM products WHERE id = ?').get(result.lastInsertRowid);
     return formatProduct(saved);
   } catch (err) {
-    // En cas de conflit de barcode, récupérer l'existant
     if (data.barcode) {
-      const existing = db.prepare('SELECT * FROM products WHERE barcode = ?').get(data.barcode);
+      const existing = await db.prepare('SELECT * FROM products WHERE barcode = ?').get(data.barcode);
       if (existing) return formatProduct(existing);
     }
     throw err;

@@ -20,14 +20,14 @@ router.post('/register', [
   const { email, password, name } = req.body;
   const db = getDB();
 
-  const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+  const existing = await db.prepare('SELECT id FROM users WHERE email = ?').get(email);
   if (existing) return res.status(409).json({ error: 'Email déjà utilisé' });
 
   const passwordHash = await bcrypt.hash(password, 12);
   const userId = uuidv4();
 
-  db.prepare('INSERT INTO users (id, email, password_hash, name) VALUES (?, ?, ?, ?)').run(userId, email, passwordHash, name);
-  db.prepare('INSERT INTO profiles (user_id) VALUES (?)').run(userId);
+  await db.prepare('INSERT INTO users (id, email, password_hash, name) VALUES (?, ?, ?, ?)').run(userId, email, passwordHash, name);
+  await db.prepare('INSERT INTO profiles (user_id) VALUES (?)').run(userId);
 
   const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '30d' });
   res.status(201).json({ token, user: { id: userId, email, name } });
@@ -44,7 +44,7 @@ router.post('/login', [
   const { email, password } = req.body;
   const db = getDB();
 
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+  const user = await db.prepare('SELECT * FROM users WHERE email = ?').get(email);
   if (!user) return res.status(401).json({ error: 'Identifiants incorrects' });
 
   const valid = await bcrypt.compare(password, user.password_hash);

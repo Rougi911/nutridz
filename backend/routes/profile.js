@@ -5,10 +5,10 @@ const auth = require('../middleware/auth');
 const router = express.Router();
 
 // GET /api/profile
-router.get('/', auth, (req, res) => {
+router.get('/', auth, async (req, res) => {
   const db = getDB();
-  const profile = db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(req.userId);
-  const user = db.prepare('SELECT id, email, name, created_at FROM users WHERE id = ?').get(req.userId);
+  const profile = await db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(req.userId);
+  const user = await db.prepare('SELECT id, email, name, created_at FROM users WHERE id = ?').get(req.userId);
   if (!profile) return res.status(404).json({ error: 'Profil non trouvé' });
 
   const computed = computeMetrics(profile);
@@ -16,37 +16,37 @@ router.get('/', auth, (req, res) => {
 });
 
 // PUT /api/profile
-router.put('/', auth, (req, res) => {
+router.put('/', auth, async (req, res) => {
   const db = getDB();
   const { age, weight, height, sexe, activity_level, sport, goal, pace } = req.body;
 
-  db.prepare(`
+  await db.prepare(`
     UPDATE profiles SET age=COALESCE(?,age), weight=COALESCE(?,weight), height=COALESCE(?,height),
     sexe=COALESCE(?,sexe), activity_level=COALESCE(?,activity_level), sport=COALESCE(?,sport),
     goal=COALESCE(?,goal), pace=COALESCE(?,pace), updated_at=CURRENT_TIMESTAMP
     WHERE user_id=?
   `).run(age, weight, height, sexe, activity_level, sport, goal, pace, req.userId);
 
-  const profile = db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(req.userId);
+  const profile = await db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(req.userId);
   res.json({ ...profile, ...computeMetrics(profile) });
 });
 
 // POST /api/profile/weight — enregistrer le poids du jour
-router.post('/weight', auth, (req, res) => {
+router.post('/weight', auth, async (req, res) => {
   const { weight, date } = req.body;
   if (!weight) return res.status(400).json({ error: 'Poids manquant' });
   const db = getDB();
   const today = date || new Date().toISOString().split('T')[0];
 
-  db.prepare('INSERT OR REPLACE INTO weight_history (user_id, weight, date) VALUES (?, ?, ?)').run(req.userId, weight, today);
-  db.prepare('UPDATE profiles SET weight=?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?').run(weight, req.userId);
+  await db.prepare('INSERT OR REPLACE INTO weight_history (user_id, weight, date) VALUES (?, ?, ?)').run(req.userId, weight, today);
+  await db.prepare('UPDATE profiles SET weight=?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?').run(weight, req.userId);
   res.json({ success: true, weight, date: today });
 });
 
 // GET /api/profile/weight/history
-router.get('/weight/history', auth, (req, res) => {
+router.get('/weight/history', auth, async (req, res) => {
   const db = getDB();
-  const rows = db.prepare('SELECT * FROM weight_history WHERE user_id=? ORDER BY date DESC LIMIT 30').all(req.userId);
+  const rows = await db.prepare('SELECT * FROM weight_history WHERE user_id=? ORDER BY date DESC LIMIT 30').all(req.userId);
   res.json(rows);
 });
 
