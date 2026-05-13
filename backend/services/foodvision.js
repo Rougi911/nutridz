@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const CLARIFAI_API_URL = 'https://api.clarifai.com/v2/models/food-item-recognition/versions/dde2543f774a4ef1b7e318dc0cfbba15/outputs';
+const CLARIFAI_API_URL = 'https://api.clarifai.com/v2/models/general-image-recognition/outputs';
 
 // ─── Base nutritionnelle locale (pour 100g) ───────────────────────────────────
 // portion = taille de portion typique en g (utilisée pour l'estimation des quantités)
