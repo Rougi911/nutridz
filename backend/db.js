@@ -1,7 +1,9 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const DB_PATH = path.join(__dirname, 'nutridz.db');
+const DB_PATH = process.env.NODE_ENV === 'production'
+  ? '/opt/render/project/src/data/nutridz.db'
+  : path.join(__dirname, 'nutridz.db');
 
 let db;
 
