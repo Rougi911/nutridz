@@ -48,6 +48,6 @@ app.use((err, req, res, next) => {
 
 // Init DB puis démarrage
 initDB();
-app.listen(PORT, () => console.log(`NutriDZ API démarrée sur le port ${PORT}`));
+app.listen(PORT, () => console.log(`NutriDZ API v2 démarrée sur le port ${PORT}`));
 
 module.exports = app;
