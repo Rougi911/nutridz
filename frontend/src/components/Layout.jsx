@@ -2,11 +2,12 @@ import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 
 const navItems = [
-  { to: '/journal', icon: 'ti-notebook', label: 'Journal' },
-  { to: '/products', icon: 'ti-search', label: 'Produits' },
-  { to: '/vision', icon: 'ti-camera', label: 'Analyser' },
-  { to: '/history', icon: 'ti-chart-bar', label: 'Historique' },
-  { to: '/profile', icon: 'ti-user', label: 'Profil' }
+  { to: '/journal',  icon: 'ti-notebook',   label: 'Journal' },
+  { to: '/products', icon: 'ti-search',      label: 'Produits' },
+  { to: '/scanner',  icon: 'ti-barcode',     label: 'Scanner' },
+  { to: '/vision',   icon: 'ti-camera',      label: 'Analyser' },
+  { to: '/history',  icon: 'ti-chart-bar',   label: 'Historique' },
+  { to: '/profile',  icon: 'ti-user',        label: 'Profil' },
 ];
 
 export default function Layout() {
@@ -24,8 +25,8 @@ export default function Layout() {
         {navItems.map(({ to, icon, label }) => (
           <NavLink key={to} to={to} style={({ isActive }) => ({
             flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-            gap: 3, padding: '8px 0 10px', textDecoration: 'none',
-            color: isActive ? '#1A6B3C' : '#888780', fontSize: 10, fontWeight: 500,
+            gap: 2, padding: '6px 0 8px', textDecoration: 'none',
+            color: isActive ? '#1A6B3C' : '#888780', fontSize: 9, fontWeight: 500,
             borderTop: isActive ? '2px solid #1A6B3C' : '2px solid transparent',
             transition: 'all 0.15s'
           })}>
