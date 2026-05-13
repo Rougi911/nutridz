@@ -223,7 +223,10 @@ async function callClarifai(base64Image) {
 
   const res = await axios.post(
     CLARIFAI_API_URL,
-    { inputs: [{ data: { image: { base64: clean } } }] },
+    {
+      user_app_id: { user_id: 'clarifai', app_id: 'main' },
+      inputs: [{ data: { image: { base64: clean } } }],
+    },
     {
       headers: {
         'Authorization': `Key ${process.env.CLARIFAI_API_KEY}`,
