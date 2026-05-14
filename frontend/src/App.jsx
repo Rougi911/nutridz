@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store';
+import { LanguageProvider } from './i18n';
 
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -25,6 +26,7 @@ export default function App() {
   useEffect(() => { initAuth(); }, [initAuth]);
 
   return (
+    <LanguageProvider>
     <BrowserRouter>
       <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
       <Routes>
@@ -42,5 +44,6 @@ export default function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+    </LanguageProvider>
   );
 }

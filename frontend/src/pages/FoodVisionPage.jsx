@@ -3,26 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useProfileStore } from '../store';
 import api from '../utils/api';
+import { useTranslation } from '../i18n';
 
 const SCORE_COLORS = { A: '#1A6B3C', B: '#0F6E56', C: '#BA7517', D: '#993C1D', E: '#993C1D' };
-const SPORTS = [
-  { key: 'marche', label: 'Marche', emoji: '🚶' },
-  { key: 'velo', label: 'Vélo', emoji: '🚴' },
-  { key: 'course', label: 'Course', emoji: '🏃' },
-  { key: 'natation', label: 'Natation', emoji: '🏊' }
-];
-const MEALS = [
-  { id: 'pdej', label: 'Petit-déj.', emoji: '☕' },
-  { id: 'dej', label: 'Déjeuner', emoji: '🍽️' },
-  { id: 'coll', label: 'Collation', emoji: '🍎' },
-  { id: 'diner', label: 'Dîner', emoji: '🌙' }
-];
-
+const SPORT_EMOJIS = { marche: '🚶', velo: '🚴', course: '🏃', natation: '🏊' };
+const MEAL_EMOJIS = { pdej: '☕', dej: '🍽️', coll: '🍎', diner: '🌙' };
 const STATES = { IDLE: 'idle', ANALYZING: 'analyzing', RESULT: 'result', REFINING: 'refining' };
 
 export default function FoodVisionPage() {
   const navigate = useNavigate();
   const { profile } = useProfileStore();
+  const { t } = useTranslation();
   const [state, setState] = useState(STATES.IDLE);
   const [imagePreview, setImagePreview] = useState(null);
   const [analysis, setAnalysis] = useState(null);
@@ -35,14 +26,9 @@ export default function FoodVisionPage() {
   });
   const [step, setStep] = useState(0);
   const fileInputRef = useRef(null);
-  const analyzeSteps = [
-    '🔍 Identification des aliments...',
-    '⚖️ Estimation des portions...',
-    '🧮 Calcul des valeurs nutritionnelles...',
-    '🇩🇿 Reconnaissance cuisine algérienne...'
-  ];
 
-  // Rotation des étapes d'analyse
+  const analyzeSteps = t('vision.analyzeSteps');
+
   React.useEffect(() => {
     if (state !== STATES.ANALYZING) return;
     const iv = setInterval(() => setStep(s => (s + 1) % analyzeSteps.length), 2500);
@@ -50,8 +36,8 @@ export default function FoodVisionPage() {
   }, [state]);
 
   const handleFile = useCallback(async (file) => {
-    if (!file?.type.startsWith('image/')) { toast.error('Fichier image requis'); return; }
-    if (file.size > 12 * 1024 * 1024) { toast.error('Image trop lourde (max 12 Mo)'); return; }
+    if (!file?.type.startsWith('image/')) { toast.error(t('vision.errors.invalidFile')); return; }
+    if (file.size > 12 * 1024 * 1024) { toast.error(t('vision.errors.tooLarge')); return; }
 
     setImagePreview(URL.createObjectURL(file));
     setState(STATES.ANALYZING);
@@ -71,11 +57,11 @@ export default function FoodVisionPage() {
       setSelectedItems(new Set(data.aliments?.map((_, i) => i) || []));
       setState(STATES.RESULT);
     } catch (err) {
-      const msg = err.response?.data?.error || 'Erreur lors de l\'analyse';
+      const msg = err.response?.data?.error || t('vision.errors.analyzeError');
       toast.error(msg);
       setState(STATES.IDLE);
     }
-  }, [mealType]);
+  }, [mealType, t]);
 
   const handleDrop = useCallback((e) => {
     e.preventDefault();
@@ -92,7 +78,7 @@ export default function FoodVisionPage() {
       setSelectedItems(new Set(data.aliments?.map((_, i) => i) || []));
       setCorrection('');
       setState(STATES.RESULT);
-    } catch { toast.error('Impossible d\'affiner l\'analyse'); setState(STATES.RESULT); }
+    } catch { toast.error(t('vision.errors.refineError')); setState(STATES.RESULT); }
   };
 
   const addToJournal = async () => {
@@ -102,9 +88,9 @@ export default function FoodVisionPage() {
         meal_type: mealType,
         selected_items: Array.from(selectedItems)
       });
-      toast.success(`${data.added_count} aliment(s) ajouté(s) — ${data.total_kcal} kcal`);
+      toast.success(t('vision.successAdded')(data.added_count, data.total_kcal));
       navigate('/journal');
-    } catch { toast.error('Erreur lors de l\'ajout au journal'); }
+    } catch { toast.error(t('vision.errors.addError')); }
   };
 
   const reset = () => {
@@ -118,17 +104,20 @@ export default function FoodVisionPage() {
     </div>
   );
 
+  const MEALS = ['pdej', 'dej', 'coll', 'diner'].map(id => ({ id, label: t(`vision.meals.${id}`), emoji: MEAL_EMOJIS[id] }));
+  const SPORTS = ['marche', 'velo', 'course', 'natation'].map(key => ({ key, label: t(`profile.activity.sports.${key}`), emoji: SPORT_EMOJIS[key] }));
+
   // ─── IDLE ─────────────────────────────────────────────────────────────────────
   if (state === STATES.IDLE) return (
     <div>
       <div style={{ background: '#1A6B3C', color: 'white', padding: '1rem 1.25rem 1.5rem', borderRadius: '0 0 24px 24px' }}>
-        <h1 style={{ fontSize: 22, fontWeight: 500 }}>🍽️ Analyser un plat</h1>
-        <p style={{ fontSize: 13, opacity: 0.8, marginTop: 2 }}>L'IA identifie les aliments et calcule les calories</p>
+        <h1 style={{ fontSize: 22, fontWeight: 500 }}>{t('vision.title')}</h1>
+        <p style={{ fontSize: 13, opacity: 0.8, marginTop: 2 }}>{t('vision.subtitle')}</p>
       </div>
 
       <div style={{ padding: '1rem 1.25rem' }}>
         {/* Sélection repas */}
-        <div style={{ fontSize: 11, color: '#888', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Quel repas ?</div>
+        <div style={{ fontSize: 11, color: '#888', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>{t('vision.mealLabel')}</div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
           {MEALS.map(m => (
             <button key={m.id} onClick={() => setMealType(m.id)} style={{
@@ -148,17 +137,17 @@ export default function FoodVisionPage() {
           onClick={() => fileInputRef.current?.click()}
           style={{ border: '2px dashed rgba(26,107,60,0.35)', borderRadius: 16, padding: '2rem 1rem', textAlign: 'center', cursor: 'pointer', background: '#f9fbf9', marginBottom: 16 }}>
           <div style={{ fontSize: 44, marginBottom: 10 }}>📷</div>
-          <div style={{ fontSize: 14, fontWeight: 500, color: '#1A6B3C', marginBottom: 4 }}>Photographiez ou déposez votre plat</div>
-          <div style={{ fontSize: 12, color: '#aaa' }}>JPG, PNG — max 12 Mo</div>
+          <div style={{ fontSize: 14, fontWeight: 500, color: '#1A6B3C', marginBottom: 4 }}>{t('vision.dropzone.title')}</div>
+          <div style={{ fontSize: 12, color: '#aaa' }}>{t('vision.dropzone.subtitle')}</div>
           <input ref={fileInputRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={e => e.target.files[0] && handleFile(e.target.files[0])} />
         </div>
 
         {/* Conseils */}
         {card(
           <div style={{ padding: '12px 14px' }}>
-            <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 8 }}>💡 Conseils pour une bonne analyse</div>
-            {['Photo de dessus ou de ¾', 'Bonne lumière, pas de contre-jour', 'Toute l\'assiette dans le cadre', 'Plus nette = estimation plus précise'].map((t, i) => (
-              <div key={i} style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>· {t}</div>
+            <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 8 }}>{t('vision.tips.title')}</div>
+            {t('vision.tips.list').map((tip, i) => (
+              <div key={i} style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>· {tip}</div>
             ))}
           </div>
         )}
@@ -166,7 +155,7 @@ export default function FoodVisionPage() {
         {/* Plats algériens reconnus */}
         {card(
           <div style={{ padding: '12px 14px' }}>
-            <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 8 }}>🇩🇿 Spécialisé cuisine algérienne</div>
+            <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 8 }}>{t('vision.algerian')}</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
               {['Couscous','Chorba','Chakhchoukha','Tajine','Bourek','Rechta','Harira','Méchoui','Dolma','Garantita','Makroud','Kalb el louz'].map(p => (
                 <span key={p} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, background: '#f0f0ec', color: '#666' }}>{p}</span>
@@ -183,7 +172,7 @@ export default function FoodVisionPage() {
   if (state === STATES.ANALYZING) return (
     <div>
       <div style={{ background: '#1A6B3C', color: 'white', padding: '1rem 1.25rem 1.5rem', borderRadius: '0 0 24px 24px' }}>
-        <h1 style={{ fontSize: 22, fontWeight: 500 }}>🍽️ Analyser un plat</h1>
+        <h1 style={{ fontSize: 22, fontWeight: 500 }}>{t('vision.title')}</h1>
       </div>
       <div style={{ padding: '1rem 1.25rem' }}>
         {imagePreview && <img src={imagePreview} alt="" style={{ width: '100%', height: 200, objectFit: 'cover', borderRadius: 12, marginBottom: 16 }} />}
@@ -196,7 +185,7 @@ export default function FoodVisionPage() {
               <div style={{ height: '100%', background: '#1A6B3C', borderRadius: 3, animation: 'grow 15s ease-out forwards', transformOrigin: 'left' }} />
               <style>{`@keyframes grow{from{width:0%}to{width:85%}}`}</style>
             </div>
-            <div style={{ fontSize: 11, color: '#aaa', marginTop: 10 }}>Analyse IA en cours — jusqu'à 15 secondes</div>
+            <div style={{ fontSize: 11, color: '#aaa', marginTop: 10 }}>{t('vision.analyzeDuration')}</div>
           </div>
         )}
       </div>
@@ -210,17 +199,17 @@ export default function FoodVisionPage() {
     const selKcal = aliments.filter((_, i) => selectedItems.has(i)).reduce((s, a) => s + (a.kcal || 0), 0);
     const confColor = analysis.confiance === 'haute' ? '#1A6B3C' : analysis.confiance === 'moyenne' ? '#BA7517' : '#993C1D';
     const mp = analysis.macros_pct || {};
+    const rv = t('vision.result');
 
     return (
       <div>
-        {/* Image résultat */}
         {imagePreview && (
           <div style={{ position: 'relative' }}>
             <img src={imagePreview} alt="" style={{ width: '100%', height: 200, objectFit: 'cover' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '10px 14px', background: 'linear-gradient(transparent, rgba(0,0,0,0.6))' }}>
               <div style={{ color: 'white', fontSize: 18, fontWeight: 600 }}>{analysis.plat_identifie}</div>
               <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: confColor + '44', color: confColor, fontWeight: 600 }}>
-                {analysis.confiance === 'haute' ? '✅' : analysis.confiance === 'moyenne' ? '⚠️' : '❓'} Confiance {analysis.confiance} {analysis.incertitude_pct ? `(±${analysis.incertitude_pct}%)` : ''}
+                {analysis.confiance === 'haute' ? '✅' : analysis.confiance === 'moyenne' ? '⚠️' : '❓'} {rv.confidence} {analysis.confiance} {analysis.incertitude_pct ? `(±${analysis.incertitude_pct}%)` : ''}
               </span>
             </div>
           </div>
@@ -230,8 +219,8 @@ export default function FoodVisionPage() {
           {/* Calories */}
           <div style={{ background: '#EAF3DE', borderRadius: 12, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
             <div>
-              <div style={{ fontSize: 30, fontWeight: 700, color: '#1A6B3C' }}>{totaux.kcal} kcal</div>
-              <div style={{ fontSize: 11, color: '#3B6D11', marginTop: 2 }}>fourchette {totaux.kcal_min}–{totaux.kcal_max} kcal</div>
+              <div style={{ fontSize: 30, fontWeight: 700, color: '#1A6B3C' }}>{totaux.kcal} {t('common.kcal')}</div>
+              <div style={{ fontSize: 11, color: '#3B6D11', marginTop: 2 }}>{rv.range} {totaux.kcal_min}–{totaux.kcal_max} {t('common.kcal')}</div>
             </div>
             <div style={{ width: 48, height: 48, borderRadius: 24, background: SCORE_COLORS[analysis.score_nutritionnel] || '#BA7517', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 20, fontWeight: 700 }}>
               {analysis.score_nutritionnel}
@@ -242,14 +231,13 @@ export default function FoodVisionPage() {
           {card(
             <>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', borderBottom: '0.5px solid rgba(0,0,0,0.06)' }}>
-                {[['Glucides', totaux.glucides, '#BA7517'], ['Protéines', totaux.proteines, '#185FA5'], ['Lipides', totaux.lipides, '#993C1D'], ['Fibres', totaux.fibres, '#1A6B3C']].map(([l, v, c]) => (
-                  <div key={l} style={{ padding: '10px 8px', textAlign: 'center', borderRight: '0.5px solid rgba(0,0,0,0.06)' }}>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: c }}>{v}g</div>
-                    <div style={{ fontSize: 10, color: '#888', marginTop: 1 }}>{l}</div>
+                {[['glucides','#BA7517'],['proteines','#185FA5'],['lipides','#993C1D'],['fibres','#1A6B3C']].map(([k, c]) => (
+                  <div key={k} style={{ padding: '10px 8px', textAlign: 'center', borderRight: '0.5px solid rgba(0,0,0,0.06)' }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: c }}>{totaux[k]}g</div>
+                    <div style={{ fontSize: 10, color: '#888', marginTop: 1 }}>{t(`common.${k}`)}</div>
                   </div>
                 ))}
               </div>
-              {/* Barre macros % */}
               {mp.glucides !== undefined && (
                 <div style={{ display: 'flex', height: 6, margin: '8px 12px' }}>
                   <div style={{ width: `${mp.glucides}%`, background: '#BA7517', borderRadius: '3px 0 0 3px' }} />
@@ -264,7 +252,7 @@ export default function FoodVisionPage() {
           {/* Effort physique */}
           {analysis.effort_physique && card(
             <div style={{ padding: '10px 14px' }}>
-              <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>⏱ Temps pour brûler ce repas</div>
+              <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>{rv.effort}</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4 }}>
                 {SPORTS.map(({ key, label, emoji }) => (
                   <div key={key} style={{ textAlign: 'center', padding: '6px 4px', background: key === (profile.sport || 'marche') ? '#EAF3DE' : '#f7f7f5', borderRadius: 8 }}>
@@ -281,17 +269,17 @@ export default function FoodVisionPage() {
           {/* Satiété */}
           {analysis.satiete && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', borderRadius: 10, padding: '10px 14px', border: '0.5px solid rgba(0,0,0,0.06)', marginBottom: 10 }}>
-              <span style={{ fontSize: 13, color: '#555' }}>Indice de satiété</span>
+              <span style={{ fontSize: 13, color: '#555' }}>{rv.satiety}</span>
               <span style={{ fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: analysis.satiete.includes('Très') ? '#EAF3DE' : '#FAEEDA', color: analysis.satiete.includes('Très') ? '#27500A' : '#633806' }}>{analysis.satiete}</span>
             </div>
           )}
 
           {/* Aliments */}
-          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>🥘 Aliments détectés</div>
-          <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>Sélectionnez ceux à ajouter au journal</div>
+          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{rv.detected}</div>
+          <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>{rv.selectPrompt}</div>
           {aliments.map((a, i) => (
             <div key={i} onClick={() => setSelectedItems(prev => { const n = new Set(prev); n.has(i) ? n.delete(i) : n.add(i); return n; })}
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', borderRadius: 10, padding: '10px 12px', marginBottom: 6, border: selectedItems.has(i) ? '1.5px solid #1A6B3C' : '0.5px solid rgba(0,0,0,0.06)', background: selectedItems.has(i) ? '#f5fbf7' : '#fff', cursor: 'pointer' }}>
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderRadius: 10, padding: '10px 12px', marginBottom: 6, border: selectedItems.has(i) ? '1.5px solid #1A6B3C' : '0.5px solid rgba(0,0,0,0.06)', background: selectedItems.has(i) ? '#f5fbf7' : '#fff', cursor: 'pointer' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 22, height: 22, borderRadius: 11, border: selectedItems.has(i) ? 'none' : '1.5px solid #ccc', background: selectedItems.has(i) ? '#1A6B3C' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: 'white', fontWeight: 700 }}>
                   {selectedItems.has(i) ? '✓' : ''}
@@ -299,12 +287,12 @@ export default function FoodVisionPage() {
                 <span style={{ fontSize: 20 }}>{a.emoji}</span>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 500 }}>{a.nom} {a.nom_ar && <span style={{ color: '#aaa', fontSize: 11 }}>· {a.nom_ar}</span>}</div>
-                  <div style={{ fontSize: 11, color: '#aaa' }}>{a.quantite_g}g · fourchette {a.fourchette?.min}–{a.fourchette?.max}g</div>
+                  <div style={{ fontSize: 11, color: '#aaa' }}>{a.quantite_g}g · {rv.range} {a.fourchette?.min}–{a.fourchette?.max}g</div>
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: 16, fontWeight: 700 }}>{a.kcal}</div>
-                <div style={{ fontSize: 10, color: '#aaa' }}>kcal</div>
+                <div style={{ fontSize: 10, color: '#aaa' }}>{t('common.kcal')}</div>
               </div>
             </div>
           ))}
@@ -312,14 +300,14 @@ export default function FoodVisionPage() {
           {/* Tags */}
           {analysis.tags?.length > 0 && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 12, marginTop: 4 }}>
-              {analysis.tags.map((t, i) => <span key={i} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, background: '#f0f0ec', color: '#666' }}>{t}</span>)}
+              {analysis.tags.map((tg, i) => <span key={i} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, background: '#f0f0ec', color: '#666' }}>{tg}</span>)}
             </div>
           )}
 
           {/* Conseil */}
           {analysis.conseil && (
             <div style={{ background: '#EAF3DE', borderRadius: 12, padding: '12px 14px', marginBottom: 12 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: '#27500A', marginBottom: 4 }}>💬 Conseil nutritionnel</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#27500A', marginBottom: 4 }}>{rv.conseil}</div>
               <div style={{ fontSize: 13, color: '#3B6D11', lineHeight: 1.6 }}>{analysis.conseil}</div>
             </div>
           )}
@@ -327,13 +315,13 @@ export default function FoodVisionPage() {
           {/* Correction */}
           {card(
             <div style={{ padding: '12px 14px' }}>
-              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>✏️ Corriger l'analyse</div>
-              <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>Ex: "Il y avait aussi du pain", "La portion était plus petite"</div>
-              <textarea value={correction} onChange={e => setCorrection(e.target.value)} placeholder="Décrivez la correction..." rows={2}
+              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{rv.correction.title}</div>
+              <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>{rv.correction.hint}</div>
+              <textarea value={correction} onChange={e => setCorrection(e.target.value)} placeholder={rv.correction.placeholder} rows={2}
                 style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '0.5px solid rgba(0,0,0,0.12)', fontSize: 13, resize: 'vertical', fontFamily: 'inherit', marginBottom: 8 }} />
               <button onClick={sendCorrection} disabled={!correction.trim() || state === STATES.REFINING}
                 style={{ width: '100%', padding: 9, background: correction.trim() ? '#1A6B3C' : '#ccc', color: 'white', border: 'none', borderRadius: 8, fontSize: 13, cursor: correction.trim() ? 'pointer' : 'not-allowed' }}>
-                {state === STATES.REFINING ? 'Analyse en cours...' : '🔄 Affiner l\'analyse'}
+                {state === STATES.REFINING ? rv.correction.refining : rv.correction.refine}
               </button>
             </div>,
             { marginBottom: 12 }
@@ -341,13 +329,13 @@ export default function FoodVisionPage() {
 
           {/* CTA */}
           <div style={{ background: '#f0f0ec', borderRadius: 10, padding: '10px 14px', textAlign: 'center', marginBottom: 10, fontSize: 13, color: '#555', fontWeight: 500 }}>
-            {selectedItems.size} aliment(s) · {selKcal} kcal sélectionnés
+            {rv.selectedSummary(selectedItems.size, selKcal)}
           </div>
           <button onClick={addToJournal} disabled={!selectedItems.size} style={{ width: '100%', padding: 13, background: selectedItems.size ? '#1A6B3C' : '#ccc', color: 'white', border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: selectedItems.size ? 'pointer' : 'not-allowed', marginBottom: 10 }}>
-            📓 Ajouter au journal
+            {rv.addToJournal}
           </button>
           <button onClick={reset} style={{ width: '100%', padding: 12, background: 'transparent', border: '0.5px solid #1A6B3C', color: '#1A6B3C', borderRadius: 12, fontSize: 14, cursor: 'pointer' }}>
-            📷 Analyser un autre plat
+            {rv.analyzeAnother}
           </button>
         </div>
       </div>

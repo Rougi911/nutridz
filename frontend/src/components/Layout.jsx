@@ -1,28 +1,37 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
+import { useTranslation } from '../i18n';
+import LanguageSelector from './LanguageSelector';
 
-const navItems = [
-  { to: '/journal',  icon: 'ti-notebook',   label: 'Journal' },
-  { to: '/products', icon: 'ti-search',      label: 'Produits' },
-  { to: '/scanner',  icon: 'ti-barcode',     label: 'Scanner' },
-  { to: '/vision',   icon: 'ti-camera',      label: 'Analyser' },
-  { to: '/history',  icon: 'ti-chart-bar',   label: 'Historique' },
-  { to: '/profile',  icon: 'ti-user',        label: 'Profil' },
+const NAV = [
+  { to: '/journal',  icon: 'ti-notebook',   key: 'journal' },
+  { to: '/products', icon: 'ti-search',      key: 'products' },
+  { to: '/scanner',  icon: 'ti-barcode',     key: 'scanner' },
+  { to: '/vision',   icon: 'ti-camera',      key: 'vision' },
+  { to: '/history',  icon: 'ti-chart-bar',   key: 'history' },
+  { to: '/profile',  icon: 'ti-user',        key: 'profile' },
 ];
 
 export default function Layout() {
+  const { t } = useTranslation();
   return (
     <div style={{ maxWidth: 480, margin: '0 auto', minHeight: '100dvh', display: 'flex', flexDirection: 'column', background: '#f7f7f5' }}>
+      {/* Language bar */}
+      <div style={{ background: '#f7f7f5', borderBottom: '0.5px solid rgba(0,0,0,0.07)', padding: '5px 14px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+        <LanguageSelector />
+      </div>
+
       <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 64 }}>
         <Outlet />
       </div>
+
       <nav style={{
         position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
         width: '100%', maxWidth: 480, background: '#fff',
         borderTop: '0.5px solid rgba(0,0,0,0.1)',
         display: 'flex', zIndex: 100
       }}>
-        {navItems.map(({ to, icon, label }) => (
+        {NAV.map(({ to, icon, key }) => (
           <NavLink key={to} to={to} style={({ isActive }) => ({
             flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
             gap: 2, padding: '6px 0 8px', textDecoration: 'none',
@@ -31,7 +40,7 @@ export default function Layout() {
             transition: 'all 0.15s'
           })}>
             <i className={`ti ${icon}`} style={{ fontSize: 20 }} />
-            {label}
+            {t(`nav.${key}`)}
           </NavLink>
         ))}
       </nav>
