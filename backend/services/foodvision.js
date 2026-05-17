@@ -274,6 +274,7 @@ async function analyzeDishPhoto(base64Image, mediaType = 'image/jpeg', context =
 
     const result = {
       plat_identifie: aliments[0].nom,
+      plat_identifie_ar: aliments[0].nom_ar || null,
       cuisine: detectCuisine(aliments),
       confiance,
       aliments,
@@ -321,6 +322,7 @@ async function analyzeMultiplePhotos(images, context = {}) {
     const totaux = calculateTotals(aliments);
     const result = {
       plat_identifie: aliments[0].nom,
+      plat_identifie_ar: aliments[0].nom_ar || null,
       cuisine: detectCuisine(aliments),
       confiance: 'haute',
       aliments, totaux,

@@ -13,7 +13,7 @@ const STATES = { IDLE: 'idle', ANALYZING: 'analyzing', RESULT: 'result', REFININ
 export default function FoodVisionPage() {
   const navigate = useNavigate();
   const { profile } = useProfileStore();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const [state, setState] = useState(STATES.IDLE);
   const [imagePreview, setImagePreview] = useState(null);
   const [analysis, setAnalysis] = useState(null);
@@ -207,7 +207,9 @@ export default function FoodVisionPage() {
           <div style={{ position: 'relative' }}>
             <img src={imagePreview} alt="" style={{ width: '100%', height: 200, objectFit: 'cover' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '10px 14px', background: 'linear-gradient(transparent, rgba(0,0,0,0.6))' }}>
-              <div style={{ color: 'white', fontSize: 18, fontWeight: 600 }}>{analysis.plat_identifie}</div>
+              <div style={{ color: 'white', fontSize: 18, fontWeight: 600 }}>
+                {lang === 'ar' && analysis.plat_identifie_ar ? analysis.plat_identifie_ar : analysis.plat_identifie}
+              </div>
               <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: confColor + '44', color: confColor, fontWeight: 600 }}>
                 {analysis.confiance === 'haute' ? '✅' : analysis.confiance === 'moyenne' ? '⚠️' : '❓'} {rv.confidence} {analysis.confiance} {analysis.incertitude_pct ? `(±${analysis.incertitude_pct}%)` : ''}
               </span>
