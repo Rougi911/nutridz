@@ -47,6 +47,7 @@ app.use('/api/', limiter);
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/user', authRoutes); // /export and /account (RGPD)
 app.use('/api/products', productsRoutes);
 app.use('/api/journal', journalRoutes);
 app.use('/api/profile', profileRoutes);

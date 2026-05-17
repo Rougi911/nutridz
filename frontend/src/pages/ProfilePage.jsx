@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useProfileStore, useAuthStore } from '../store';
 import { calcBMR, calcTDEE, calcTarget, calcIMC, imcStatus } from '../utils/api';
 import { useTranslation } from '../i18n';
+import api from '../utils/api';
 
 const GOAL_ICONS = { perte: '📉', maintien: '⚖️', prise: '💪', sante: '🫀' };
 const SPORT_EMOJIS = { marche: '🚶', velo: '🚴', course: '🏃', natation: '🏊' };
@@ -12,6 +14,30 @@ export default function ProfilePage() {
   const { user, logout } = useAuthStore();
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState('corps');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleExport() {
+    try {
+      const response = await api.get('/user/export', { responseType: 'blob' });
+      const url = URL.createObjectURL(new Blob([response.data], { type: 'application/json' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'nutrivita-mes-donnees.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch { toast.error('Erreur lors du téléchargement'); }
+  }
+
+  async function handleDeleteAccount() {
+    setDeleting(true);
+    try {
+      await api.delete('/user/account');
+      toast.success('Compte supprimé définitivement');
+      logout();
+    } catch { toast.error('Erreur lors de la suppression'); }
+    finally { setDeleting(false); setShowDeleteModal(false); }
+  }
   const { t } = useTranslation();
 
   const p = profile;
@@ -164,11 +190,47 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <div style={{ margin: '1rem 1.25rem' }}>
+      {/* Mes données (RGPD) */}
+      <div style={{ margin: '1rem 1.25rem', background: '#fff', borderRadius: 12, padding: '14px 16px', border: '0.5px solid rgba(0,0,0,0.08)' }}>
+        <h3 style={{ fontSize: 13, fontWeight: 700, color: '#333', margin: '0 0 12px' }}>Mes données</h3>
+        <button onClick={handleExport}
+          style={{ width: '100%', padding: '10px', marginBottom: 8, background: '#EAF3DE', color: '#1A6B3C', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}>
+          📥 Télécharger mes données (JSON)
+        </button>
+        <button onClick={() => setShowDeleteModal(true)}
+          style={{ width: '100%', padding: '10px', background: '#FEF2F2', color: '#993C1D', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}>
+          🗑️ Supprimer mon compte
+        </button>
+      </div>
+
+      <div style={{ margin: '0 1.25rem 1rem' }}>
         <button onClick={logout} style={{ width: '100%', padding: 10, background: 'transparent', color: '#993C1D', border: '0.5px solid #993C1D', borderRadius: 10, fontSize: 13, cursor: 'pointer' }}>
           <i className="ti ti-logout" style={{ marginRight: 6 }} />{t('profile.logout')}
         </button>
       </div>
+
+      {/* Delete confirmation modal */}
+      {showDeleteModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div style={{ background: '#fff', borderRadius: 20, padding: 24, maxWidth: 340, width: '100%' }}>
+            <div style={{ fontSize: 36, textAlign: 'center', marginBottom: 12 }}>⚠️</div>
+            <h3 style={{ textAlign: 'center', fontSize: 16, fontWeight: 700, color: '#1a1a1a', margin: '0 0 10px' }}>Supprimer mon compte</h3>
+            <p style={{ fontSize: 13, color: '#666', textAlign: 'center', lineHeight: 1.5, margin: '0 0 20px' }}>
+              Cette action est <strong>irréversible</strong>. Toutes vos données (journal, activités, profil) seront définitivement supprimées.
+            </p>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setShowDeleteModal(false)}
+                style={{ flex: 1, padding: '11px', borderRadius: 10, border: '1px solid #ddd', background: '#f5f5f5', fontWeight: 600, fontSize: 13, cursor: 'pointer', color: '#555' }}>
+                Annuler
+              </button>
+              <button onClick={handleDeleteAccount} disabled={deleting}
+                style={{ flex: 1, padding: '11px', borderRadius: 10, border: 'none', background: '#993C1D', color: '#fff', fontWeight: 700, fontSize: 13, cursor: deleting ? 'not-allowed' : 'pointer', opacity: deleting ? 0.6 : 1 }}>
+                {deleting ? 'Suppression...' : 'Supprimer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

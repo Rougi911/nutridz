@@ -9,6 +9,8 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const { register } = useAuthStore();
   const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [consentTerms, setConsentTerms] = useState(false);
+  const [consentHealth, setConsentHealth] = useState(false);
   const [loading, setLoading] = useState(false);
   const { t } = useTranslation();
 
@@ -48,7 +50,27 @@ export default function RegisterPage() {
               style={{ width: '100%', padding: '10px 14px', borderRadius: 10, border: '0.5px solid rgba(0,0,0,0.15)', fontSize: 14, background: '#fff', outline: 'none' }} />
           </div>
         ))}
-        <button type="submit" disabled={loading} style={{ marginTop: 8, padding: '12px', background: '#1A6B3C', color: 'white', border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 500, cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
+        {/* RGPD consent checkboxes */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 4 }}>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
+            <input type="checkbox" checked={consentTerms} onChange={e => setConsentTerms(e.target.checked)}
+              style={{ marginTop: 2, accentColor: '#1A6B3C', flexShrink: 0 }} />
+            <span style={{ fontSize: 12, color: '#555', lineHeight: 1.5 }}>
+              J'accepte les{' '}
+              <Link to="/confidentialite" style={{ color: '#1A6B3C' }}>conditions d'utilisation et la politique de confidentialité</Link>
+            </span>
+          </label>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
+            <input type="checkbox" checked={consentHealth} onChange={e => setConsentHealth(e.target.checked)}
+              style={{ marginTop: 2, accentColor: '#1A6B3C', flexShrink: 0 }} />
+            <span style={{ fontSize: 12, color: '#555', lineHeight: 1.5 }}>
+              J'accepte que NutriVita traite mes données de santé (poids, calories, activités) pour me fournir le service
+            </span>
+          </label>
+        </div>
+
+        <button type="submit" disabled={loading || !consentTerms || !consentHealth}
+          style={{ marginTop: 8, padding: '12px', background: '#1A6B3C', color: 'white', border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 500, cursor: (!consentTerms || !consentHealth) ? 'not-allowed' : 'pointer', opacity: (loading || !consentTerms || !consentHealth) ? 0.5 : 1 }}>
           {loading ? t('auth.register.loading') : t('auth.register.submit')}
         </button>
         <p style={{ textAlign: 'center', fontSize: 13, color: '#888' }}>

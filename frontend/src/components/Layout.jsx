@@ -1,7 +1,8 @@
 import React from 'react';
-import { Outlet, NavLink } from 'react-router-dom';
+import { Outlet, NavLink, Link } from 'react-router-dom';
 import { useTranslation } from '../i18n';
 import LanguageSelector from './LanguageSelector';
+import CookieBanner from './CookieBanner';
 
 const NAV = [
   { to: '/journal',  icon: 'ti-notebook',   key: 'journal' },
@@ -24,6 +25,11 @@ export default function Layout() {
 
       <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 64 }}>
         <Outlet />
+        <footer style={{ padding: '16px 20px 8px', borderTop: '0.5px solid rgba(0,0,0,0.07)', display: 'flex', justifyContent: 'center', gap: 20, flexWrap: 'wrap' }}>
+          <Link to="/confidentialite" style={{ fontSize: 11, color: '#aaa', textDecoration: 'none' }}>Confidentialité</Link>
+          <Link to="/mentions-legales" style={{ fontSize: 11, color: '#aaa', textDecoration: 'none' }}>Mentions légales</Link>
+          <a href="mailto:contact@nutrivita.app" style={{ fontSize: 11, color: '#aaa', textDecoration: 'none' }}>Contact</a>
+        </footer>
       </div>
 
       <nav style={{
@@ -45,6 +51,7 @@ export default function Layout() {
           </NavLink>
         ))}
       </nav>
+      <CookieBanner />
     </div>
   );
 }

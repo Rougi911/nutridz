@@ -14,6 +14,8 @@ import HistoryPage from './pages/HistoryPage';
 import FoodVisionPage from './pages/FoodVisionPage';
 import ScannerPage from './pages/ScannerPage';
 import BilanPage from './pages/BilanPage';
+import PrivacyPage from './pages/PrivacyPage';
+import LegalPage from './pages/LegalPage';
 import Layout from './components/Layout';
 
 function PrivateRoute({ children }) {
@@ -33,6 +35,8 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/confidentialite" element={<PrivacyPage />} />
+        <Route path="/mentions-legales" element={<LegalPage />} />
         <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
           <Route index element={<Navigate to="/journal" replace />} />
           <Route path="journal" element={<JournalPage />} />
