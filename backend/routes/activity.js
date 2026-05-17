@@ -42,24 +42,32 @@ router.get('/strava/callback', async (req, res) => {
     const tokens = await exchangeCode(code);
     const db = getDB();
 
+    const athleteName = [tokens.athlete?.firstname, tokens.athlete?.lastname]
+      .filter(Boolean).join(' ') || 'Athlète Strava';
+
+    console.log(`[Strava callback] userId=${state} athlete="${athleteName}" expires_at=${tokens.expires_at}`);
+
     await db.prepare(`
       UPDATE profiles SET
         strava_access_token = ?,
         strava_refresh_token = ?,
         strava_athlete_id = ?,
-        strava_token_expires_at = ?
+        strava_token_expires_at = ?,
+        strava_athlete_name = ?
       WHERE user_id = ?
     `).run(
       tokens.access_token,
       tokens.refresh_token,
       String(tokens.athlete?.id || ''),
       tokens.expires_at,
+      athleteName,
       state   // state was set to userId in getAuthUrl
     );
 
-    res.redirect(`${frontendUrl}/bilan?strava=ok`);
+    console.log(`[Strava callback] Token saved successfully for userId=${state}`);
+    res.redirect(`${frontendUrl}/bilan?strava=ok&athlete=${encodeURIComponent(athleteName)}`);
   } catch (err) {
-    console.error('Strava callback error:', err.message);
+    console.error('[Strava callback] Error:', err.message);
     res.redirect(`${frontendUrl}/bilan?strava=error&reason=exchange_failed`);
   }
 });
@@ -68,10 +76,13 @@ router.get('/strava/callback', async (req, res) => {
 
 router.get('/strava/today', auth, async (req, res) => {
   try {
+    console.log(`[Strava today] Fetching activities for userId=${req.userId}`);
     const result = await getTodayActivities(req.userId);
     if (!result.connected) {
+      console.log(`[Strava today] userId=${req.userId} — not connected (no token)`);
       return res.json({ connected: false, activities: [] });
     }
+    console.log(`[Strava today] userId=${req.userId} — ${result.activities.length} activitie(s) from Strava`);
 
     const db = getDB();
     const today = new Date().toISOString().split('T')[0];
@@ -139,7 +150,7 @@ router.get('/bilan/:date', auth, async (req, res) => {
     db.prepare(`
       SELECT * FROM activities WHERE user_id = ? AND date = ? ORDER BY created_at DESC
     `).all(req.userId, date),
-    db.prepare('SELECT weight, goal FROM profiles WHERE user_id = ?').get(req.userId),
+    db.prepare('SELECT weight, goal, strava_access_token, strava_athlete_name FROM profiles WHERE user_id = ?').get(req.userId),
   ]);
 
   const ingested_kcal = Math.round(journalRow?.ingested_kcal || 0);
@@ -161,6 +172,8 @@ router.get('/bilan/:date', auth, async (req, res) => {
     balance: ingested_kcal - burned_kcal,
     net_remaining: target_kcal - (ingested_kcal - burned_kcal),
     activities,
+    strava_connected: !!profile?.strava_access_token,
+    strava_athlete_name: profile?.strava_athlete_name || null,
   });
 });
 

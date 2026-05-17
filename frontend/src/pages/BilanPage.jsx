@@ -79,6 +79,8 @@ function CalorieRing({ ingested, burned, target }) {
 // ─── Activity row ──────────────────────────────────────────────────────────────
 function ActivityRow({ activity, t }) {
   const icon = SPORT_ICONS[activity.type] || '🏃';
+  const isStrava = activity.source === 'strava';
+  const label = activity.name || t(`bilan.sport.${activity.type}`) || activity.type;
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -86,25 +88,22 @@ function ActivityRow({ activity, t }) {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{
-          width: 40, height: 40, borderRadius: 12, background: '#FFF3ED',
+          width: 42, height: 42, borderRadius: 12,
+          background: isStrava ? '#FFF0EB' : '#EAF3DE',
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
         }}>
           {icon}
         </div>
         <div>
-          <div style={{ fontWeight: 600, fontSize: 14, color: '#222' }}>
-            {t(`bilan.sport.${activity.type}`) || activity.type}
-          </div>
-          <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>
-            {activity.duration_min} min
-            {activity.distance_km > 0 && ` · ${activity.distance_km} km`}
-            {' · '}
+          <div style={{ fontWeight: 600, fontSize: 14, color: '#222' }}>{label}</div>
+          <div style={{ fontSize: 12, color: '#999', marginTop: 2, display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span>{activity.duration_min} min</span>
+            {activity.distance_km > 0 && <span>· {activity.distance_km} km</span>}
             <span style={{
-              fontSize: 11, background: activity.source === 'strava' ? '#FC4C02' : '#e8f5e9',
-              color: activity.source === 'strava' ? '#fff' : '#1A6B3C',
-              padding: '1px 6px', borderRadius: 6, fontWeight: 600,
+              fontSize: 10, background: isStrava ? '#FC4C02' : '#1A6B3C',
+              color: '#fff', padding: '1px 6px', borderRadius: 6, fontWeight: 700,
             }}>
-              {activity.source === 'strava' ? 'Strava' : 'Manuel'}
+              {isStrava ? 'Strava' : 'Manuel'}
             </span>
           </div>
         </div>
@@ -128,7 +127,7 @@ export default function BilanPage() {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [syncingStrava, setSyncingStrava] = useState(false);
-  const [stravaConnected, setStravaConnected] = useState(false);
+  const [syncResult, setSyncResult] = useState(null); // { count, newCount }
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -142,16 +141,18 @@ export default function BilanPage() {
 
   useEffect(() => { fetchBilan(today); }, []);
 
-  // Handle return from Strava OAuth redirect (?strava=ok or ?strava=error)
+  // Handle return from Strava OAuth redirect (?strava=ok|error)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const strava = params.get('strava');
     if (strava === 'ok') {
-      toast.success('Strava connecté avec succès !');
+      const athlete = params.get('athlete') || 'Strava';
+      toast.success(`✅ ${athlete} connecté à Strava !`);
       fetchBilan(today);
       window.history.replaceState({}, '', '/bilan');
     } else if (strava === 'error') {
-      toast.error('Échec connexion Strava');
+      const reason = params.get('reason') || '';
+      toast.error(`Échec connexion Strava${reason ? ` (${reason})` : ''}`);
       window.history.replaceState({}, '', '/bilan');
     }
   }, []);
@@ -169,13 +170,18 @@ export default function BilanPage() {
 
   async function handleSyncStrava() {
     setSyncingStrava(true);
+    setSyncResult(null);
     try {
       const result = await fetchStravaToday();
-      setStravaConnected(result.connected);
       if (result.connected) {
-        toast.success(`${result.activities.length} activité(s) synchronisée(s)`);
+        setSyncResult({ count: result.activities.length });
+        toast.success(
+          result.activities.length > 0
+            ? `🔄 ${result.activities.length} activité(s) synchronisée(s)`
+            : 'Aucune activité Strava aujourd\'hui'
+        );
       } else {
-        toast.error('Strava non connecté');
+        toast.error('Strava non connecté — reconnectez votre compte');
       }
     } catch {
       toast.error('Erreur synchronisation Strava');
@@ -200,6 +206,8 @@ export default function BilanPage() {
   const ingested = bilan?.ingested_kcal || 0;
   const burned = bilan?.burned_kcal || 0;
   const activities = bilan?.activities || [];
+  const stravaConnected = bilan?.strava_connected || false;
+  const stravaAthleteName = bilan?.strava_athlete_name || null;
 
   const statCards = [
     { label: t('bilan.ingested'), value: ingested, unit: 'kcal', color: '#1A6B3C', bg: '#EAF3DE', icon: '🍽️' },
@@ -246,36 +254,75 @@ export default function BilanPage() {
         ))}
       </div>
 
-      {/* Strava buttons */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-        <button
-          onClick={handleConnectStrava}
-          style={{
-            flex: 1, padding: '12px', borderRadius: 14, border: 'none',
-            background: '#FC4C02', color: '#fff',
-            fontWeight: 700, fontSize: 13, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-          }}
-        >
-          <i className="ti ti-brand-strava" style={{ fontSize: 18 }} />
-          {t('bilan.connectStrava')}
-        </button>
-        <button
-          onClick={handleSyncStrava}
-          disabled={syncingStrava}
-          style={{
-            flex: 1, padding: '12px', borderRadius: 14,
-            border: '2px solid #FC4C02', background: '#fff',
-            color: '#FC4C02', fontWeight: 700, fontSize: 13,
-            cursor: syncingStrava ? 'not-allowed' : 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-          }}
-        >
-          {syncingStrava
-            ? <i className="ti ti-loader" style={{ fontSize: 16 }} />
-            : <i className="ti ti-refresh" style={{ fontSize: 16 }} />}
-          {t('bilan.syncStrava')}
-        </button>
+      {/* Strava connection card */}
+      <div style={{
+        background: '#fff', borderRadius: 20, padding: '14px 16px',
+        marginBottom: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+      }}>
+        {stravaConnected ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{
+                width: 38, height: 38, borderRadius: 10, background: '#FC4C02',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <i className="ti ti-brand-strava" style={{ fontSize: 20, color: '#fff' }} />
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 13, color: '#222' }}>
+                  ✅ {stravaAthleteName || 'Strava connecté'}
+                </div>
+                <div style={{ fontSize: 11, color: '#aaa' }}>Compte Strava lié</div>
+              </div>
+            </div>
+            <button
+              onClick={handleSyncStrava}
+              disabled={syncingStrava}
+              style={{
+                padding: '9px 14px', borderRadius: 12,
+                border: '1.5px solid #FC4C02', background: syncingStrava ? '#f5f5f5' : '#fff',
+                color: '#FC4C02', fontWeight: 700, fontSize: 12,
+                cursor: syncingStrava ? 'not-allowed' : 'pointer',
+                display: 'flex', alignItems: 'center', gap: 5,
+              }}
+            >
+              <i className={`ti ${syncingStrava ? 'ti-loader-2' : 'ti-refresh'}`}
+                style={{ fontSize: 15, animation: syncingStrava ? 'spin 1s linear infinite' : 'none' }} />
+              {syncingStrava ? 'Sync...' : '🔄 Synchroniser'}
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: 13, color: '#555' }}>Strava non connecté</div>
+              <div style={{ fontSize: 11, color: '#aaa' }}>Liez votre compte pour importer vos activités</div>
+            </div>
+            <button
+              onClick={handleConnectStrava}
+              style={{
+                padding: '9px 14px', borderRadius: 12, border: 'none',
+                background: '#FC4C02', color: '#fff',
+                fontWeight: 700, fontSize: 12, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 5,
+              }}
+            >
+              <i className="ti ti-brand-strava" style={{ fontSize: 15 }} />
+              Connecter
+            </button>
+          </div>
+        )}
+
+        {syncResult !== null && (
+          <div style={{
+            marginTop: 10, padding: '8px 12px', borderRadius: 10,
+            background: syncResult.count > 0 ? '#EAF3DE' : '#f5f5f5',
+            fontSize: 12, color: syncResult.count > 0 ? '#1A6B3C' : '#888',
+          }}>
+            {syncResult.count > 0
+              ? `✅ ${syncResult.count} activité(s) importée(s) depuis Strava`
+              : 'Aucune activité Strava enregistrée aujourd\'hui'}
+          </div>
+        )}
       </div>
 
       {/* Activities list */}
@@ -287,18 +334,25 @@ export default function BilanPage() {
           <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#333' }}>
             {t('bilan.activities')}
           </h3>
-          <span style={{
-            background: '#FF6B35', color: '#fff',
-            borderRadius: 10, padding: '2px 10px', fontSize: 12, fontWeight: 700,
-          }}>
-            −{Math.round(burned)} kcal
-          </span>
+          {burned > 0 && (
+            <span style={{
+              background: '#FF6B35', color: '#fff',
+              borderRadius: 10, padding: '2px 10px', fontSize: 12, fontWeight: 700,
+            }}>
+              −{Math.round(burned)} kcal
+            </span>
+          )}
         </div>
 
         {activities.length === 0 ? (
-          <p style={{ color: '#bbb', fontSize: 13, textAlign: 'center', margin: '16px 0' }}>
-            {t('bilan.noActivities')}
-          </p>
+          <div style={{ textAlign: 'center', padding: '16px 0' }}>
+            <div style={{ fontSize: 28, marginBottom: 6 }}>🏃</div>
+            <p style={{ color: '#bbb', fontSize: 13, margin: 0 }}>
+              {stravaConnected
+                ? 'Aucune activité Strava aujourd\'hui — appuyez sur Synchroniser'
+                : t('bilan.noActivities')}
+            </p>
+          </div>
         ) : (
           activities.map(a => <ActivityRow key={a.id} activity={a} t={t} />)
         )}

@@ -180,6 +180,7 @@ async function initDB() {
     'ALTER TABLE profiles ADD COLUMN strava_refresh_token TEXT',
     'ALTER TABLE profiles ADD COLUMN strava_athlete_id TEXT',
     'ALTER TABLE profiles ADD COLUMN strava_token_expires_at INTEGER',
+    'ALTER TABLE profiles ADD COLUMN strava_athlete_name TEXT',
   ];
   for (const sql of stravaColumns) {
     try { await db.exec(sql); } catch (_) { /* column already exists */ }
