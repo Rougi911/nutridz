@@ -111,6 +111,7 @@ export const useJournalStore = create((set, get) => ({
 export const useActivityStore = create((set, get) => ({
   bilan: null,
   weeklyStats: null,
+  monthlyStats: null,
   loading: false,
   stravaConnected: false,
 
@@ -152,6 +153,13 @@ export const useActivityStore = create((set, get) => ({
       const { data } = await api.get('/activity/stats/weekly');
       set({ weeklyStats: data });
     } catch { /* silent fail — stats are non-critical */ }
+  },
+
+  fetchMonthlyStats: async (year, month) => {
+    try {
+      const { data } = await api.get(`/activity/stats/monthly?year=${year}&month=${month}`);
+      set({ monthlyStats: data });
+    } catch { /* silent */ }
   },
 }));
 

@@ -280,4 +280,71 @@ router.get('/stats/weekly', auth, async (req, res) => {
   });
 });
 
+// ─── Statistiques mensuelles ───────────────────────────────────────────────────
+
+router.get('/stats/monthly', auth, async (req, res) => {
+  const year  = parseInt(req.query.year)  || new Date().getFullYear();
+  const month = parseInt(req.query.month) || (new Date().getMonth() + 1);
+  const db = getDB();
+
+  const pad = n => String(n).padStart(2, '0');
+  const startDate = `${year}-${pad(month)}-01`;
+  const lastDay   = new Date(year, month, 0).getDate();
+  const endDate   = `${year}-${pad(month)}-${pad(lastDay)}`;
+
+  const [journalRows, activityRows, profile] = await Promise.all([
+    db.prepare(`
+      SELECT date, COALESCE(SUM(kcal), 0) as calories_in
+      FROM journal_entries
+      WHERE user_id = ? AND date >= ? AND date <= ?
+      GROUP BY date
+    `).all(req.userId, startDate, endDate),
+    db.prepare(`
+      SELECT date, COALESCE(SUM(calories_burned), 0) as calories_out
+      FROM activities
+      WHERE user_id = ? AND date >= ? AND date <= ?
+      GROUP BY date
+    `).all(req.userId, startDate, endDate),
+    db.prepare('SELECT weight, goal FROM profiles WHERE user_id = ?').get(req.userId),
+  ]);
+
+  const target_kcal = profile?.goal === 'perte' ? 1800
+    : profile?.goal === 'prise' ? 2500
+    : 2000;
+  const goal = profile?.goal || 'maintien';
+
+  const journalMap  = Object.fromEntries(journalRows.map(r => [r.date, Math.round(r.calories_in)]));
+  const activityMap = Object.fromEntries(activityRows.map(r => [r.date, Math.round(r.calories_out)]));
+
+  const days = [];
+  for (let d = 1; d <= lastDay; d++) {
+    const date         = `${year}-${pad(month)}-${pad(d)}`;
+    const calories_in  = journalMap[date]  || 0;
+    const calories_out = activityMap[date] || 0;
+    const has_data     = calories_in > 0;
+    const balance      = Math.round(calories_in - calories_out);
+    const deviation    = Math.round(balance - target_kcal);
+    const on_target    = has_data && Math.abs(deviation) <= 150;
+    days.push({ date, day: d, calories_in, calories_out, balance, deviation, on_target, has_data });
+  }
+
+  const tracked = days.filter(d => d.has_data);
+  const days_on_target = tracked.filter(d => d.on_target).length;
+  const avg_balance    = tracked.length
+    ? Math.round(tracked.reduce((s, d) => s + d.balance, 0) / tracked.length)
+    : 0;
+
+  const sorted    = [...tracked].sort((a, b) => Math.abs(a.deviation) - Math.abs(b.deviation));
+  const best_day  = sorted[0]?.date || null;
+  const worst_day = sorted[sorted.length - 1]?.date || null;
+
+  const projected_weight_change = parseFloat((avg_balance * lastDay / 3500).toFixed(2));
+
+  res.json({
+    year, month, days, target_kcal, goal,
+    days_on_target, total_tracked: tracked.length,
+    best_day, worst_day, avg_balance, projected_weight_change,
+  });
+});
+
 module.exports = router;
