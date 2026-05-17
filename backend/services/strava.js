@@ -9,7 +9,7 @@ function getAuthUrl(state = '') {
     redirect_uri: process.env.STRAVA_REDIRECT_URI,
     response_type: 'code',
     approval_prompt: 'auto',
-    scope: 'activity:read',
+    scope: 'activity:read_all',
     state,
   });
   return `https://www.strava.com/oauth/authorize?${params}`;

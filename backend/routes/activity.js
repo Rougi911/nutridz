@@ -17,13 +17,22 @@ const MET = {
 // ─── Strava OAuth ──────────────────────────────────────────────────────────────
 
 router.get('/strava/auth', auth, (req, res) => {
+  if (!process.env.STRAVA_CLIENT_ID || !process.env.STRAVA_REDIRECT_URI) {
+    return res.status(503).json({ error: 'Strava non configuré (STRAVA_CLIENT_ID manquant)' });
+  }
+  // state = userId so the callback can identify the user without a JWT
   const url = getAuthUrl(req.user.id);
   res.json({ url });
 });
 
-router.get('/strava/callback', auth, async (req, res) => {
+// No auth middleware — Strava redirects the browser here with no JWT header
+router.get('/strava/callback', async (req, res) => {
   const { code, state } = req.query;
-  if (!code) return res.status(400).json({ error: 'Code manquant' });
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+  if (!code || !state) {
+    return res.redirect(`${frontendUrl}/bilan?strava=error&reason=missing_params`);
+  }
 
   try {
     const tokens = await exchangeCode(code);
@@ -41,13 +50,13 @@ router.get('/strava/callback', auth, async (req, res) => {
       tokens.refresh_token,
       String(tokens.athlete?.id || ''),
       tokens.expires_at,
-      req.user.id
+      state   // state was set to userId in getAuthUrl
     );
 
-    res.json({ success: true, athlete: tokens.athlete });
+    res.redirect(`${frontendUrl}/bilan?strava=ok`);
   } catch (err) {
     console.error('Strava callback error:', err.message);
-    res.status(500).json({ error: 'Échec connexion Strava' });
+    res.redirect(`${frontendUrl}/bilan?strava=error&reason=exchange_failed`);
   }
 });
 

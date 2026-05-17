@@ -142,12 +142,28 @@ export default function BilanPage() {
 
   useEffect(() => { fetchBilan(today); }, []);
 
+  // Handle return from Strava OAuth redirect (?strava=ok or ?strava=error)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const strava = params.get('strava');
+    if (strava === 'ok') {
+      toast.success('Strava connecté avec succès !');
+      fetchBilan(today);
+      window.history.replaceState({}, '', '/bilan');
+    } else if (strava === 'error') {
+      toast.error('Échec connexion Strava');
+      window.history.replaceState({}, '', '/bilan');
+    }
+  }, []);
+
   async function handleConnectStrava() {
     try {
       const url = await getStravaAuthUrl();
-      window.open(url, '_blank', 'width=600,height=700');
-    } catch {
-      toast.error('Impossible de se connecter à Strava');
+      // window.open is blocked on mobile PWA — use full-page redirect
+      window.location.href = url;
+    } catch (err) {
+      const msg = err?.response?.data?.error || 'Impossible de se connecter à Strava';
+      toast.error(msg);
     }
   }
 
