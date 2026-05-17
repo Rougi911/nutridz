@@ -143,7 +143,11 @@ router.get('/bilan/:date', auth, async (req, res) => {
 
   const [journalRow, activities, profile] = await Promise.all([
     db.prepare(`
-      SELECT COALESCE(SUM(kcal), 0) as ingested_kcal
+      SELECT
+        COALESCE(SUM(kcal), 0)      as ingested_kcal,
+        COALESCE(SUM(glucides), 0)  as glucides,
+        COALESCE(SUM(proteines), 0) as proteines,
+        COALESCE(SUM(lipides), 0)   as lipides
       FROM journal_entries
       WHERE user_id = ? AND date = ?
     `).get(req.userId, date),
@@ -171,9 +175,108 @@ router.get('/bilan/:date', auth, async (req, res) => {
     target_kcal,
     balance: ingested_kcal - burned_kcal,
     net_remaining: target_kcal - (ingested_kcal - burned_kcal),
+    glucides: Math.round(journalRow?.glucides || 0),
+    proteines: Math.round(journalRow?.proteines || 0),
+    lipides: Math.round(journalRow?.lipides || 0),
     activities,
     strava_connected: !!profile?.strava_access_token,
     strava_athlete_name: profile?.strava_athlete_name || null,
+  });
+});
+
+// ─── Statistiques hebdomadaires ────────────────────────────────────────────────
+
+router.get('/stats/weekly', auth, async (req, res) => {
+  const db = getDB();
+
+  // Build array of last 7 dates (oldest → today)
+  const dates = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    dates.push(d.toISOString().split('T')[0]);
+  }
+  const oldest = dates[0];
+
+  const [journalRows, activityRows, profile] = await Promise.all([
+    db.prepare(`
+      SELECT date,
+        COALESCE(SUM(kcal), 0)      as calories_in,
+        COALESCE(SUM(glucides), 0)  as carbs,
+        COALESCE(SUM(proteines), 0) as protein,
+        COALESCE(SUM(lipides), 0)   as fat
+      FROM journal_entries
+      WHERE user_id = ? AND date >= ?
+      GROUP BY date
+    `).all(req.userId, oldest),
+    db.prepare(`
+      SELECT date, COALESCE(SUM(calories_burned), 0) as calories_out
+      FROM activities
+      WHERE user_id = ? AND date >= ?
+      GROUP BY date
+    `).all(req.userId, oldest),
+    db.prepare('SELECT weight, goal FROM profiles WHERE user_id = ?').get(req.userId),
+  ]);
+
+  const target_kcal = profile?.goal === 'perte' ? 1800
+    : profile?.goal === 'prise' ? 2500
+    : 2000;
+  const weight = profile?.weight || 70;
+
+  // Merge into a day-by-day map
+  const dayMap = {};
+  for (const date of dates) {
+    dayMap[date] = { date, calories_in: 0, calories_out: 0, carbs: 0, protein: 0, fat: 0 };
+  }
+  for (const r of journalRows) {
+    if (dayMap[r.date]) Object.assign(dayMap[r.date], r);
+  }
+  for (const r of activityRows) {
+    if (dayMap[r.date]) dayMap[r.date].calories_out = Math.round(r.calories_out);
+  }
+
+  const days = Object.values(dayMap); // 7 entries
+  const activeDays = days.filter(d => d.calories_in > 0);
+  const n = activeDays.length || 1;
+
+  const avg_calories_in  = Math.round(activeDays.reduce((s, d) => s + d.calories_in,  0) / n);
+  const avg_calories_out = Math.round(activeDays.reduce((s, d) => s + d.calories_out, 0) / n);
+  const avg_balance      = avg_calories_in - avg_calories_out;
+
+  const days_on_target = activeDays.filter(d =>
+    Math.abs(d.calories_in - target_kcal) <= 200
+  ).length;
+
+  const weekly_protein_avg = Math.round(activeDays.reduce((s, d) => s + d.protein, 0) / n);
+  const weekly_carbs_avg   = Math.round(activeDays.reduce((s, d) => s + d.carbs,   0) / n);
+  const weekly_fat_avg     = Math.round(activeDays.reduce((s, d) => s + d.fat,     0) / n);
+
+  // Best day = closest balance to 0, worst = farthest
+  const sortedByBalance = [...activeDays].sort((a, b) =>
+    Math.abs(a.calories_in - target_kcal) - Math.abs(b.calories_in - target_kcal)
+  );
+  const best_day  = sortedByBalance[0]?.date || null;
+  const worst_day = sortedByBalance[sortedByBalance.length - 1]?.date || null;
+
+  // Projected weekly weight change: avg_balance * 7 / 3500 (fat) or / 2800 (muscle)
+  const projected_weight_change = parseFloat((avg_balance * 7 / 3500).toFixed(2));
+
+  res.json({
+    days,
+    target_kcal,
+    avg_calories_in,
+    avg_calories_out,
+    avg_balance,
+    days_on_target,
+    active_days: activeDays.length,
+    best_day,
+    worst_day,
+    weekly_protein_avg,
+    weekly_carbs_avg,
+    weekly_fat_avg,
+    projected_weight_change,
+    weight,
+    goal: profile?.goal || 'maintien',
   });
 });
 

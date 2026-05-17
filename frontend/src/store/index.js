@@ -110,6 +110,7 @@ export const useJournalStore = create((set, get) => ({
 // ─── Activity Store ───────────────────────────────────────────────────────────
 export const useActivityStore = create((set, get) => ({
   bilan: null,
+  weeklyStats: null,
   loading: false,
   stravaConnected: false,
 
@@ -144,6 +145,13 @@ export const useActivityStore = create((set, get) => ({
   getStravaAuthUrl: async () => {
     const { data } = await api.get('/activity/strava/auth');
     return data.url;
+  },
+
+  fetchWeeklyStats: async () => {
+    try {
+      const { data } = await api.get('/activity/stats/weekly');
+      set({ weeklyStats: data });
+    } catch { /* silent fail — stats are non-critical */ }
   },
 }));
 
