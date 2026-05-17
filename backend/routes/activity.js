@@ -28,7 +28,11 @@ router.get('/strava/auth', auth, (req, res) => {
 // No auth middleware — Strava redirects the browser here with no JWT header
 router.get('/strava/callback', async (req, res) => {
   const { code, state } = req.query;
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const frontendUrl = (process.env.FRONTEND_URL || '').replace(/\/$/, '');
+  if (!frontendUrl) {
+    console.error('FRONTEND_URL is not set — Strava callback cannot redirect correctly');
+    return res.status(500).send('Server misconfiguration: FRONTEND_URL not set');
+  }
 
   if (!code || !state) {
     return res.redirect(`${frontendUrl}/bilan?strava=error&reason=missing_params`);
