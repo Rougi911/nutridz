@@ -21,7 +21,7 @@ router.get('/strava/auth', auth, (req, res) => {
     return res.status(503).json({ error: 'Strava non configuré (STRAVA_CLIENT_ID manquant)' });
   }
   // state = userId so the callback can identify the user without a JWT
-  const url = getAuthUrl(req.user.id);
+  const url = getAuthUrl(req.userId);
   res.json({ url });
 });
 
@@ -64,7 +64,7 @@ router.get('/strava/callback', async (req, res) => {
 
 router.get('/strava/today', auth, async (req, res) => {
   try {
-    const result = await getTodayActivities(req.user.id);
+    const result = await getTodayActivities(req.userId);
     if (!result.connected) {
       return res.json({ connected: false, activities: [] });
     }
@@ -75,13 +75,13 @@ router.get('/strava/today', auth, async (req, res) => {
     for (const act of result.activities) {
       const exists = await db.prepare(
         'SELECT id FROM activities WHERE strava_id = ? AND user_id = ?'
-      ).get(act.strava_id, req.user.id);
+      ).get(act.strava_id, req.userId);
 
       if (!exists) {
         await db.prepare(`
           INSERT INTO activities (id, user_id, date, type, duration_min, distance_km, calories_burned, source, strava_id)
           VALUES (?, ?, ?, ?, ?, ?, ?, 'strava', ?)
-        `).run(uuidv4(), req.user.id, today, act.type, act.duration_min, act.distance_km, act.calories_burned, act.strava_id);
+        `).run(uuidv4(), req.userId, today, act.type, act.duration_min, act.distance_km, act.calories_burned, act.strava_id);
       }
     }
 
@@ -102,7 +102,7 @@ router.post('/manual', auth, async (req, res) => {
   }
 
   const db = getDB();
-  const profile = await db.prepare('SELECT weight FROM profiles WHERE user_id = ?').get(req.user.id);
+  const profile = await db.prepare('SELECT weight FROM profiles WHERE user_id = ?').get(req.userId);
   const weight = profile?.weight || 70;
 
   const met = MET[type]?.[intensite] ?? MET.marche.moderee;
@@ -114,7 +114,7 @@ router.post('/manual', auth, async (req, res) => {
   await db.prepare(`
     INSERT INTO activities (id, user_id, date, type, duration_min, distance_km, calories_burned, source)
     VALUES (?, ?, ?, ?, ?, ?, ?, 'manual')
-  `).run(id, req.user.id, actDate, type, duration_min, distance_km, calories_burned);
+  `).run(id, req.userId, actDate, type, duration_min, distance_km, calories_burned);
 
   const activity = await db.prepare('SELECT * FROM activities WHERE id = ?').get(id);
   res.status(201).json({ success: true, activity });
@@ -131,11 +131,11 @@ router.get('/bilan/:date', auth, async (req, res) => {
       SELECT COALESCE(SUM(kcal), 0) as ingested_kcal
       FROM journal_entries
       WHERE user_id = ? AND date = ?
-    `).get(req.user.id, date),
+    `).get(req.userId, date),
     db.prepare(`
       SELECT * FROM activities WHERE user_id = ? AND date = ? ORDER BY created_at DESC
-    `).all(req.user.id, date),
-    db.prepare('SELECT weight, goal FROM profiles WHERE user_id = ?').get(req.user.id),
+    `).all(req.userId, date),
+    db.prepare('SELECT weight, goal FROM profiles WHERE user_id = ?').get(req.userId),
   ]);
 
   const ingested_kcal = Math.round(journalRow?.ingested_kcal || 0);

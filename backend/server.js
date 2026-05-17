@@ -16,6 +16,7 @@ const PORT = process.env.PORT || 3001;
 
 // Sécurité
 app.use(helmet());
+app.set('trust proxy', 1); // Render/Heroku proxy — needed for express-rate-limit
 
 const allowedOrigins = [
   'https://nutridz-web.onrender.com',
