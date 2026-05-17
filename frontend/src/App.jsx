@@ -13,6 +13,7 @@ import ProfilePage from './pages/ProfilePage';
 import HistoryPage from './pages/HistoryPage';
 import FoodVisionPage from './pages/FoodVisionPage';
 import ScannerPage from './pages/ScannerPage';
+import BilanPage from './pages/BilanPage';
 import Layout from './components/Layout';
 
 function PrivateRoute({ children }) {
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="history" element={<HistoryPage />} />
           <Route path="scanner" element={<ScannerPage />} />
           <Route path="vision" element={<FoodVisionPage />} />
+          <Route path="bilan" element={<BilanPage />} />
           <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Routes>

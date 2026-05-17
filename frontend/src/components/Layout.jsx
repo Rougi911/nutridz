@@ -8,6 +8,7 @@ const NAV = [
   { to: '/products', icon: 'ti-search',      key: 'products' },
   { to: '/scanner',  icon: 'ti-barcode',     key: 'scanner' },
   { to: '/vision',   icon: 'ti-camera',      key: 'vision' },
+  { to: '/bilan',    icon: 'ti-heartbeat',   key: 'bilan' },
   { to: '/history',  icon: 'ti-chart-bar',   key: 'history' },
   { to: '/profile',  icon: 'ti-user',        key: 'profile' },
 ];

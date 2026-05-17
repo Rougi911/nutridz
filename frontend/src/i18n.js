@@ -5,7 +5,7 @@ const DATE_LOCALES = { fr, ar, en: enUS };
 
 const T = {
   fr: {
-    nav: { journal: 'Journal', products: 'Produits', scanner: 'Scanner', vision: 'Analyser', history: 'Historique', profile: 'Profil' },
+    nav: { journal: 'Journal', products: 'Produits', scanner: 'Scanner', vision: 'Analyser', history: 'Historique', profile: 'Profil', bilan: 'Bilan' },
     common: {
       save: 'Enregistrer', saving: 'Enregistrement...', cancel: 'Annuler', retry: 'Réessayer',
       error: 'Erreur', loading: 'Chargement...', add: 'Ajouter', delete: 'Supprimer', close: 'Fermer',
@@ -99,6 +99,21 @@ const T = {
       errors: { invalidFile: 'Fichier image requis', tooLarge: 'Image trop lourde (max 12 Mo)', analyzeError: "Erreur lors de l'analyse", refineError: "Impossible d'affiner l'analyse", addError: "Erreur lors de l'ajout au journal" },
       successAdded: (n, kcal) => `${n} aliment(s) ajouté(s) — ${kcal} kcal`,
     },
+    bilan: {
+      title: 'Bilan calorique',
+      ingested: 'Ingérées', burned: 'Dépensées', balance: 'Solde', target: 'Objectif',
+      surplus: 'Surplus', deficit: 'Déficit',
+      activities: 'Activités du jour', noActivities: 'Aucune activité enregistrée',
+      connectStrava: 'Connecter Strava', stravaConnected: 'Strava connecté',
+      syncStrava: 'Sync Strava',
+      addActivity: 'Ajouter une activité',
+      sport: { marche: 'Marche', course: 'Course', velo: 'Vélo', natation: 'Natation', muscu: 'Musculation' },
+      intensity: { legere: 'Légère', moderee: 'Modérée', intense: 'Intense' },
+      duration: 'Durée', minutes: 'min',
+      caloriesBurned: 'Calories brûlées',
+      saving: 'Enregistrement...', saved: 'Activité enregistrée !',
+      errorLoad: 'Erreur lors du chargement', errorSave: "Erreur lors de l'enregistrement",
+    },
     auth: {
       login: { title: 'NutriDZ', subtitle: 'Nutrition personnalisée pour le marché algérien', email: 'Email', password: 'Mot de passe', submit: 'Se connecter', loading: 'Connexion...', noAccount: 'Pas encore de compte ?', register: "S'inscrire", error: 'Identifiants incorrects' },
       register: { title: 'NutriDZ', subtitle: 'Créer un compte', name: 'Prénom & Nom', namePlaceholder: 'Ex: Ahmed Benali', email: 'Email', emailPlaceholder: 'exemple@gmail.com', password: 'Mot de passe', passwordPlaceholder: '6 caractères minimum', submit: 'Créer mon compte', loading: 'Création...', hasAccount: 'Déjà un compte ?', login: 'Se connecter', shortPassword: 'Mot de passe trop court (6 caractères min)', success: 'Compte créé ! Bienvenue 🎉', error: "Erreur lors de l'inscription" },
@@ -106,7 +121,7 @@ const T = {
   },
 
   ar: {
-    nav: { journal: 'اليومية', products: 'منتجات', scanner: 'مسح', vision: 'تحليل', history: 'تاريخ', profile: 'الملف' },
+    nav: { journal: 'اليومية', products: 'منتجات', scanner: 'مسح', vision: 'تحليل', history: 'تاريخ', profile: 'الملف', bilan: 'ميزان' },
     common: {
       save: 'حفظ', saving: 'جارٍ الحفظ...', cancel: 'إلغاء', retry: 'إعادة المحاولة',
       error: 'خطأ', loading: 'تحميل...', add: 'إضافة', delete: 'حذف', close: 'إغلاق',
@@ -200,6 +215,21 @@ const T = {
       errors: { invalidFile: 'يجب أن يكون الملف صورة', tooLarge: 'الصورة كبيرة جداً (الحد الأقصى 12 ميغا)', analyzeError: 'خطأ في التحليل', refineError: 'تعذّر تحسين التحليل', addError: 'خطأ في الإضافة لليومية' },
       successAdded: (n, kcal) => `${n} عنصر(عناصر) مضاف — ${kcal} سعرة`,
     },
+    bilan: {
+      title: 'الميزان الحراري',
+      ingested: 'مُستهلك', burned: 'محروق', balance: 'الرصيد', target: 'الهدف',
+      surplus: 'فائض', deficit: 'عجز',
+      activities: 'أنشطة اليوم', noActivities: 'لا توجد أنشطة مسجلة',
+      connectStrava: 'ربط Strava', stravaConnected: 'Strava مرتبط',
+      syncStrava: 'مزامنة Strava',
+      addActivity: 'إضافة نشاط',
+      sport: { marche: 'مشي', course: 'جري', velo: 'دراجة', natation: 'سباحة', muscu: 'تمارين القوة' },
+      intensity: { legere: 'خفيفة', moderee: 'متوسطة', intense: 'شديدة' },
+      duration: 'المدة', minutes: 'دقيقة',
+      caloriesBurned: 'سعرات محروقة',
+      saving: 'جارٍ الحفظ...', saved: 'تم تسجيل النشاط !',
+      errorLoad: 'خطأ في التحميل', errorSave: 'خطأ في الحفظ',
+    },
     auth: {
       login: { title: 'NutriDZ', subtitle: 'تغذية شخصية للسوق الجزائرية', email: 'البريد الإلكتروني', password: 'كلمة المرور', submit: 'تسجيل الدخول', loading: 'جارٍ الدخول...', noAccount: 'ليس لديك حساب؟', register: 'إنشاء حساب', error: 'بيانات الدخول غير صحيحة' },
       register: { title: 'NutriDZ', subtitle: 'إنشاء حساب', name: 'الاسم الكامل', namePlaceholder: 'مثال: أحمد بن علي', email: 'البريد الإلكتروني', emailPlaceholder: 'example@gmail.com', password: 'كلمة المرور', passwordPlaceholder: '6 أحرف على الأقل', submit: 'إنشاء حسابي', loading: 'جارٍ الإنشاء...', hasAccount: 'لديك حساب بالفعل؟', login: 'تسجيل الدخول', shortPassword: 'كلمة المرور قصيرة جداً (6 أحرف على الأقل)', success: 'تم إنشاء الحساب ! مرحباً 🎉', error: 'خطأ في إنشاء الحساب' },
@@ -207,7 +237,7 @@ const T = {
   },
 
   en: {
-    nav: { journal: 'Journal', products: 'Products', scanner: 'Scanner', vision: 'Analyze', history: 'History', profile: 'Profile' },
+    nav: { journal: 'Journal', products: 'Products', scanner: 'Scanner', vision: 'Analyze', history: 'History', profile: 'Profile', bilan: 'Balance' },
     common: {
       save: 'Save', saving: 'Saving...', cancel: 'Cancel', retry: 'Retry',
       error: 'Error', loading: 'Loading...', add: 'Add', delete: 'Delete', close: 'Close',
@@ -300,6 +330,21 @@ const T = {
       },
       errors: { invalidFile: 'Image file required', tooLarge: 'Image too large (max 12 MB)', analyzeError: 'Error during analysis', refineError: 'Unable to refine analysis', addError: 'Error adding to journal' },
       successAdded: (n, kcal) => `${n} item(s) added — ${kcal} kcal`,
+    },
+    bilan: {
+      title: 'Calorie Balance',
+      ingested: 'Eaten', burned: 'Burned', balance: 'Balance', target: 'Target',
+      surplus: 'Surplus', deficit: 'Deficit',
+      activities: "Today's activities", noActivities: 'No activities logged',
+      connectStrava: 'Connect Strava', stravaConnected: 'Strava connected',
+      syncStrava: 'Sync Strava',
+      addActivity: 'Add activity',
+      sport: { marche: 'Walking', course: 'Running', velo: 'Cycling', natation: 'Swimming', muscu: 'Strength' },
+      intensity: { legere: 'Light', moderee: 'Moderate', intense: 'Intense' },
+      duration: 'Duration', minutes: 'min',
+      caloriesBurned: 'Calories burned',
+      saving: 'Saving...', saved: 'Activity saved!',
+      errorLoad: 'Error loading data', errorSave: 'Error saving activity',
     },
     auth: {
       login: { title: 'NutriDZ', subtitle: 'Personalized nutrition for the Algerian market', email: 'Email', password: 'Password', submit: 'Log in', loading: 'Logging in...', noAccount: 'No account yet?', register: 'Sign up', error: 'Invalid credentials' },

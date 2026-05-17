@@ -107,6 +107,46 @@ export const useJournalStore = create((set, get) => ({
   }
 }));
 
+// ─── Activity Store ───────────────────────────────────────────────────────────
+export const useActivityStore = create((set, get) => ({
+  bilan: null,
+  loading: false,
+  stravaConnected: false,
+
+  fetchBilan: async (date) => {
+    set({ loading: true });
+    try {
+      const d = date || new Date().toISOString().split('T')[0];
+      const { data } = await api.get(`/activity/bilan/${d}`);
+      set({ bilan: data, loading: false });
+    } catch { set({ loading: false }); }
+  },
+
+  addActivity: async (activity) => {
+    const { data } = await api.post('/activity/manual', activity);
+    const d = activity.date || new Date().toISOString().split('T')[0];
+    await get().fetchBilan(d);
+    return data;
+  },
+
+  fetchStravaToday: async () => {
+    try {
+      const { data } = await api.get('/activity/strava/today');
+      set({ stravaConnected: data.connected });
+      if (data.connected) {
+        const d = new Date().toISOString().split('T')[0];
+        await get().fetchBilan(d);
+      }
+      return data;
+    } catch { return { connected: false, activities: [] }; }
+  },
+
+  getStravaAuthUrl: async () => {
+    const { data } = await api.get('/activity/strava/auth');
+    return data.url;
+  },
+}));
+
 // ─── Products Store ───────────────────────────────────────────────────────────
 export const useProductsStore = create((set) => ({
   products: [],

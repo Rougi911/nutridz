@@ -160,6 +160,31 @@ async function initDB() {
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   )`);
 
+  await db.exec(`CREATE TABLE IF NOT EXISTS activities (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    date TEXT NOT NULL,
+    type TEXT NOT NULL,
+    duration_min INTEGER DEFAULT 0,
+    distance_km REAL DEFAULT 0,
+    calories_burned REAL DEFAULT 0,
+    source TEXT DEFAULT 'manual',
+    strava_id TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )`);
+
+  // Add Strava & Google Fit columns to profiles (safe for existing DBs)
+  const stravaColumns = [
+    'ALTER TABLE profiles ADD COLUMN strava_access_token TEXT',
+    'ALTER TABLE profiles ADD COLUMN strava_refresh_token TEXT',
+    'ALTER TABLE profiles ADD COLUMN strava_athlete_id TEXT',
+    'ALTER TABLE profiles ADD COLUMN strava_token_expires_at INTEGER',
+  ];
+  for (const sql of stravaColumns) {
+    try { await db.exec(sql); } catch (_) { /* column already exists */ }
+  }
+
   console.log('✅ Base de données initialisée');
   await seedProducts(db);
 }
