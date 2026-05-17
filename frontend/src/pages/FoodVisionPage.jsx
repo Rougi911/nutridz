@@ -276,28 +276,85 @@ export default function FoodVisionPage() {
             </div>
           )}
 
-          {/* Aliments */}
+          {/* Aliments — titre + résumé qualité de détection */}
           <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{rv.detected}</div>
           <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>{rv.selectPrompt}</div>
-          {aliments.map((a, i) => (
-            <div key={i} onClick={() => setSelectedItems(prev => { const n = new Set(prev); n.has(i) ? n.delete(i) : n.add(i); return n; })}
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderRadius: 10, padding: '10px 12px', marginBottom: 6, border: selectedItems.has(i) ? '1.5px solid #1A6B3C' : '0.5px solid rgba(0,0,0,0.06)', background: selectedItems.has(i) ? '#f5fbf7' : '#fff', cursor: 'pointer' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 22, height: 22, borderRadius: 11, border: selectedItems.has(i) ? 'none' : '1.5px solid #ccc', background: selectedItems.has(i) ? '#1A6B3C' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: 'white', fontWeight: 700 }}>
-                  {selectedItems.has(i) ? '✓' : ''}
-                </div>
-                <span style={{ fontSize: 20 }}>{a.emoji}</span>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 500 }}>{a.nom} {a.nom_ar && <span style={{ color: '#aaa', fontSize: 11 }}>· {a.nom_ar}</span>}</div>
-                  <div style={{ fontSize: 11, color: '#aaa' }}>{a.quantite_g}g · {rv.range} {a.fourchette?.min}–{a.fourchette?.max}g</div>
-                </div>
+
+          {/* Bandeau résumé vert / orange */}
+          {aliments.length > 0 && (() => {
+            const high = aliments.filter(a => (a.confiance_detection || 0) >= 80);
+            const low  = aliments.filter(a => (a.confiance_detection || 0) <  80);
+            return (
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+                {high.length > 0 && (
+                  <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: '#EAF3DE', color: '#27500A', fontWeight: 500 }}>
+                    ✅ {high.length} détecté{high.length > 1 ? 's' : ''} avec certitude
+                  </span>
+                )}
+                {low.length > 0 && (
+                  <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: '#FAEEDA', color: '#633806', fontWeight: 500 }}>
+                    ⚠️ {low.length} à vérifier
+                  </span>
+                )}
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 16, fontWeight: 700 }}>{a.kcal}</div>
-                <div style={{ fontSize: 10, color: '#aaa' }}>{t('common.kcal')}</div>
+            );
+          })()}
+
+          {/* Liste des aliments avec badge confiance */}
+          {aliments.map((a, i) => {
+            const conf     = a.confiance_detection || 0;
+            const confHigh = conf >= 80;
+            const confMid  = conf >= 60 && conf < 80;
+            const confBg    = confHigh ? '#EAF3DE' : confMid ? '#FAEEDA' : '#FAECE7';
+            const confColor = confHigh ? '#27500A'  : confMid ? '#633806'  : '#7A1818';
+            const confIcon  = confHigh ? '✅' : confMid ? '⚠️' : '❓';
+            const borderCol = selectedItems.has(i) ? '#1A6B3C'
+                            : !confHigh ? (confMid ? '#BA751733' : '#993C1D33') : 'rgba(0,0,0,0.06)';
+            const bgCol = selectedItems.has(i) ? '#f5fbf7'
+                        : !confHigh ? (confMid ? '#fffdf7' : '#fff9f8') : '#fff';
+            return (
+              <div key={i}
+                onClick={() => setSelectedItems(prev => { const n = new Set(prev); n.has(i) ? n.delete(i) : n.add(i); return n; })}
+                style={{ borderRadius: 10, padding: '10px 12px', marginBottom: 6, cursor: 'pointer',
+                  border: `${selectedItems.has(i) ? '1.5px' : '1px'} solid ${borderCol}`,
+                  background: bgCol }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 22, height: 22, borderRadius: 11, flexShrink: 0,
+                      border: selectedItems.has(i) ? 'none' : '1.5px solid #ccc',
+                      background: selectedItems.has(i) ? '#1A6B3C' : 'transparent',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 12, color: 'white', fontWeight: 700 }}>
+                      {selectedItems.has(i) ? '✓' : ''}
+                    </div>
+                    <span style={{ fontSize: 20 }}>{a.emoji}</span>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 500 }}>
+                        {a.nom}{a.nom_ar && <span style={{ color: '#aaa', fontSize: 11 }}> · {a.nom_ar}</span>}
+                      </div>
+                      <div style={{ fontSize: 11, color: '#aaa' }}>{a.quantite_g}g · {rv.range} {a.fourchette?.min}–{a.fourchette?.max}g</div>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+                    <div>
+                      <span style={{ fontSize: 16, fontWeight: 700 }}>{a.kcal}</span>
+                      <span style={{ fontSize: 10, color: '#aaa', marginLeft: 2 }}>{t('common.kcal')}</span>
+                    </div>
+                    <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 20, fontWeight: 600,
+                      background: confBg, color: confColor }}>
+                      {confIcon} {conf}%
+                    </span>
+                  </div>
+                </div>
+                {/* Alerte si confiance faible */}
+                {conf < 60 && (
+                  <div style={{ marginTop: 6, fontSize: 11, color: '#993C1D', background: '#FAECE7', borderRadius: 6, padding: '4px 8px' }}>
+                    Détection incertaine — corrigez via le champ ci-dessous si besoin
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* Tags */}
           {analysis.tags?.length > 0 && (
