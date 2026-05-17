@@ -21,26 +21,48 @@ async function lookupBarcode(barcode) {
 }
 
 /**
- * Recherche par nom de produit (fallback si barcode inconnu)
+ * Recherche par nom sur OpenFoodFacts.
+ * Stratégie double : Algérie en priorité, puis monde entier.
+ * Les deux requêtes partent en parallèle ; on fusionne en dédupliquant.
  */
-async function searchByName(query, limit = 5) {
-  try {
-    const { data } = await axios.get(OFF_SEARCH, {
-      params: {
-        search_terms: query,
-        search_simple: 1,
-        action: 'process',
-        json: 1,
-        page_size: limit,
-        countries_tags: 'algeria'
-      },
-      timeout: 8000
-    });
+async function searchByName(query, limit = 8) {
+  const [algRes, globalRes] = await Promise.allSettled([
+    searchOFF(query, limit, 'algeria'),
+    searchOFF(query, limit, null),
+  ]);
 
+  const alg    = algRes.status    === 'fulfilled' ? algRes.value    : [];
+  const global = globalRes.status === 'fulfilled' ? globalRes.value : [];
+
+  const seen = new Set();
+  const merged = [];
+  for (const p of [...alg, ...global]) {
+    const key = p.barcode || p.name;
+    if (!seen.has(key)) {
+      seen.add(key);
+      merged.push(p);
+    }
+    if (merged.length >= limit) break;
+  }
+  return merged;
+}
+
+/** Requête interne OpenFoodFacts avec filtre pays optionnel */
+async function searchOFF(query, limit, country) {
+  try {
+    const params = {
+      search_terms: query,
+      search_simple: 1,
+      action: 'process',
+      json: 1,
+      page_size: limit,
+    };
+    if (country) params.countries_tags = country;
+
+    const { data } = await axios.get(OFF_SEARCH, { params, timeout: 8000 });
     if (!data.products?.length) return [];
     return data.products.map(p => normalizeOFFProduct(p)).filter(Boolean);
-  } catch (err) {
-    console.error('[OpenFoodFacts] Erreur search:', err.message);
+  } catch {
     return [];
   }
 }
@@ -195,4 +217,4 @@ function guessCategory(tags) {
   return 'divers';
 }
 
-module.exports = { lookupBarcode, searchByName, normalizeOFFProduct, computeScore };
+module.exports = { lookupBarcode, searchByName, searchOFF, normalizeOFFProduct, computeScore };

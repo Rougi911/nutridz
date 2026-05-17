@@ -35,21 +35,20 @@ router.get('/barcode/:code', auth, async (req, res) => {
 
   return res.json({
     source: null, found: false, barcode: code,
-    message: 'Produit inconnu. Scannez la liste des ingrédients ou les valeurs nutritionnelles.',
-    next_step: 'ocr'
+    message: 'Produit inconnu. Scannez les valeurs nutritionnelles ou recherchez par nom.',
+    next_steps: ['ocr', 'search']
   });
 });
 
-// ─── 2. OCR étiquette nutritionnelle ─────────────────────────────────────────
+// ─── 2. OCR étiquette nutritionnelle (Tesseract.js — gratuit, 100% local) ────
 router.post('/ocr', auth, upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Image manquante' });
 
-  const base64 = req.file.buffer.toString('base64');
-  const mediaType = req.file.mimetype;
   const barcode = req.body.barcode || null;
 
-  const result = await extractNutritionFromImage(base64, mediaType);
-  if (!result.success) return res.status(422).json({ error: result.error });
+  // On passe le Buffer directement à Tesseract (pas besoin de base64)
+  const result = await extractNutritionFromImage(req.file.buffer, req.file.mimetype);
+  if (!result.success) return res.status(422).json({ error: result.error, raw_text: result.raw_text });
 
   const data = result.data;
 
@@ -57,14 +56,14 @@ router.post('/ocr', auth, upload.single('image'), async (req, res) => {
     const db = getDB();
     const product = await saveProductToDB(db, { ...data, barcode: barcode || null });
     return res.json({
-      source: 'ocr_claude', found: true,
+      source: 'ocr_tesseract', found: true,
       confidence: data.confiance || 'moyenne',
       product, raw_ocr: data
     });
   }
 
   return res.json({
-    source: 'ocr_claude', found: false, confidence: 'faible',
+    source: 'ocr_tesseract', found: false, confidence: 'faible',
     partial_data: data,
     message: 'Données partielles extraites. Vous pouvez compléter manuellement.'
   });

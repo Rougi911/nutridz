@@ -1,172 +1,262 @@
-const Anthropic = require('@anthropic-ai/sdk');
+const { createWorker } = require('tesseract.js');
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// ─── OCR local via Tesseract.js (gratuit, 100% offline après premier téléchargement) ──
 
 /**
- * Analyse une image d'étiquette nutritionnelle avec Claude Vision
- * Retourne un objet normalisé prêt pour la DB
+ * Lit une photo d'étiquette nutritionnelle et extrait les valeurs.
+ * Accepte un Buffer ou une chaîne base64.
  */
-async function extractNutritionFromImage(base64Image, mediaType = 'image/jpeg') {
-  const prompt = `Tu es un expert en nutrition. Analyse cette image d'étiquette alimentaire et extrais TOUTES les informations nutritionnelles présentes.
+async function extractNutritionFromImage(imageInput, _mediaType = 'image/jpeg') {
+  const buffer = Buffer.isBuffer(imageInput)
+    ? imageInput
+    : Buffer.from(imageInput, 'base64');
 
-Réponds UNIQUEMENT avec un JSON valide (sans markdown, sans backticks), avec cette structure exacte :
-{
-  "name": "nom du produit",
-  "brand": "marque (vide si absente)",
-  "kcal_per100": 0,
-  "glucides": 0,
-  "sucres": 0,
-  "proteines": 0,
-  "lipides": 0,
-  "graisses_saturees": 0,
-  "fibres": 0,
-  "sel": 0,
-  "sodium": 0,
-  "ingredients": ["liste", "des", "ingrédients"],
-  "additifs": [{"name": "E471", "type": "warn"}],
-  "portion_size": 100,
-  "portions_per_pack": null,
-  "allergens": ["gluten", "lait"],
-  "is_bio": false,
-  "conservation": "",
-  "confiance": "haute|moyenne|faible"
-}
-
-Règles :
-- Si une valeur est absente de l'étiquette, mets 0 ou null
-- Les valeurs nutritionnelles doivent être POUR 100g (convertis si nécessaire)
-- Si l'étiquette est en arabe ou français, extrais quand même les chiffres
-- Pour les additifs : type "bad" si controversé (E621, E951...), "warn" si modéré (E471...), "ok" si inoffensif
-- confiance = "haute" si tu vois clairement les valeurs, "faible" si l'image est floue
-- Si ce n'est pas une étiquette alimentaire, retourne {"erreur": "pas une étiquette alimentaire"}`;
-
+  let worker;
   try {
-    const response = await client.messages.create({
-      model: 'claude-opus-4-5',
-      max_tokens: 1024,
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'image',
-            source: { type: 'base64', media_type: mediaType, data: base64Image }
-          },
-          { type: 'text', text: prompt }
-        ]
-      }]
-    });
+    // fra = français · ara = arabe · eng = anglais (mots-clés)
+    // logger: () => {} supprime les logs de progression Tesseract
+    worker = await createWorker('fra+ara+eng', 1, { logger: () => {} });
+    const { data } = await worker.recognize(buffer);
+    const { text, confidence } = data;
 
-    const text = response.content[0].text.trim();
-
-    // Nettoyer si Claude a quand même ajouté des backticks
-    const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    const parsed = JSON.parse(clean);
-
-    if (parsed.erreur) {
-      return { success: false, error: parsed.erreur };
+    if (!text || text.trim().length < 15) {
+      return {
+        success: false,
+        error: "Texte illisible. Rapprochez-vous de l'étiquette et assurez une bonne lumière."
+      };
     }
 
-    return { success: true, data: enrichOCRResult(parsed) };
+    const nutrition = parseNutritionText(text);
+    const hasValues = nutrition.kcal_per100 || nutrition.proteines
+                   || nutrition.lipides    || nutrition.glucides;
+
+    if (!hasValues) {
+      return {
+        success: false,
+        error: 'Tableau nutritionnel non détecté. Photographiez le tableau des valeurs nutritionnelles en entier.',
+        raw_text: text.slice(0, 400)
+      };
+    }
+
+    const confiance = confidence > 70 ? 'haute' : confidence > 40 ? 'moyenne' : 'faible';
+
+    return {
+      success: true,
+      data: enrichOCRResult({
+        name: nutrition.name || 'Produit scanné',
+        brand: '',
+        confiance,
+        ...nutrition
+      })
+    };
 
   } catch (err) {
-    console.error('[Claude OCR] Erreur:', err.message);
-    if (err instanceof SyntaxError) {
-      return { success: false, error: 'Impossible de lire les données nutritionnelles. Essayez une image plus nette.' };
-    }
-    return { success: false, error: 'Erreur lors de l\'analyse de l\'image.' };
+    console.error('[Tesseract OCR] Erreur:', err.message);
+    return { success: false, error: "Erreur lors de l'analyse de l'image." };
+  } finally {
+    if (worker) await worker.terminate().catch(() => {});
   }
 }
 
-/**
- * Analyse le texte libre des ingrédients (OCR texte brut)
- */
-async function extractFromIngredientsText(text) {
-  const prompt = `Analyse cette liste d'ingrédients d'un produit alimentaire algérien et extrais les informations suivantes.
+// ─── Parsing du texte OCR — regex FR + AR ────────────────────────────────────
 
-Liste d'ingrédients : "${text}"
+function parseNutritionText(rawText) {
+  // Normalisation : virgule décimale FR → point, artefacts OCR courants
+  const text = rawText
+    .replace(/(\d),(\d)/g, '$1.$2')   // 3,2 → 3.2
+    .replace(/[|lI](?=\d)/g, '1')     // l/I/| → 1 devant un chiffre
+    .replace(/(?<=\d)[oO](?=\s|g|$)/g, '0'); // o/O → 0 après un chiffre
 
-Réponds UNIQUEMENT avec du JSON valide :
-{
-  "ingredients_parsed": ["ingrédient 1", "ingrédient 2"],
-  "additifs": [{"name": "E471", "type": "warn", "role": "émulsifiant"}],
-  "allergenes": ["gluten", "lait"],
-  "is_bio": false,
-  "qualite_estimation": "A|B|C|D",
-  "commentaire": "brève analyse qualitative"
-}
+  // Extrait le 1er nombre décimal valide après l'un des motifs
+  const pick = (...patterns) => {
+    for (const pat of patterns) {
+      const m = text.match(pat);
+      if (m) {
+        const v = parseFloat(m[1]);
+        if (!isNaN(v) && v >= 0 && v < 10000) return v;
+      }
+    }
+    return 0;
+  };
 
-Types d'additifs : "bad" = à éviter (E102, E110, E621, E951...), "warn" = modéré (E471, E330...), "ok" = inoffensif`;
-
-  try {
-    const response = await client.messages.create({
-      model: 'claude-opus-4-5',
-      max_tokens: 512,
-      messages: [{ role: 'user', content: prompt }]
-    });
-
-    const clean = response.content[0].text.trim().replace(/```json\n?/g, '').replace(/```\n?/g, '');
-    return { success: true, data: JSON.parse(clean) };
-  } catch (err) {
-    return { success: false, error: 'Analyse des ingrédients impossible.' };
+  // --- Énergie (kcal) ---
+  let kcal_per100 = pick(
+    /(?:énergie|energie|energy|valeur[^:\n]*énergétique)[^\n]*?(\d+\.?\d*)\s*kcal/i,
+    /(?:سعرات حرارية|طاقة)[^\n\d]*(\d+\.?\d*)/,
+    /(\d{2,4})\s*kcal/i
+  );
+  // Fallback kJ → kcal
+  if (!kcal_per100) {
+    const kj = pick(
+      /(?:énergie|energie|energy)[^\n]*?(\d+\.?\d*)\s*kJ/i,
+      /(\d{3,5})\s*kJ/i
+    );
+    if (kj) kcal_per100 = Math.round(kj / 4.184);
   }
+
+  // --- Lipides / Matières grasses ---
+  const lipides = pick(
+    /(?:matières?\s*grasses?|lipides?|fat(?:\s*total)?)[^\n]*?(\d+\.?\d*)\s*g/i,
+    /(?:دهون|ليبيدات|مواد دهنية)[^\n\d]*(\d+\.?\d*)/
+  );
+
+  // --- Acides gras saturés ---
+  const graisses_saturees = pick(
+    /(?:dont\s*)?(?:acides?\s*gras\s*saturés?|saturated\s*fat)[^\n]*?(\d+\.?\d*)\s*g/i,
+    /(?:أحماض دهنية مشبعة|دهون مشبعة)[^\n\d]*(\d+\.?\d*)/
+  );
+
+  // --- Glucides ---
+  const glucides = pick(
+    /(?:glucides?|carbohydrate)[^\n]*?(\d+\.?\d*)\s*g/i,
+    /(?:كربوهيدرات|نشويات)[^\n\d]*(\d+\.?\d*)/
+  );
+
+  // --- Sucres ---
+  const sucres = pick(
+    /(?:dont\s*)?(?:sucres?|sugars?)[^\n]*?(\d+\.?\d*)\s*g/i,
+    /(?:سكريات)[^\n\d]*(\d+\.?\d*)/
+  );
+
+  // --- Protéines ---
+  const proteines = pick(
+    /(?:protéines?|proteines?|proteins?)[^\n]*?(\d+\.?\d*)\s*g/i,
+    /(?:بروتين|بروتينات)[^\n\d]*(\d+\.?\d*)/
+  );
+
+  // --- Fibres ---
+  const fibres = pick(
+    /(?:fibres?\s*(?:alimentaires?)?|dietary\s*fibre)[^\n]*?(\d+\.?\d*)\s*g/i,
+    /(?:ألياف)[^\n\d]*(\d+\.?\d*)/
+  );
+
+  // --- Sel / Sodium ---
+  let sel = pick(
+    /\bsel\b[^\n]*?(\d+\.?\d*)\s*g/im,
+    /\bsalt\b[^\n]*?(\d+\.?\d*)\s*g/i,
+    /(?:ملح)[^\n\d]*(\d+\.?\d*)/
+  );
+  if (!sel) {
+    const sodMg = pick(/\bsodium\b[^\n]*?(\d+\.?\d*)\s*mg/i);
+    if (sodMg) sel = Math.round(sodMg / 1000 * 2.54 * 100) / 100;
+    else {
+      const sodG = pick(/\bsodium\b[^\n]*?(\d+\.?\d*)\s*g/i);
+      if (sodG) sel = Math.round(sodG * 2.54 * 100) / 100;
+    }
+  }
+
+  // --- Nom du produit : 1ère ligne significative non-nutritionnelle ---
+  const NUTRIENT_RE = /(?:énergie|kcal|kj|lipide|glucide|protéine|matière|acide.gras|fibres?|sodium|\bsel\b|fat\b|protein|carbo|sugar|fibre)/i;
+  const name = rawText.split('\n')
+    .map(l => l.trim())
+    .find(l => l.length > 2 && l.length < 60
+            && !/^\d[\d\s.,\/]*$/.test(l)
+            && !NUTRIENT_RE.test(l)) || '';
+
+  return { kcal_per100, lipides, graisses_saturees, glucides, sucres, proteines, fibres, sel, name };
 }
 
-/**
- * Enrichit le résultat OCR avec le score et le commentaire
- */
+// ─── Analyse d'ingrédients — 100% local, sans IA ─────────────────────────────
+
+function extractFromIngredientsText(text) {
+  if (!text?.trim()) return { success: false, error: 'Texte manquant.' };
+
+  // Additifs E-number
+  const BAD_E  = new Set(['E102','E110','E122','E124','E129','E211','E220','E621','E631','E951','E104','E127','E128']);
+  const WARN_E = new Set(['E471','E472','E322','E330','E300','E250','E251','E252','E407','E412','E415']);
+  const eNums  = [...new Set((text.match(/\bE\d{3,4}[a-z]?\b/gi) || []).map(e => e.toUpperCase()))];
+  const additifs = eNums.map(name => ({
+    name,
+    type: BAD_E.has(name) ? 'bad' : WARN_E.has(name) ? 'warn' : 'ok'
+  }));
+
+  // Liste d'ingrédients
+  const ingredients_parsed = text.split(/[,;]/)
+    .map(i => i.trim().replace(/\s+/g, ' '))
+    .filter(i => i.length > 1)
+    .slice(0, 25);
+
+  // Allergènes réglementés (14 majeurs EU)
+  const ALLERGEN_MAP = {
+    gluten:    /gluten|blé|orge|seigle|avoine|froment|épeautre/i,
+    lait:      /lait|lactose|beurre|fromage|crème|caséine|lactos/i,
+    oeufs:     /œufs?|oeuf/i,
+    arachides: /arachide|cacahuète|peanut/i,
+    soja:      /\bsoja\b|\bsoya\b/i,
+    noix:      /\bnoix\b|noisette|amande|pistache|cajou|pécan|macadamia/i,
+    poisson:   /poisson|saumon|thon|sardine|morue/i,
+    crustacés: /crustacé|crevette|homard|crabe/i,
+    moutarde:  /moutarde/i,
+    sésame:    /sésame/i,
+    sulfites:  /sulfite|anhydride\s*sulfureux/i,
+  };
+  const allergenes = Object.entries(ALLERGEN_MAP)
+    .filter(([, re]) => re.test(text))
+    .map(([name]) => name);
+
+  const is_bio = /\bbio\b|organic|biologique/i.test(text);
+  const hasBad = additifs.some(a => a.type === 'bad');
+  const hasWarn = additifs.some(a => a.type === 'warn');
+  const qualite_estimation = hasBad ? 'D' : hasWarn ? 'C' : additifs.length === 0 ? 'A' : 'B';
+
+  return {
+    success: true,
+    data: {
+      ingredients_parsed, additifs, allergenes, is_bio, qualite_estimation,
+      commentaire: `${ingredients_parsed.length} ingrédient(s), ${additifs.length} additif(s) identifié(s).`
+    }
+  };
+}
+
+// ─── Enrichissement du résultat OCR ──────────────────────────────────────────
+
 function enrichOCRResult(data) {
   const { computeScore } = require('./openfoodfacts');
-
   const score = computeScore({
-    kcal: data.kcal_per100 || 0,
-    sucres: data.sucres || 0,
-    graissesSat: data.graisses_saturees || 0,
-    sel: data.sel || 0,
-    fibres: data.fibres || 0,
-    proteines: data.proteines || 0
+    kcal:        data.kcal_per100        || 0,
+    sucres:      data.sucres             || 0,
+    graissesSat: data.graisses_saturees  || 0,
+    sel:         data.sel                || 0,
+    fibres:      data.fibres             || 0,
+    proteines:   data.proteines          || 0
   });
-
-  const scoreComments = {
+  const COMMENTS = {
     A: 'Excellent profil nutritionnel.',
     B: 'Bon choix, à consommer régulièrement.',
     C: 'Qualité correcte — consommer avec modération.',
     D: 'À limiter dans votre alimentation quotidienne.',
     E: 'À éviter — profil nutritionnel défavorable.'
   };
-
-  // Emoji selon le nom
-  const emoji = guessEmojiFromName(data.name || '');
-
   return {
     ...data,
     score,
-    emoji,
-    comment: scoreComments[score],
+    emoji:    guessEmojiFromName(data.name || ''),
+    comment:  COMMENTS[score],
     category: 'divers',
-    source: 'ocr_claude'
+    source:   'ocr_tesseract'
   };
 }
 
 function guessEmojiFromName(name) {
-  const lower = name.toLowerCase();
-  if (lower.includes('lait') || lower.includes('milk')) return '🥛';
-  if (lower.includes('yaourt') || lower.includes('yog')) return '🥛';
-  if (lower.includes('fromage') || lower.includes('cheese')) return '🧀';
-  if (lower.includes('pain') || lower.includes('bread')) return '🍞';
-  if (lower.includes('couscous') || lower.includes('semoule')) return '🥣';
-  if (lower.includes('huile') || lower.includes('oil')) return '🫙';
-  if (lower.includes('jus') || lower.includes('juice')) return '🧃';
-  if (lower.includes('biscuit') || lower.includes('gateau') || lower.includes('gâteau')) return '🍪';
-  if (lower.includes('chips') || lower.includes('snack')) return '🍿';
-  if (lower.includes('poisson') || lower.includes('sardine') || lower.includes('thon')) return '🐟';
-  if (lower.includes('viande') || lower.includes('poulet') || lower.includes('kefta')) return '🥩';
-  if (lower.includes('oeuf') || lower.includes('egg')) return '🥚';
-  if (lower.includes('miel') || lower.includes('honey')) return '🍯';
-  if (lower.includes('sucre') || lower.includes('confiture')) return '🍯';
-  if (lower.includes('café') || lower.includes('coffee')) return '☕';
-  if (lower.includes('thé') || lower.includes('tea')) return '🍵';
-  if (lower.includes('chocolat')) return '🍫';
-  if (lower.includes('eau') || lower.includes('water')) return '💧';
+  const l = name.toLowerCase();
+  if (l.includes('lait') || l.includes('milk'))              return '🥛';
+  if (l.includes('yaourt') || l.includes('yog'))             return '🥛';
+  if (l.includes('fromage') || l.includes('cheese'))         return '🧀';
+  if (l.includes('pain') || l.includes('bread'))             return '🍞';
+  if (l.includes('couscous') || l.includes('semoule'))       return '🥣';
+  if (l.includes('huile') || l.includes('oil'))              return '🫙';
+  if (l.includes('jus') || l.includes('juice'))              return '🧃';
+  if (l.includes('biscuit') || l.includes('gateau') || l.includes('gâteau')) return '🍪';
+  if (l.includes('chips') || l.includes('snack'))            return '🍿';
+  if (l.includes('poisson') || l.includes('sardine') || l.includes('thon'))  return '🐟';
+  if (l.includes('viande') || l.includes('poulet') || l.includes('kefta'))   return '🥩';
+  if (l.includes('oeuf') || l.includes('egg'))               return '🥚';
+  if (l.includes('miel') || l.includes('honey'))             return '🍯';
+  if (l.includes('sucre') || l.includes('confiture'))        return '🍯';
+  if (l.includes('café') || l.includes('coffee'))            return '☕';
+  if (l.includes('thé') || l.includes('tea'))                return '🍵';
+  if (l.includes('chocolat'))                                return '🍫';
+  if (l.includes('eau') || l.includes('water'))              return '💧';
   return '🍽️';
 }
 
