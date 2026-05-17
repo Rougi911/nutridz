@@ -1,7 +1,7 @@
 {
-  "name": "NutriDZ",
-  "short_name": "NutriDZ",
-  "description": "Nutrition personnalisée pour le marché algérien",
+  "name": "NutriVita",
+  "short_name": "NutriVita",
+  "description": "Your Daily Wellness Companion",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

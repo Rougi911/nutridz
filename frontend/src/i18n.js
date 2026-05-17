@@ -69,7 +69,7 @@ const T = {
         notfound: 'Produit non trouvé dans la base',
       },
       searching: 'Recherche du produit…',
-      found: { viewDetails: 'Voir détails', scanAnother: 'Scanner autre', sourceLocal: '📦 Base NutriDZ', sourceRemote: '🌍 OpenFoodFacts' },
+      found: { viewDetails: 'Voir détails', scanAnother: 'Scanner autre', sourceLocal: '📦 Base NutriVita', sourceRemote: '🌍 OpenFoodFacts' },
       notfound: {
         title: 'Produit inconnu', codeLabel: 'Code : ',
         message: "Ce produit n'est pas encore dans la base. Scannez l'étiquette nutritionnelle pour l'identifier automatiquement.",
@@ -115,8 +115,8 @@ const T = {
       errorLoad: 'Erreur lors du chargement', errorSave: "Erreur lors de l'enregistrement",
     },
     auth: {
-      login: { title: 'NutriDZ', subtitle: 'Nutrition personnalisée pour le marché algérien', email: 'Email', password: 'Mot de passe', submit: 'Se connecter', loading: 'Connexion...', noAccount: 'Pas encore de compte ?', register: "S'inscrire", error: 'Identifiants incorrects' },
-      register: { title: 'NutriDZ', subtitle: 'Créer un compte', name: 'Prénom & Nom', namePlaceholder: 'Ex: Ahmed Benali', email: 'Email', emailPlaceholder: 'exemple@gmail.com', password: 'Mot de passe', passwordPlaceholder: '6 caractères minimum', submit: 'Créer mon compte', loading: 'Création...', hasAccount: 'Déjà un compte ?', login: 'Se connecter', shortPassword: 'Mot de passe trop court (6 caractères min)', success: 'Compte créé ! Bienvenue 🎉', error: "Erreur lors de l'inscription" },
+      login: { title: 'NutriVita', subtitle: 'Nutrition personnalisée pour le marché algérien', email: 'Email', password: 'Mot de passe', submit: 'Se connecter', loading: 'Connexion...', noAccount: 'Pas encore de compte ?', register: "S'inscrire", error: 'Identifiants incorrects' },
+      register: { title: 'NutriVita', subtitle: 'Créer un compte', name: 'Prénom & Nom', namePlaceholder: 'Ex: Ahmed Benali', email: 'Email', emailPlaceholder: 'exemple@gmail.com', password: 'Mot de passe', passwordPlaceholder: '6 caractères minimum', submit: 'Créer mon compte', loading: 'Création...', hasAccount: 'Déjà un compte ?', login: 'Se connecter', shortPassword: 'Mot de passe trop court (6 caractères min)', success: 'Compte créé ! Bienvenue 🎉', error: "Erreur lors de l'inscription" },
     },
   },
 
@@ -185,7 +185,7 @@ const T = {
         notfound: 'المنتج غير موجود في القاعدة',
       },
       searching: 'البحث عن المنتج...',
-      found: { viewDetails: 'عرض التفاصيل', scanAnother: 'مسح آخر', sourceLocal: '📦 قاعدة NutriDZ', sourceRemote: '🌍 OpenFoodFacts' },
+      found: { viewDetails: 'عرض التفاصيل', scanAnother: 'مسح آخر', sourceLocal: '📦 قاعدة NutriVita', sourceRemote: '🌍 OpenFoodFacts' },
       notfound: {
         title: 'منتج غير معروف', codeLabel: 'الرمز: ',
         message: 'هذا المنتج غير موجود في قاعدة البيانات. امسح الملصق الغذائي للتعرف عليه تلقائياً.',
@@ -231,8 +231,8 @@ const T = {
       errorLoad: 'خطأ في التحميل', errorSave: 'خطأ في الحفظ',
     },
     auth: {
-      login: { title: 'NutriDZ', subtitle: 'تغذية شخصية للسوق الجزائرية', email: 'البريد الإلكتروني', password: 'كلمة المرور', submit: 'تسجيل الدخول', loading: 'جارٍ الدخول...', noAccount: 'ليس لديك حساب؟', register: 'إنشاء حساب', error: 'بيانات الدخول غير صحيحة' },
-      register: { title: 'NutriDZ', subtitle: 'إنشاء حساب', name: 'الاسم الكامل', namePlaceholder: 'مثال: أحمد بن علي', email: 'البريد الإلكتروني', emailPlaceholder: 'example@gmail.com', password: 'كلمة المرور', passwordPlaceholder: '6 أحرف على الأقل', submit: 'إنشاء حسابي', loading: 'جارٍ الإنشاء...', hasAccount: 'لديك حساب بالفعل؟', login: 'تسجيل الدخول', shortPassword: 'كلمة المرور قصيرة جداً (6 أحرف على الأقل)', success: 'تم إنشاء الحساب ! مرحباً 🎉', error: 'خطأ في إنشاء الحساب' },
+      login: { title: 'NutriVita', subtitle: 'تغذية شخصية للسوق الجزائرية', email: 'البريد الإلكتروني', password: 'كلمة المرور', submit: 'تسجيل الدخول', loading: 'جارٍ الدخول...', noAccount: 'ليس لديك حساب؟', register: 'إنشاء حساب', error: 'بيانات الدخول غير صحيحة' },
+      register: { title: 'NutriVita', subtitle: 'إنشاء حساب', name: 'الاسم الكامل', namePlaceholder: 'مثال: أحمد بن علي', email: 'البريد الإلكتروني', emailPlaceholder: 'example@gmail.com', password: 'كلمة المرور', passwordPlaceholder: '6 أحرف على الأقل', submit: 'إنشاء حسابي', loading: 'جارٍ الإنشاء...', hasAccount: 'لديك حساب بالفعل؟', login: 'تسجيل الدخول', shortPassword: 'كلمة المرور قصيرة جداً (6 أحرف على الأقل)', success: 'تم إنشاء الحساب ! مرحباً 🎉', error: 'خطأ في إنشاء الحساب' },
     },
   },
 
@@ -301,7 +301,7 @@ const T = {
         notfound: 'Product not found in database',
       },
       searching: 'Searching product…',
-      found: { viewDetails: 'View details', scanAnother: 'Scan another', sourceLocal: '📦 NutriDZ database', sourceRemote: '🌍 OpenFoodFacts' },
+      found: { viewDetails: 'View details', scanAnother: 'Scan another', sourceLocal: '📦 NutriVita database', sourceRemote: '🌍 OpenFoodFacts' },
       notfound: {
         title: 'Unknown product', codeLabel: 'Code: ',
         message: 'This product is not in the database yet. Scan the nutrition label to identify it automatically.',
@@ -347,8 +347,8 @@ const T = {
       errorLoad: 'Error loading data', errorSave: 'Error saving activity',
     },
     auth: {
-      login: { title: 'NutriDZ', subtitle: 'Personalized nutrition for the Algerian market', email: 'Email', password: 'Password', submit: 'Log in', loading: 'Logging in...', noAccount: 'No account yet?', register: 'Sign up', error: 'Invalid credentials' },
-      register: { title: 'NutriDZ', subtitle: 'Create account', name: 'Full Name', namePlaceholder: 'Ex: Ahmed Benali', email: 'Email', emailPlaceholder: 'example@gmail.com', password: 'Password', passwordPlaceholder: '6 characters minimum', submit: 'Create my account', loading: 'Creating...', hasAccount: 'Already have an account?', login: 'Log in', shortPassword: 'Password too short (6 chars min)', success: 'Account created! Welcome 🎉', error: 'Error creating account' },
+      login: { title: 'NutriVita', subtitle: 'Personalized nutrition for the Algerian market', email: 'Email', password: 'Password', submit: 'Log in', loading: 'Logging in...', noAccount: 'No account yet?', register: 'Sign up', error: 'Invalid credentials' },
+      register: { title: 'NutriVita', subtitle: 'Create account', name: 'Full Name', namePlaceholder: 'Ex: Ahmed Benali', email: 'Email', emailPlaceholder: 'example@gmail.com', password: 'Password', passwordPlaceholder: '6 characters minimum', submit: 'Create my account', loading: 'Creating...', hasAccount: 'Already have an account?', login: 'Log in', shortPassword: 'Password too short (6 chars min)', success: 'Account created! Welcome 🎉', error: 'Error creating account' },
     },
   },
 };
