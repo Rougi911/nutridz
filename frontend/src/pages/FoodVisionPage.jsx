@@ -152,13 +152,22 @@ export default function FoodVisionPage() {
           </div>
         )}
 
-        {/* Plats algériens reconnus */}
+        {/* Cuisines reconnues */}
         {card(
           <div style={{ padding: '12px 14px' }}>
-            <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 8 }}>{t('vision.algerian')}</div>
+            <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 8 }}>Cuisines reconnues</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-              {['Couscous','Chorba','Chakhchoukha','Tajine','Bourek','Rechta','Harira','Méchoui','Dolma','Garantita','Makroud','Kalb el louz'].map(p => (
-                <span key={p} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, background: '#f0f0ec', color: '#666' }}>{p}</span>
+              {[
+                ['🇫🇷', 'Française'],
+                ['🇮🇹', 'Italienne'],
+                ['🇩🇿', 'Maghrébine'],
+                ['🇨🇳', 'Asiatique'],
+                ['🇺🇸', 'Américaine'],
+                ['🇸🇦', 'Moyen-Orient'],
+              ].map(([flag, label]) => (
+                <span key={label} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, background: '#f0f0ec', color: '#666' }}>
+                  {flag} {label}
+                </span>
               ))}
             </div>
           </div>,
