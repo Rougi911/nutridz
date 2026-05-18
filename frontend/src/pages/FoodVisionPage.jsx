@@ -163,6 +163,7 @@ export default function FoodVisionPage() {
                 ['🇩🇿', 'Maghrébine'],
                 ['🇹🇷', 'Turque'],
                 ['🇮🇳', 'Indienne'],
+                ['🇯🇵', 'Japonaise'],
                 ['🇨🇳', 'Asiatique'],
                 ['🇲🇽', 'Mexicaine'],
                 ['🇺🇸', 'Américaine'],

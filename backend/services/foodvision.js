@@ -64,6 +64,11 @@ const NUTRITION_DB = {
   butter_chicken:{ nom_fr: 'Butter Chicken',   kcal: 150, glucides: 5,   proteines: 14, lipides: 9,    fibres: 1,   sel: 0.9,  portion: 300, emoji: '🍛',  nom_ar: null,        cuisine: 'indienne' },
   naan:          { nom_fr: 'Naan',             kcal: 290, glucides: 50,  proteines: 9,  lipides: 6,    fibres: 2,   sel: 0.8,  portion: 100, emoji: '🫓',  nom_ar: 'خبز نان',   cuisine: 'indienne' },
   dal:           { nom_fr: 'Dal',              kcal: 90,  glucides: 12,  proteines: 6,  lipides: 2,    fibres: 4,   sel: 0.5,  portion: 300, emoji: '🫘',  nom_ar: 'دال',       cuisine: 'indienne' },
+  // Cuisine japonaise
+  sushi:         { nom_fr: 'Sushi',            kcal: 150, glucides: 28,  proteines: 6,  lipides: 2,    fibres: 1,   sel: 0.8,  portion: 200, emoji: '🍣',  nom_ar: 'سوشي',      cuisine: 'japonaise' },
+  ramen:         { nom_fr: 'Ramen',            kcal: 95,  glucides: 12,  proteines: 6,  lipides: 3,    fibres: 1,   sel: 1.5,  portion: 450, emoji: '🍜',  nom_ar: 'رامن',      cuisine: 'japonaise' },
+  tempura:       { nom_fr: 'Tempura',          kcal: 280, glucides: 22,  proteines: 10, lipides: 17,   fibres: 1,   sel: 0.6,  portion: 150, emoji: '🍤',  nom_ar: null,        cuisine: 'japonaise' },
+  onigiri:       { nom_fr: 'Onigiri',          kcal: 170, glucides: 35,  proteines: 4,  lipides: 1,    fibres: 0.5, sel: 0.5,  portion: 100, emoji: '🍙',  nom_ar: null,        cuisine: 'japonaise' },
   // Cuisine mexicaine
   tacos:         { nom_fr: 'Tacos',            kcal: 220, glucides: 20,  proteines: 12, lipides: 10,   fibres: 2,   sel: 0.8,  portion: 200, emoji: '🌮',  nom_ar: 'تاكو',      cuisine: 'mexicaine' },
   burrito:       { nom_fr: 'Burrito',          kcal: 210, glucides: 25,  proteines: 12, lipides: 8,    fibres: 3,   sel: 1.0,  portion: 300, emoji: '🌯',  nom_ar: 'بوريتو',    cuisine: 'mexicaine' },
@@ -95,6 +100,10 @@ const LABEL_MAP = {
   'butter chicken': 'butter_chicken', 'murgh makhani': 'butter_chicken', 'chicken curry': 'butter_chicken', 'tikka masala': 'butter_chicken', 'chicken tikka': 'butter_chicken',
   'naan': 'naan', 'indian bread': 'naan',
   'dal': 'dal', 'dahl': 'dal', 'daal': 'dal', 'lentil curry': 'dal', 'lentil soup': 'dal',
+  'sushi': 'sushi', 'nigiri': 'sushi', 'maki': 'sushi', 'sashimi': 'sushi',
+  'ramen': 'ramen', 'japanese noodle': 'ramen',
+  'tempura': 'tempura',
+  'onigiri': 'onigiri', 'rice ball': 'onigiri',
   'tacos': 'tacos', 'taco': 'tacos', 'mexican taco': 'tacos',
   'burrito': 'burrito', 'mexican burrito': 'burrito',
   'guacamole': 'guacamole', 'avocado dip': 'guacamole',
@@ -185,10 +194,12 @@ function detectCuisine(aliments) {
   const algKeys = ['couscous', 'chakhchoukha', 'rechta', 'chorba', 'harira', 'tajine', 'merguez', 'kefta', 'bourek', 'garantita', 'dolma', 'berkoukes', 'makroud'];
   const turkishKeys = ['doner_kebab', 'iskender', 'lahmacun', 'pide', 'kofte', 'manti', 'pilav'];
   const indianKeys   = ['biryani', 'butter_chicken', 'naan', 'dal'];
+  const japaneseKeys = ['sushi', 'ramen', 'tempura', 'onigiri'];
   const mexicanKeys  = ['tacos', 'burrito', 'guacamole', 'quesadilla'];
   if (aliments.some(a => algKeys.includes(a._dbKey))) return 'algérienne';
   if (aliments.some(a => turkishKeys.includes(a._dbKey))) return 'turque';
   if (aliments.some(a => indianKeys.includes(a._dbKey))) return 'indienne';
+  if (aliments.some(a => japaneseKeys.includes(a._dbKey))) return 'japonaise';
   if (aliments.some(a => mexicanKeys.includes(a._dbKey))) return 'mexicaine';
   if (aliments.some(a => ['pizza', 'burger', 'fries', 'sandwich'].includes(a._dbKey))) return 'internationale';
   return 'méditerranéenne';
@@ -222,6 +233,7 @@ function generateTags(aliments, totaux) {
   if (aliments.some(a => NUTRITION_DB[a._dbKey]?.cuisine === 'algérienne')) tags.push('cuisine algérienne');
   if (aliments.some(a => NUTRITION_DB[a._dbKey]?.cuisine === 'turque')) tags.push('cuisine turque');
   if (aliments.some(a => NUTRITION_DB[a._dbKey]?.cuisine === 'indienne')) tags.push('cuisine indienne');
+  if (aliments.some(a => NUTRITION_DB[a._dbKey]?.cuisine === 'japonaise')) tags.push('cuisine japonaise');
   if (aliments.some(a => NUTRITION_DB[a._dbKey]?.cuisine === 'mexicaine')) tags.push('cuisine mexicaine');
   if (aliments.some(a => ['chickpea', 'lentil'].includes(a._dbKey))) tags.push('légumineuses');
   if (aliments.some(a => ['chicken', 'beef', 'lamb', 'fish', 'egg', 'merguez', 'kefta', 'sardine'].includes(a._dbKey))) tags.push('source de protéines');
