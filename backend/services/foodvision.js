@@ -51,6 +51,14 @@ const NUTRITION_DB = {
   apple:         { nom_fr: 'Pomme',           kcal: 52,  glucides: 14,  proteines: 0.3,lipides: 0.2,  fibres: 2.4, sel: 0,    portion: 150, emoji: '🍎',  nom_ar: 'تفاح',    cuisine: null },
   orange:        { nom_fr: 'Orange',          kcal: 47,  glucides: 12,  proteines: 0.9,lipides: 0.1,  fibres: 2.4, sel: 0,    portion: 150, emoji: '🍊',  nom_ar: 'برتقال',  cuisine: null },
   banana:        { nom_fr: 'Banane',          kcal: 89,  glucides: 23,  proteines: 1.1,lipides: 0.3,  fibres: 2.6, sel: 0,    portion: 120, emoji: '🍌',  nom_ar: 'موز',     cuisine: null },
+  // Cuisine turque
+  doner_kebab:   { nom_fr: 'Döner Kebab',     kcal: 260, glucides: 15,  proteines: 18, lipides: 14,   fibres: 1,   sel: 1.5,  portion: 250, emoji: '🥙',  nom_ar: 'دونر كباب',  cuisine: 'turque' },
+  iskender:      { nom_fr: 'İskender',         kcal: 200, glucides: 12,  proteines: 15, lipides: 10,   fibres: 1,   sel: 1.5,  portion: 300, emoji: '🍖',  nom_ar: null,         cuisine: 'turque' },
+  lahmacun:      { nom_fr: 'Lahmacun',         kcal: 280, glucides: 35,  proteines: 13, lipides: 10,   fibres: 2,   sel: 1.2,  portion: 200, emoji: '🫓',  nom_ar: null,         cuisine: 'turque' },
+  pide:          { nom_fr: 'Pide',             kcal: 260, glucides: 30,  proteines: 12, lipides: 10,   fibres: 2,   sel: 1.0,  portion: 200, emoji: '🫓',  nom_ar: null,         cuisine: 'turque' },
+  kofte:         { nom_fr: 'Köfte',            kcal: 260, glucides: 8,   proteines: 22, lipides: 16,   fibres: 0.5, sel: 1.5,  portion: 150, emoji: '🍢',  nom_ar: 'كفتة تركية', cuisine: 'turque' },
+  manti:         { nom_fr: 'Mantı',            kcal: 250, glucides: 30,  proteines: 12, lipides: 10,   fibres: 1,   sel: 1.0,  portion: 200, emoji: '🥟',  nom_ar: null,         cuisine: 'turque' },
+  pilav:         { nom_fr: 'Pilav',            kcal: 150, glucides: 26,  proteines: 3,  lipides: 4,    fibres: 0.5, sel: 0.6,  portion: 200, emoji: '🍚',  nom_ar: null,         cuisine: 'turque' },
   // Fast-food / international
   pizza:         { nom_fr: 'Pizza',           kcal: 266, glucides: 33,  proteines: 11, lipides: 10,   fibres: 2.3, sel: 1.5,  portion: 200, emoji: '🍕',  nom_ar: null,      cuisine: 'internationale' },
   burger:        { nom_fr: 'Burger',          kcal: 295, glucides: 24,  proteines: 17, lipides: 14,   fibres: 1,   sel: 1.8,  portion: 200, emoji: '🍔',  nom_ar: null,      cuisine: 'internationale' },
@@ -65,7 +73,14 @@ const LABEL_MAP = {
   'couscous': 'couscous', 'chakhchoukha': 'chakhchoukha', 'rechta': 'rechta',
   'chorba': 'chorba', 'harira': 'harira', 'tajine': 'tajine', 'tagine': 'tajine',
   'merguez': 'merguez', 'sausage': 'merguez', 'spicy sausage': 'merguez',
-  'kefta': 'kefta', 'kebab': 'kefta', 'meatball': 'kefta', 'kofte': 'kefta',
+  'kefta': 'kefta', 'kebab': 'doner_kebab', 'meatball': 'kefta',
+  'döner': 'doner_kebab', 'doner': 'doner_kebab', 'döner kebab': 'doner_kebab', 'doner kebab': 'doner_kebab', 'kebap': 'doner_kebab',
+  'iskender': 'iskender', 'iskender kebab': 'iskender',
+  'lahmacun': 'lahmacun',
+  'pide': 'pide', 'turkish pizza': 'pide',
+  'köfte': 'kofte', 'kofte': 'kofte', 'kofta': 'kofte',
+  'manti': 'manti', 'mantı': 'manti', 'turkish dumpling': 'manti', 'dumpling': 'manti',
+  'pilav': 'pilav', 'turkish rice': 'pilav',
   'bourek': 'bourek', 'borek': 'bourek', 'brik': 'bourek', 'spring roll': 'bourek',
   'garantita': 'garantita', 'dolma': 'dolma', 'stuffed pepper': 'dolma',
   'berkoukes': 'berkoukes', 'makroud': 'makroud', 'baklava': 'baklava',
@@ -150,7 +165,9 @@ function calculateTotals(aliments) {
 
 function detectCuisine(aliments) {
   const algKeys = ['couscous', 'chakhchoukha', 'rechta', 'chorba', 'harira', 'tajine', 'merguez', 'kefta', 'bourek', 'garantita', 'dolma', 'berkoukes', 'makroud'];
+  const turkishKeys = ['doner_kebab', 'iskender', 'lahmacun', 'pide', 'kofte', 'manti', 'pilav'];
   if (aliments.some(a => algKeys.includes(a._dbKey))) return 'algérienne';
+  if (aliments.some(a => turkishKeys.includes(a._dbKey))) return 'turque';
   if (aliments.some(a => ['pizza', 'burger', 'fries', 'sandwich'].includes(a._dbKey))) return 'internationale';
   return 'méditerranéenne';
 }
@@ -181,6 +198,7 @@ function generateTags(aliments, totaux) {
   if (totaux.kcal < 400) tags.push('léger');
   if (totaux.kcal > 700) tags.push('calorique');
   if (aliments.some(a => NUTRITION_DB[a._dbKey]?.cuisine === 'algérienne')) tags.push('cuisine algérienne');
+  if (aliments.some(a => NUTRITION_DB[a._dbKey]?.cuisine === 'turque')) tags.push('cuisine turque');
   if (aliments.some(a => ['chickpea', 'lentil'].includes(a._dbKey))) tags.push('légumineuses');
   if (aliments.some(a => ['chicken', 'beef', 'lamb', 'fish', 'egg', 'merguez', 'kefta', 'sardine'].includes(a._dbKey))) tags.push('source de protéines');
   return tags;
