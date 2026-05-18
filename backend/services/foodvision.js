@@ -59,6 +59,11 @@ const NUTRITION_DB = {
   kofte:         { nom_fr: 'Köfte',            kcal: 260, glucides: 8,   proteines: 22, lipides: 16,   fibres: 0.5, sel: 1.5,  portion: 150, emoji: '🍢',  nom_ar: 'كفتة تركية', cuisine: 'turque' },
   manti:         { nom_fr: 'Mantı',            kcal: 250, glucides: 30,  proteines: 12, lipides: 10,   fibres: 1,   sel: 1.0,  portion: 200, emoji: '🥟',  nom_ar: null,         cuisine: 'turque' },
   pilav:         { nom_fr: 'Pilav',            kcal: 150, glucides: 26,  proteines: 3,  lipides: 4,    fibres: 0.5, sel: 0.6,  portion: 200, emoji: '🍚',  nom_ar: null,         cuisine: 'turque' },
+  // Cuisine indienne
+  biryani:       { nom_fr: 'Biryani',          kcal: 200, glucides: 25,  proteines: 8,  lipides: 8,    fibres: 1,   sel: 0.8,  portion: 350, emoji: '🍛',  nom_ar: 'برياني',    cuisine: 'indienne' },
+  butter_chicken:{ nom_fr: 'Butter Chicken',   kcal: 150, glucides: 5,   proteines: 14, lipides: 9,    fibres: 1,   sel: 0.9,  portion: 300, emoji: '🍛',  nom_ar: null,        cuisine: 'indienne' },
+  naan:          { nom_fr: 'Naan',             kcal: 290, glucides: 50,  proteines: 9,  lipides: 6,    fibres: 2,   sel: 0.8,  portion: 100, emoji: '🫓',  nom_ar: 'خبز نان',   cuisine: 'indienne' },
+  dal:           { nom_fr: 'Dal',              kcal: 90,  glucides: 12,  proteines: 6,  lipides: 2,    fibres: 4,   sel: 0.5,  portion: 300, emoji: '🫘',  nom_ar: 'دال',       cuisine: 'indienne' },
   // Fast-food / international
   pizza:         { nom_fr: 'Pizza',           kcal: 266, glucides: 33,  proteines: 11, lipides: 10,   fibres: 2.3, sel: 1.5,  portion: 200, emoji: '🍕',  nom_ar: null,      cuisine: 'internationale' },
   burger:        { nom_fr: 'Burger',          kcal: 295, glucides: 24,  proteines: 17, lipides: 14,   fibres: 1,   sel: 1.8,  portion: 200, emoji: '🍔',  nom_ar: null,      cuisine: 'internationale' },
@@ -81,6 +86,10 @@ const LABEL_MAP = {
   'köfte': 'kofte', 'kofte': 'kofte', 'kofta': 'kofte',
   'manti': 'manti', 'mantı': 'manti', 'turkish dumpling': 'manti', 'dumpling': 'manti',
   'pilav': 'pilav', 'turkish rice': 'pilav',
+  'biryani': 'biryani', 'chicken biryani': 'biryani', 'lamb biryani': 'biryani',
+  'butter chicken': 'butter_chicken', 'murgh makhani': 'butter_chicken', 'chicken curry': 'butter_chicken', 'tikka masala': 'butter_chicken', 'chicken tikka': 'butter_chicken',
+  'naan': 'naan', 'indian bread': 'naan',
+  'dal': 'dal', 'dahl': 'dal', 'daal': 'dal', 'lentil curry': 'dal', 'lentil soup': 'dal',
   'bourek': 'bourek', 'borek': 'bourek', 'brik': 'bourek', 'spring roll': 'bourek',
   'garantita': 'garantita', 'dolma': 'dolma', 'stuffed pepper': 'dolma',
   'berkoukes': 'berkoukes', 'makroud': 'makroud', 'baklava': 'baklava',
@@ -166,8 +175,10 @@ function calculateTotals(aliments) {
 function detectCuisine(aliments) {
   const algKeys = ['couscous', 'chakhchoukha', 'rechta', 'chorba', 'harira', 'tajine', 'merguez', 'kefta', 'bourek', 'garantita', 'dolma', 'berkoukes', 'makroud'];
   const turkishKeys = ['doner_kebab', 'iskender', 'lahmacun', 'pide', 'kofte', 'manti', 'pilav'];
+  const indianKeys  = ['biryani', 'butter_chicken', 'naan', 'dal'];
   if (aliments.some(a => algKeys.includes(a._dbKey))) return 'algérienne';
   if (aliments.some(a => turkishKeys.includes(a._dbKey))) return 'turque';
+  if (aliments.some(a => indianKeys.includes(a._dbKey))) return 'indienne';
   if (aliments.some(a => ['pizza', 'burger', 'fries', 'sandwich'].includes(a._dbKey))) return 'internationale';
   return 'méditerranéenne';
 }
@@ -199,6 +210,7 @@ function generateTags(aliments, totaux) {
   if (totaux.kcal > 700) tags.push('calorique');
   if (aliments.some(a => NUTRITION_DB[a._dbKey]?.cuisine === 'algérienne')) tags.push('cuisine algérienne');
   if (aliments.some(a => NUTRITION_DB[a._dbKey]?.cuisine === 'turque')) tags.push('cuisine turque');
+  if (aliments.some(a => NUTRITION_DB[a._dbKey]?.cuisine === 'indienne')) tags.push('cuisine indienne');
   if (aliments.some(a => ['chickpea', 'lentil'].includes(a._dbKey))) tags.push('légumineuses');
   if (aliments.some(a => ['chicken', 'beef', 'lamb', 'fish', 'egg', 'merguez', 'kefta', 'sardine'].includes(a._dbKey))) tags.push('source de protéines');
   return tags;
