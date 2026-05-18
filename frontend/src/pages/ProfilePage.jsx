@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useProfileStore, useAuthStore } from '../store';
@@ -16,6 +16,11 @@ export default function ProfilePage() {
   const [tab, setTab] = useState('corps');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [nutriStats, setNutriStats] = useState(null);
+
+  useEffect(() => {
+    api.get('/nutrition/stats').then(r => setNutriStats(r.data)).catch(() => {});
+  }, []);
 
   async function handleExport() {
     try {
@@ -189,6 +194,29 @@ export default function ProfilePage() {
           </button>
         </div>
       </div>
+
+      {/* Couverture nutritionnelle */}
+      {nutriStats && (
+        <div style={{ margin: '0 1.25rem 1rem', background: '#fff', borderRadius: 12, padding: '14px 16px', border: '0.5px solid rgba(0,0,0,0.08)' }}>
+          <h3 style={{ fontSize: 13, fontWeight: 700, color: '#333', margin: '0 0 12px' }}>📊 Bases nutritionnelles</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {[
+              { key: 'local',  icon: '📦', color: '#1A6B3C', bg: '#EAF3DE' },
+              { key: 'ciqual', icon: '🇫🇷', color: '#185FA5', bg: '#EBF2FC' },
+              { key: 'usda',   icon: '🇺🇸', color: '#BA7517', bg: '#FFF4E0' },
+            ].map(({ key, icon, color, bg }) => {
+              const s = nutriStats[key];
+              if (!s) return null;
+              return (
+                <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: bg, borderRadius: 8, padding: '8px 12px' }}>
+                  <span style={{ fontSize: 13, color }}>{icon} {s.label}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color }}>{s.count.toLocaleString()} aliments</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Mes données (RGPD) */}
       <div style={{ margin: '1rem 1.25rem', background: '#fff', borderRadius: 12, padding: '14px 16px', border: '0.5px solid rgba(0,0,0,0.08)' }}>

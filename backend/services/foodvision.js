@@ -1,4 +1,7 @@
 const axios = require('axios');
+const ciqual = require('./ciqual');
+const usda   = require('./usda');
+const translations = require('../data/translations.json');
 
 const CLARIFAI_API_URL = 'https://api.clarifai.com/v2/models/general-image-recognition/outputs';
 
@@ -142,14 +145,21 @@ const LABEL_MAP = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function findInDB(clarifaiLabel) {
+function findInLocalDB(clarifaiLabel) {
   const lower = clarifaiLabel.toLowerCase().trim();
   if (LABEL_MAP[lower]) return LABEL_MAP[lower];
-  // Correspondance partielle
   for (const [label, key] of Object.entries(LABEL_MAP)) {
     if (lower.includes(label) || label.includes(lower)) return key;
   }
   return null;
+}
+
+// Kept for backward compatibility (refineAnalysis uses it)
+function findInDB(clarifaiLabel) { return findInLocalDB(clarifaiLabel); }
+
+function translateLabel(label) {
+  const lower = label.toLowerCase().trim();
+  return translations.en_to_fr?.[lower] || label;
 }
 
 function buildAliment(dbKey, isMain, confiance_pct) {
@@ -168,7 +178,31 @@ function buildAliment(dbKey, isMain, confiance_pct) {
     emoji: nutr.emoji,
     est_principal: isMain,
     confiance_detection: confiance_pct,
+    source: 'local',
     _dbKey: dbKey,
+  };
+}
+
+function buildAlimentFromExternal(nutr, label, isMain, confiance_pct, src) {
+  const portion = 150; // default portion for external results
+  const ratio   = portion / 100;
+  const fr = translations.en_to_fr?.[label.toLowerCase()] || null;
+  const ar = translations.en_to_ar?.[label.toLowerCase()] || null;
+  return {
+    nom:        nutr.nom_fr || label,
+    nom_ar:     ar,
+    quantite_g: portion,
+    fourchette: { min: Math.round(portion * 0.7), max: Math.round(portion * 1.3) },
+    kcal:       Math.round((nutr.kcal      || 0) * ratio),
+    glucides:   Math.round((nutr.glucides  || 0) * ratio * 10) / 10,
+    proteines:  Math.round((nutr.proteines || 0) * ratio * 10) / 10,
+    lipides:    Math.round((nutr.lipides   || 0) * ratio * 10) / 10,
+    fibres:     Math.round((nutr.fibres    || 0) * ratio * 10) / 10,
+    emoji:      '🍽️',
+    est_principal: isMain,
+    confiance_detection: confiance_pct,
+    source: src,
+    _dbKey: null,
   };
 }
 
@@ -184,7 +218,7 @@ function calculateTotals(aliments) {
     lipides:   Math.round(sum('lipides')   * 10) / 10,
     fibres:    Math.round(sum('fibres')    * 10) / 10,
     sel_estime: Math.round(aliments.reduce((s, a) => {
-      const n = NUTRITION_DB[a._dbKey];
+      const n = a._dbKey ? NUTRITION_DB[a._dbKey] : null;
       return s + (n ? n.sel * (a.quantite_g / 100) : 0);
     }, 0) * 10) / 10,
   };
@@ -230,13 +264,14 @@ function generateTags(aliments, totaux) {
   if (totaux.fibres > 8) tags.push('riche en fibres');
   if (totaux.kcal < 400) tags.push('léger');
   if (totaux.kcal > 700) tags.push('calorique');
-  if (aliments.some(a => NUTRITION_DB[a._dbKey]?.cuisine === 'algérienne')) tags.push('cuisine algérienne');
-  if (aliments.some(a => NUTRITION_DB[a._dbKey]?.cuisine === 'turque')) tags.push('cuisine turque');
-  if (aliments.some(a => NUTRITION_DB[a._dbKey]?.cuisine === 'indienne')) tags.push('cuisine indienne');
-  if (aliments.some(a => NUTRITION_DB[a._dbKey]?.cuisine === 'japonaise')) tags.push('cuisine japonaise');
-  if (aliments.some(a => NUTRITION_DB[a._dbKey]?.cuisine === 'mexicaine')) tags.push('cuisine mexicaine');
-  if (aliments.some(a => ['chickpea', 'lentil'].includes(a._dbKey))) tags.push('légumineuses');
-  if (aliments.some(a => ['chicken', 'beef', 'lamb', 'fish', 'egg', 'merguez', 'kefta', 'sardine'].includes(a._dbKey))) tags.push('source de protéines');
+  const getCuisine = a => a._dbKey ? NUTRITION_DB[a._dbKey]?.cuisine : null;
+  if (aliments.some(a => getCuisine(a) === 'algérienne')) tags.push('cuisine algérienne');
+  if (aliments.some(a => getCuisine(a) === 'turque')) tags.push('cuisine turque');
+  if (aliments.some(a => getCuisine(a) === 'indienne')) tags.push('cuisine indienne');
+  if (aliments.some(a => getCuisine(a) === 'japonaise')) tags.push('cuisine japonaise');
+  if (aliments.some(a => getCuisine(a) === 'mexicaine')) tags.push('cuisine mexicaine');
+  if (aliments.some(a => a._dbKey && ['chickpea', 'lentil'].includes(a._dbKey))) tags.push('légumineuses');
+  if (aliments.some(a => a._dbKey && ['chicken', 'beef', 'lamb', 'fish', 'egg', 'merguez', 'kefta', 'sardine'].includes(a._dbKey))) tags.push('source de protéines');
   return tags;
 }
 
@@ -292,17 +327,49 @@ async function callClarifai(base64Image) {
   return res.data?.outputs?.[0]?.data?.concepts || [];
 }
 
-function conceptsToAliments(concepts, minConfidence = 0.5, maxItems = 6) {
+async function conceptsToAliments(concepts, minConfidence = 0.5, maxItems = 6) {
   const seen = new Set();
   const aliments = [];
+
   for (const c of concepts) {
     if (c.value < minConfidence) break;
-    const dbKey = findInDB(c.name);
-    if (!dbKey || seen.has(dbKey)) continue;
-    seen.add(dbKey);
-    aliments.push(buildAliment(dbKey, aliments.length === 0, Math.round(c.value * 100)));
-    if (aliments.length >= maxItems) break;
+    const confPct = Math.round(c.value * 100);
+    const label   = c.name;
+
+    // 1. Local NUTRITION_DB
+    const dbKey = findInLocalDB(label);
+    if (dbKey && !seen.has(dbKey)) {
+      seen.add(dbKey);
+      aliments.push(buildAliment(dbKey, aliments.length === 0, confPct));
+      if (aliments.length >= maxItems) break;
+      continue;
+    }
+
+    // 2. CIQUAL — try with French translation first
+    const frLabel = translateLabel(label);
+    const ciqualResults = ciqual.searchByName(frLabel, 1);
+    if (ciqualResults.length && !seen.has('ciqual:' + frLabel)) {
+      seen.add('ciqual:' + frLabel);
+      aliments.push(buildAlimentFromExternal(ciqualResults[0], label, aliments.length === 0, confPct, 'ciqual'));
+      if (aliments.length >= maxItems) break;
+      continue;
+    }
+
+    // 3. USDA — only if CIQUAL missed and it's a plausible food term
+    if (label.length > 2 && !seen.has('usda:' + label)) {
+      try {
+        const usdaResults = await usda.searchFood(label, 1);
+        if (usdaResults.length) {
+          seen.add('usda:' + label);
+          aliments.push(buildAlimentFromExternal(usdaResults[0], label, aliments.length === 0, confPct, 'usda'));
+          usda.cacheInProducts(usdaResults[0].nom_fr, usdaResults[0]).catch(() => {});
+          if (aliments.length >= maxItems) break;
+          continue;
+        }
+      } catch (_) {}
+    }
   }
+
   return aliments;
 }
 
@@ -317,7 +384,7 @@ async function analyzeDishPhoto(base64Image, mediaType = 'image/jpeg', context =
       return { success: false, error: 'Aucun aliment détecté. Prenez la photo de plus près avec une bonne lumière.' };
     }
 
-    const aliments = conceptsToAliments(concepts);
+    const aliments = await conceptsToAliments(concepts);
     if (!aliments.length) {
       return { success: false, error: 'Aliments non reconnus. Essayez une photo plus nette.' };
     }
@@ -370,7 +437,7 @@ async function analyzeMultiplePhotos(images, context = {}) {
       .sort((a, b) => b[1] - a[1])
       .map(([name, value]) => ({ name, value }));
 
-    const aliments = conceptsToAliments(merged, 0.5, 8);
+    const aliments = await conceptsToAliments(merged, 0.5, 8);
     if (!aliments.length) return { success: false, error: 'Aucun aliment reconnu sur les photos.' };
 
     const totaux = calculateTotals(aliments);

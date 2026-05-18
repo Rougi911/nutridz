@@ -146,17 +146,21 @@ function CreateDishModal({ onClose, onCreated, t }) {
   async function searchProducts(q) {
     if (!q.trim()) { setSuggestions([]); return; }
     try {
-      const { data } = await api.get(`/products?q=${encodeURIComponent(q)}`);
-      setSuggestions((data.products || []).slice(0, 6));
+      const { data } = await api.get(`/nutrition/search?q=${encodeURIComponent(q)}`);
+      setSuggestions(data.slice(0, 8));
     } catch {}
   }
 
-  function addIngredient(product) {
+  function addIngredient(item) {
     const grams = 100;
+    const kcalPer100 = item.kcal || item.kcal_per100 || 0;
     setIngredients(prev => [...prev, {
-      product_id: product.id, name: product.name, emoji: product.emoji,
-      grams, kcal_per100: product.kcal_per100,
-      kcal_preview: Math.round(product.kcal_per100 * grams / 100),
+      product_id: item.product_id || null,
+      name: item.nom_fr || item.name,
+      emoji: item.emoji || '🥘',
+      grams, kcal_per100: kcalPer100,
+      kcal_preview: Math.round(kcalPer100 * grams / 100),
+      source: item.source || 'local',
     }]);
     setSearch(''); setSuggestions([]);
   }
@@ -177,7 +181,7 @@ function CreateDishModal({ onClose, onCreated, t }) {
     if (!ingredients.length) { toast.error('Ajoutez au moins un ingrédient'); return; }
     setSaving(true);
     try {
-      await api.post('/dishes', { name, emoji, cuisine, description, ingredients: ingredients.map(i => ({ product_id: i.product_id, grams: i.grams, name: i.name })) });
+      await api.post('/dishes', { name, emoji, cuisine, description, ingredients: ingredients.map(i => ({ product_id: i.product_id || null, grams: i.grams, name: i.name })) });
       toast.success('Plat créé !');
       onCreated();
     } catch { toast.error('Erreur lors de la création'); }
@@ -224,13 +228,13 @@ function CreateDishModal({ onClose, onCreated, t }) {
             style={{ width: '100%', padding: '9px 12px', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: 10, fontSize: 13, boxSizing: 'border-box' }} />
           {suggestions.length > 0 && (
             <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: 10, zIndex: 10, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-              {suggestions.map(p => (
-                <button key={p.id} onClick={() => addIngredient(p)}
+              {suggestions.map((p, i) => (
+                <button key={i} onClick={() => addIngredient(p)}
                   style={{ width: '100%', padding: '10px 14px', border: 'none', background: '#fff', cursor: 'pointer', textAlign: 'left', fontSize: 13, display: 'flex', alignItems: 'center', gap: 10, borderBottom: '0.5px solid #f5f5f5' }}>
-                  <span style={{ fontSize: 20 }}>{p.emoji}</span>
-                  <div>
-                    <div style={{ fontWeight: 500 }}>{p.name}</div>
-                    <div style={{ fontSize: 11, color: '#888' }}>{p.kcal_per100} kcal/100g</div>
+                  <span style={{ fontSize: 20 }}>{p.emoji || '🥘'}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.nom_fr || p.name}</div>
+                    <div style={{ fontSize: 11, color: '#888' }}>{p.kcal || p.kcal_per100 || 0} kcal/100g · <span style={{ color: p.source === 'usda' ? '#BA7517' : p.source === 'ciqual' ? '#185FA5' : '#1A6B3C' }}>{p.source || 'local'}</span></div>
                   </div>
                 </button>
               ))}

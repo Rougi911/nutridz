@@ -198,6 +198,9 @@ async function initDB() {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
+  // Add source column to products (safe for existing DBs)
+  try { await db.exec('ALTER TABLE products ADD COLUMN source TEXT DEFAULT NULL'); } catch (_) {}
+
   // Add Strava & Google Fit columns to profiles (safe for existing DBs)
   const stravaColumns = [
     'ALTER TABLE profiles ADD COLUMN strava_access_token TEXT',

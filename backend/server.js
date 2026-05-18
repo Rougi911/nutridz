@@ -58,6 +58,8 @@ const activityRoutes = require('./routes/activity');
 app.use('/api/activity', activityRoutes);
 const dishesRoutes = require('./routes/dishes');
 app.use('/api/dishes', dishesRoutes);
+const nutritionRoutes = require('./routes/nutrition');
+app.use('/api/nutrition', nutritionRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', version: '1.0.0' }));
