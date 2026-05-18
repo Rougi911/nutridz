@@ -14,6 +14,8 @@ import HistoryPage from './pages/HistoryPage';
 import FoodVisionPage from './pages/FoodVisionPage';
 import ScannerPage from './pages/ScannerPage';
 import BilanPage from './pages/BilanPage';
+import DishesPage from './pages/DishesPage';
+import DishDetailPage from './pages/DishDetailPage';
 import PrivacyPage from './pages/PrivacyPage';
 import LegalPage from './pages/LegalPage';
 import Layout from './components/Layout';
@@ -45,6 +47,8 @@ export default function App() {
           <Route path="history" element={<HistoryPage />} />
           <Route path="scanner" element={<ScannerPage />} />
           <Route path="vision" element={<FoodVisionPage />} />
+          <Route path="dishes" element={<DishesPage />} />
+          <Route path="dishes/:id" element={<DishDetailPage />} />
           <Route path="bilan" element={<BilanPage />} />
           <Route path="profile" element={<ProfilePage />} />
         </Route>

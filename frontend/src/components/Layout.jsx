@@ -7,6 +7,7 @@ import CookieBanner from './CookieBanner';
 const NAV = [
   { to: '/journal',  icon: 'ti-notebook',   key: 'journal' },
   { to: '/products', icon: 'ti-search',      key: 'products' },
+  { to: '/dishes',   icon: 'ti-soup',        key: 'dishes' },
   { to: '/scanner',  icon: 'ti-barcode',     key: 'scanner' },
   { to: '/vision',   icon: 'ti-camera',      key: 'vision' },
   { to: '/bilan',    icon: 'ti-heartbeat',   key: 'bilan' },

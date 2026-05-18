@@ -102,6 +102,9 @@ export default function JournalPage() {
                 <button onClick={() => navigate(`/products?meal=${id}`)} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 20, border: '0.5px solid #1A6B3C', color: '#1A6B3C', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
                   <i className="ti ti-plus" style={{ fontSize: 12 }} /> {t('journal.add')}
                 </button>
+                <button onClick={() => navigate(`/dishes?meal=${id}`)} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 20, border: '0.5px solid #BA7517', color: '#BA7517', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
+                  <i className="ti ti-soup" style={{ fontSize: 12 }} /> {t('dishes.addDish')}
+                </button>
               </div>
             </div>
             {items.length === 0 && <div style={{ padding: 12, fontSize: 12, color: '#bbb', fontStyle: 'italic', paddingLeft: 16 }}>{t('journal.empty')}</div>}

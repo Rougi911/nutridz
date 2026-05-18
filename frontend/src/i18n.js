@@ -5,7 +5,7 @@ const DATE_LOCALES = { fr, ar, en: enUS };
 
 const T = {
   fr: {
-    nav: { journal: 'Journal', products: 'Produits', scanner: 'Scanner', vision: 'Analyser', history: 'Historique', profile: 'Profil', bilan: 'Bilan' },
+    nav: { journal: 'Journal', products: 'Produits', scanner: 'Scanner', vision: 'Analyser', dishes: 'Plats', history: 'Historique', profile: 'Profil', bilan: 'Bilan' },
     common: {
       save: 'Enregistrer', saving: 'Enregistrement...', cancel: 'Annuler', retry: 'Réessayer',
       error: 'Erreur', loading: 'Chargement...', add: 'Ajouter', delete: 'Supprimer', close: 'Fermer',
@@ -114,6 +114,16 @@ const T = {
       saving: 'Enregistrement...', saved: 'Activité enregistrée !',
       errorLoad: 'Erreur lors du chargement', errorSave: "Erreur lors de l'enregistrement",
     },
+    dishes: {
+      title: 'Plats', subtitle: 'Découvrez des recettes du monde entier',
+      searchPlaceholder: 'Rechercher un plat...', allCuisines: 'Toutes', notFound: 'Aucun plat trouvé',
+      createTitle: 'Créer un plat', namePlaceholder: 'Nom du plat...', descPlaceholder: 'Description...',
+      ingredients: 'Ingrédients', ingredientSearch: 'Ajouter un ingrédient...', create: 'Créer le plat',
+      addToJournal: 'Ajouter au journal', adjustPortion: 'Ajuster la portion', customBadge: 'Custom',
+      addDish: '+ Ajouter un plat', prep: 'Prép.', cook: 'Cuisson',
+      difficulty: { facile: 'Facile', moyen: 'Moyen', difficile: 'Difficile' },
+      categories: { plat: 'Plat', entree: 'Entrée', dessert: 'Dessert' },
+    },
     auth: {
       login: { title: 'NutriVita', subtitle: 'Nutrition personnalisée pour le marché algérien', email: 'Email', password: 'Mot de passe', submit: 'Se connecter', loading: 'Connexion...', noAccount: 'Pas encore de compte ?', register: "S'inscrire", error: 'Identifiants incorrects' },
       register: { title: 'NutriVita', subtitle: 'Créer un compte', name: 'Prénom & Nom', namePlaceholder: 'Ex: Ahmed Benali', email: 'Email', emailPlaceholder: 'exemple@gmail.com', password: 'Mot de passe', passwordPlaceholder: '6 caractères minimum', submit: 'Créer mon compte', loading: 'Création...', hasAccount: 'Déjà un compte ?', login: 'Se connecter', shortPassword: 'Mot de passe trop court (6 caractères min)', success: 'Compte créé ! Bienvenue 🎉', error: "Erreur lors de l'inscription" },
@@ -121,7 +131,7 @@ const T = {
   },
 
   ar: {
-    nav: { journal: 'اليومية', products: 'منتجات', scanner: 'مسح', vision: 'تحليل', history: 'تاريخ', profile: 'الملف', bilan: 'ميزان' },
+    nav: { journal: 'اليومية', products: 'منتجات', scanner: 'مسح', vision: 'تحليل', dishes: 'أطباق', history: 'تاريخ', profile: 'الملف', bilan: 'ميزان' },
     common: {
       save: 'حفظ', saving: 'جارٍ الحفظ...', cancel: 'إلغاء', retry: 'إعادة المحاولة',
       error: 'خطأ', loading: 'تحميل...', add: 'إضافة', delete: 'حذف', close: 'إغلاق',
@@ -230,6 +240,16 @@ const T = {
       saving: 'جارٍ الحفظ...', saved: 'تم تسجيل النشاط !',
       errorLoad: 'خطأ في التحميل', errorSave: 'خطأ في الحفظ',
     },
+    dishes: {
+      title: 'أطباق', subtitle: 'اكتشف وصفات من حول العالم',
+      searchPlaceholder: 'ابحث عن طبق...', allCuisines: 'الكل', notFound: 'لا توجد أطباق',
+      createTitle: 'إنشاء طبق', namePlaceholder: 'اسم الطبق...', descPlaceholder: 'وصف...',
+      ingredients: 'المكونات', ingredientSearch: 'إضافة مكون...', create: 'إنشاء الطبق',
+      addToJournal: 'أضف لليومية', adjustPortion: 'ضبط الكمية', customBadge: 'مخصص',
+      addDish: '+ إضافة طبق', prep: 'التحضير', cook: 'الطهي',
+      difficulty: { facile: 'سهل', moyen: 'متوسط', difficile: 'صعب' },
+      categories: { plat: 'طبق رئيسي', entree: 'مقبلات', dessert: 'حلوى' },
+    },
     auth: {
       login: { title: 'NutriVita', subtitle: 'تغذية شخصية للسوق الجزائرية', email: 'البريد الإلكتروني', password: 'كلمة المرور', submit: 'تسجيل الدخول', loading: 'جارٍ الدخول...', noAccount: 'ليس لديك حساب؟', register: 'إنشاء حساب', error: 'بيانات الدخول غير صحيحة' },
       register: { title: 'NutriVita', subtitle: 'إنشاء حساب', name: 'الاسم الكامل', namePlaceholder: 'مثال: أحمد بن علي', email: 'البريد الإلكتروني', emailPlaceholder: 'example@gmail.com', password: 'كلمة المرور', passwordPlaceholder: '6 أحرف على الأقل', submit: 'إنشاء حسابي', loading: 'جارٍ الإنشاء...', hasAccount: 'لديك حساب بالفعل؟', login: 'تسجيل الدخول', shortPassword: 'كلمة المرور قصيرة جداً (6 أحرف على الأقل)', success: 'تم إنشاء الحساب ! مرحباً 🎉', error: 'خطأ في إنشاء الحساب' },
@@ -237,7 +257,7 @@ const T = {
   },
 
   en: {
-    nav: { journal: 'Journal', products: 'Products', scanner: 'Scanner', vision: 'Analyze', history: 'History', profile: 'Profile', bilan: 'Balance' },
+    nav: { journal: 'Journal', products: 'Products', scanner: 'Scanner', vision: 'Analyze', dishes: 'Dishes', history: 'History', profile: 'Profile', bilan: 'Balance' },
     common: {
       save: 'Save', saving: 'Saving...', cancel: 'Cancel', retry: 'Retry',
       error: 'Error', loading: 'Loading...', add: 'Add', delete: 'Delete', close: 'Close',
@@ -345,6 +365,16 @@ const T = {
       caloriesBurned: 'Calories burned',
       saving: 'Saving...', saved: 'Activity saved!',
       errorLoad: 'Error loading data', errorSave: 'Error saving activity',
+    },
+    dishes: {
+      title: 'Dishes', subtitle: 'Explore recipes from around the world',
+      searchPlaceholder: 'Search a dish...', allCuisines: 'All', notFound: 'No dishes found',
+      createTitle: 'Create a dish', namePlaceholder: 'Dish name...', descPlaceholder: 'Description...',
+      ingredients: 'Ingredients', ingredientSearch: 'Add an ingredient...', create: 'Create dish',
+      addToJournal: 'Add to journal', adjustPortion: 'Adjust portion', customBadge: 'Custom',
+      addDish: '+ Add a dish', prep: 'Prep', cook: 'Cook',
+      difficulty: { facile: 'Easy', moyen: 'Medium', difficile: 'Hard' },
+      categories: { plat: 'Main', entree: 'Starter', dessert: 'Dessert' },
     },
     auth: {
       login: { title: 'NutriVita', subtitle: 'Personalized nutrition for the Algerian market', email: 'Email', password: 'Password', submit: 'Log in', loading: 'Logging in...', noAccount: 'No account yet?', register: 'Sign up', error: 'Invalid credentials' },
