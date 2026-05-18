@@ -164,6 +164,7 @@ export default function FoodVisionPage() {
                 ['🇹🇷', 'Turque'],
                 ['🇮🇳', 'Indienne'],
                 ['🇨🇳', 'Asiatique'],
+                ['🇲🇽', 'Mexicaine'],
                 ['🇺🇸', 'Américaine'],
                 ['🇸🇦', 'Moyen-Orient'],
               ].map(([flag, label]) => (
