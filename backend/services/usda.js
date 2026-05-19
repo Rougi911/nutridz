@@ -4,6 +4,10 @@ const { getDB } = require('../db');
 const BASE_URL = 'https://api.nal.usda.gov/fdc/v1';
 const API_KEY  = process.env.USDA_API_KEY || 'DEMO_KEY';
 
+// Log key status once at startup
+const keyLabel = API_KEY === 'DEMO_KEY' ? 'DEMO_KEY (limited to ~30 req/day)' : `custom key (${API_KEY.slice(0,4)}...)`;
+console.log(`[USDA] API key: ${keyLabel}`);
+
 // Nutrient IDs used by USDA FoodData Central
 const NUTRIENT_IDS = {
   kcal:      1008,
@@ -33,13 +37,15 @@ function parseNutrients(foodNutrients) {
 
 async function searchFood(query, pageSize = 5) {
   if (!query) return [];
+  const url = `${BASE_URL}/foods/search`;
+  console.log(`[USDA] searchFood("${query}", pageSize=${pageSize}) key=${API_KEY === 'DEMO_KEY' ? 'DEMO_KEY' : API_KEY.slice(0,4)+'...'}`);
   try {
-    const url = `${BASE_URL}/foods/search`;
     const res = await axios.get(url, {
       params: { api_key: API_KEY, query, pageSize, dataType: 'SR Legacy,Foundation,Branded' },
-      timeout: 8000,
+      timeout: 10000,
     });
     const foods = res.data?.foods || [];
+    console.log(`[USDA] → ${res.data?.totalHits ?? '?'} hits, returning ${foods.length} results`);
     return foods.map(f => ({
       source:    'usda',
       fdcId:     f.fdcId,
@@ -50,10 +56,14 @@ async function searchFood(query, pageSize = 5) {
       ...parseNutrients(f.foodNutrients),
     }));
   } catch (err) {
-    if (err.response?.status === 403) {
-      console.warn('[USDA] Clé API invalide ou quota dépassé');
+    const status = err.response?.status;
+    const body   = JSON.stringify(err.response?.data || {}).slice(0, 200);
+    if (status === 403) {
+      console.error('[USDA] ❌ 403 Forbidden — clé API invalide ou quota DEMO_KEY dépassé');
+    } else if (status === 429) {
+      console.error('[USDA] ❌ 429 Too Many Requests — quota dépassé');
     } else {
-      console.warn('[USDA] Erreur recherche:', err.message);
+      console.error(`[USDA] ❌ Erreur ${status || 'réseau'}: ${err.message} | body: ${body}`);
     }
     return [];
   }
@@ -62,7 +72,7 @@ async function searchFood(query, pageSize = 5) {
 async function getFood(fdcId) {
   try {
     const url = `${BASE_URL}/food/${fdcId}`;
-    const res = await axios.get(url, { params: { api_key: API_KEY }, timeout: 8000 });
+    const res = await axios.get(url, { params: { api_key: API_KEY }, timeout: 10000 });
     const f = res.data;
     return {
       source:    'usda',
@@ -74,7 +84,7 @@ async function getFood(fdcId) {
       ...parseNutrients(f.foodNutrients),
     };
   } catch (err) {
-    console.warn('[USDA] Erreur getFood:', err.message);
+    console.error(`[USDA] ❌ getFood(${fdcId}): ${err.response?.status || err.message}`);
     return null;
   }
 }
@@ -84,7 +94,6 @@ async function cacheInProducts(name, data) {
   if (!data || data.kcal === 0) return null;
   const db = getDB();
   try {
-    // Don't duplicate
     const existing = await db.prepare(
       "SELECT id FROM products WHERE name = ? AND brand = 'USDA'"
     ).get(name);

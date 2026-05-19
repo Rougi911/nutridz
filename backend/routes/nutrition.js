@@ -71,11 +71,10 @@ router.get('/search', auth, async (req, res) => {
     }
   }
 
-  // 3. USDA
-  if (sources.includes('usda') && results.length < 8) {
+  // 3. USDA — always query for maximum coverage
+  if (sources.includes('usda')) {
     const usdaResults = await usdaSearch(q, 5);
     add(usdaResults);
-    // Cache results
     for (const r of usdaResults.slice(0, 2)) {
       cacheInProducts(r.nom_fr, r).catch(() => {});
     }
