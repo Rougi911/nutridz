@@ -20,11 +20,16 @@ function loadCiqual() {
   }
 }
 
+// U+0300-U+036F: combining diacritical marks
+const ACCENT_RE = new RegExp('[\\u0300-\\u036f]', 'g');
+const NON_ALPHANUM = /[^a-z0-9 ]/g;
+
 function normalize(str) {
   return (str || '')
     .toLowerCase()
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')  // remove accents
-    .replace(/[^a-z0-9 ]/g, ' ')
+    .normalize('NFD')
+    .replace(ACCENT_RE, '')
+    .replace(NON_ALPHANUM, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -52,19 +57,17 @@ function searchByName(query, limit = 5) {
   if (!loaded) loadCiqual();
   if (!query || !ciqualData.length) return [];
 
-  const results = ciqualData
+  return ciqualData
     .map(entry => ({ entry, score: score(query, entry) }))
     .filter(r => r.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
     .map(r => formatEntry(r.entry));
-
-  return results;
 }
 
 function formatEntry(entry) {
   return {
-    source: 'ciqual',
+    source:    'ciqual',
     nom_fr:    entry.alim_nom_fr,
     nom_en:    entry.alim_nom_en || null,
     group:     entry.group || null,
@@ -82,7 +85,6 @@ function getStats() {
   return { count: ciqualData.length, source: 'ciqual' };
 }
 
-// Load immediately at startup
 loadCiqual();
 
 module.exports = { loadCiqual, searchByName, getStats };

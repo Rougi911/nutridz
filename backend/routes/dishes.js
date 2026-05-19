@@ -62,17 +62,28 @@ router.post('/', auth, async (req, res) => {
   let total_kcal = 0, total_glucides = 0, total_proteines = 0, total_lipides = 0, total_fibres = 0, total_g = 0;
 
   for (const ing of ingredients) {
-    if (ing.product_id && ing.grams > 0) {
+    if (!ing.grams || ing.grams <= 0) continue;
+    const r = ing.grams / 100;
+
+    if (ing.product_id) {
+      // Local products table
       const p = await db.prepare('SELECT * FROM products WHERE id = ?').get(ing.product_id);
       if (p) {
-        const r = ing.grams / 100;
-        total_kcal     += (p.kcal_per100 || 0) * r;
-        total_glucides += (p.glucides   || 0) * r;
-        total_proteines+= (p.proteines  || 0) * r;
-        total_lipides  += (p.lipides    || 0) * r;
-        total_fibres   += (p.fibres     || 0) * r;
-        total_g        += ing.grams;
+        total_kcal      += (p.kcal_per100 || 0) * r;
+        total_glucides  += (p.glucides    || 0) * r;
+        total_proteines += (p.proteines   || 0) * r;
+        total_lipides   += (p.lipides     || 0) * r;
+        total_fibres    += (p.fibres      || 0) * r;
+        total_g         += ing.grams;
       }
+    } else if (ing.kcal_per100 != null) {
+      // Inline nutritional data (from CIQUAL / USDA)
+      total_kcal      += (ing.kcal_per100  || 0) * r;
+      total_glucides  += (ing.glucides     || 0) * r;
+      total_proteines += (ing.proteines    || 0) * r;
+      total_lipides   += (ing.lipides      || 0) * r;
+      total_fibres    += (ing.fibres       || 0) * r;
+      total_g         += ing.grams;
     }
   }
 

@@ -158,7 +158,12 @@ function CreateDishModal({ onClose, onCreated, t }) {
       product_id: item.product_id || null,
       name: item.nom_fr || item.name,
       emoji: item.emoji || '🥘',
-      grams, kcal_per100: kcalPer100,
+      grams,
+      kcal_per100: kcalPer100,
+      glucides:    item.glucides   || 0,
+      proteines:   item.proteines  || 0,
+      lipides:     item.lipides    || 0,
+      fibres:      item.fibres     || 0,
       kcal_preview: Math.round(kcalPer100 * grams / 100),
       source: item.source || 'local',
     }]);
@@ -181,7 +186,7 @@ function CreateDishModal({ onClose, onCreated, t }) {
     if (!ingredients.length) { toast.error('Ajoutez au moins un ingrédient'); return; }
     setSaving(true);
     try {
-      await api.post('/dishes', { name, emoji, cuisine, description, ingredients: ingredients.map(i => ({ product_id: i.product_id || null, grams: i.grams, name: i.name })) });
+      await api.post('/dishes', { name, emoji, cuisine, description, ingredients: ingredients.map(i => ({ product_id: i.product_id || null, grams: i.grams, name: i.name, kcal_per100: i.kcal_per100, glucides: i.glucides, proteines: i.proteines, lipides: i.lipides, fibres: i.fibres })) });
       toast.success('Plat créé !');
       onCreated();
     } catch { toast.error('Erreur lors de la création'); }
