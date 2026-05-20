@@ -1,5 +1,4 @@
 import axios from 'axios';
-import i18n from '../i18n';
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL || '/api',
@@ -15,8 +14,7 @@ api.interceptors.request.use((config) => {
       if (state?.token) config.headers.Authorization = `Bearer ${state.token}`;
     } catch {}
   }
-  const rawLang = i18n.language || 'fr';
-  const lang = rawLang.slice(0, 2).toLowerCase();
+  const lang = localStorage.getItem('nutridz-lang') || 'fr';
   config.params = { ...config.params, lang };
   return config;
 });
