@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { useJournalStore, useProfileStore } from '../store';
 import { useTranslation } from '../i18n';
 import api from '../utils/api';
+import VoiceInput from '../components/VoiceInput';
 
 const MEAL_ICONS = { pdej: 'ti-coffee', dej: 'ti-soup', coll: 'ti-apple', diner: 'ti-moon' };
 
@@ -12,7 +13,7 @@ export default function JournalPage() {
   const navigate = useNavigate();
   const { date, meals, totals, loading, fetchJournal, removeEntry, setDate } = useJournalStore();
   const { profile } = useProfileStore();
-  const { t, dateFnsLocale } = useTranslation();
+  const { t, dateFnsLocale, lang } = useTranslation();
   const target = profile.target_kcal || 2310;
 
   const [todayWeight, setTodayWeight] = useState('');
@@ -21,23 +22,23 @@ export default function JournalPage() {
 
   useEffect(() => { fetchJournal(); }, []);
 
-  useEffect(() => {
-    const fetchWeights = async () => {
-      try {
-        const today = format(parseISO(date), 'yyyy-MM-dd');
-        const yesterday = format(subDays(parseISO(date), 1), 'yyyy-MM-dd');
-        const [todayRes, yesterdayRes] = await Promise.all([
-          api.get(`/weight?from=${today}&to=${today}`),
-          api.get(`/weight?from=${yesterday}&to=${yesterday}`),
-        ]);
-        setTodayWeight(todayRes.data.length > 0 ? todayRes.data[0].weight_kg : '');
-        setYesterdayWeight(yesterdayRes.data.length > 0 ? yesterdayRes.data[0].weight_kg : null);
-      } catch (err) {
-        console.error('Weight fetch error:', err);
-      }
-    };
-    fetchWeights();
-  }, [date]);
+  const fetchWeights = async () => {
+    try {
+      const today = format(parseISO(date), 'yyyy-MM-dd');
+      const yesterday = format(subDays(parseISO(date), 1), 'yyyy-MM-dd');
+      const [todayRes, yesterdayRes] = await Promise.all([
+        api.get(`/weight?from=${today}&to=${today}`),
+        api.get(`/weight?from=${yesterday}&to=${yesterday}`),
+      ]);
+      setTodayWeight(todayRes.data.length > 0 ? todayRes.data[0].weight_kg : '');
+      setYesterdayWeight(yesterdayRes.data.length > 0 ? yesterdayRes.data[0].weight_kg : null);
+    } catch (err) {
+      console.error('Weight fetch error:', err);
+    }
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchWeights(); }, [date]);
 
   const handleWeightSubmit = async () => {
     if (!todayWeight || parseFloat(todayWeight) < 20 || parseFloat(todayWeight) > 300) return;
@@ -49,6 +50,38 @@ export default function JournalPage() {
       toast.success(t('weight.saved'));
     } catch {
       toast.error(t('weight.error'));
+    }
+  };
+
+  const handleVoiceFood = async (transcript) => {
+    try {
+      const res = await api.post('/voice/parse', { text: transcript, context: 'food', lang });
+      if (res.data.items && res.data.items.length > 0) {
+        toast.success(`${res.data.items.length} aliment(s) : ${res.data.items.map(i => i.name).join(', ')}`);
+      } else {
+        toast.error(t('voice.noItemsDetected'));
+      }
+    } catch {
+      toast.error(t('voice.parseError'));
+    }
+  };
+
+  const handleVoiceWeight = async (transcript) => {
+    try {
+      const res = await api.post('/voice/parse', { text: transcript, context: 'weight', lang });
+      if (res.data.weight_kg) {
+        setTodayWeight(res.data.weight_kg);
+        await api.post('/weight', {
+          weight_kg: res.data.weight_kg,
+          date: format(parseISO(date), 'yyyy-MM-dd'),
+        });
+        toast.success(t('weight.saved'));
+        fetchWeights();
+      } else {
+        toast.error(t('voice.weightNotDetected'));
+      }
+    } catch {
+      toast.error(t('voice.parseError'));
     }
   };
 
@@ -134,16 +167,35 @@ export default function JournalPage() {
             </span>
           )}
         </div>
-        <input
-          type="number"
-          step="0.1"
-          placeholder={t('weight.enterWeight')}
-          value={todayWeight}
-          onChange={(e) => setTodayWeight(e.target.value)}
-          onBlur={handleWeightSubmit}
-          onKeyPress={(e) => e.key === 'Enter' && handleWeightSubmit()}
-          style={{ marginTop: '0.5rem', width: '100%', padding: '0.6rem', border: '1px solid #e5e7eb', borderRadius: '6px', fontSize: '1rem', boxSizing: 'border-box' }}
-        />
+        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <input
+            type="number"
+            step="0.1"
+            placeholder={t('weight.enterWeight')}
+            value={todayWeight}
+            onChange={(e) => setTodayWeight(e.target.value)}
+            onBlur={handleWeightSubmit}
+            onKeyPress={(e) => e.key === 'Enter' && handleWeightSubmit()}
+            style={{ flex: 1, padding: '0.6rem', border: '1px solid #e5e7eb', borderRadius: '6px', fontSize: '1rem' }}
+          />
+          <VoiceInput
+            context="weight"
+            onResult={handleVoiceWeight}
+            showTranscript={false}
+            buttonStyle={{ padding: '0.6rem' }}
+          />
+        </div>
+      </div>
+
+      {/* Saisie vocale aliments */}
+      <div style={{ margin: '0.8rem 1.25rem 0', padding: '1rem', background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+          <h3 style={{ margin: 0, fontSize: '1rem' }}>🎤 {t('voice.addFoodVoice')}</h3>
+        </div>
+        <p style={{ fontSize: '0.85rem', color: '#6b7280', margin: '0 0 0.8rem' }}>
+          {t('voice.foodHelp')}
+        </p>
+        <VoiceInput context="food" onResult={handleVoiceFood} showTranscript={true} />
       </div>
 
       {/* Repas */}

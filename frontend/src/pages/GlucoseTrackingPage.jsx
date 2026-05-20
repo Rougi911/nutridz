@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
 import { useTranslation } from '../i18n';
+import VoiceInput from '../components/VoiceInput';
 import {
   ScatterChart, Scatter,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -10,7 +11,7 @@ import {
 } from 'recharts';
 
 export default function GlucoseTrackingPage() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const [readings, setReadings]   = useState([]);
   const [metrics, setMetrics]     = useState(null);
   const [period, setPeriod]       = useState(14);
@@ -53,6 +54,21 @@ export default function GlucoseTrackingPage() {
       fetchData();
     } catch {
       toast.error(t('glucose.errorSaving'));
+    }
+  };
+
+  const handleVoiceGlucose = async (transcript) => {
+    try {
+      const res = await api.post('/voice/parse', { text: transcript, context: 'glucose', lang });
+      if (res.data.glucose_mg_dl) {
+        setGlucoseValue(res.data.glucose_mg_dl);
+        setReadingType(res.data.reading_type || 'random');
+        toast.success(t('voice.glucoseDetected'));
+      } else {
+        toast.error(t('voice.glucoseNotDetected'));
+      }
+    } catch {
+      toast.error(t('voice.parseError'));
     }
   };
 
@@ -122,12 +138,20 @@ export default function GlucoseTrackingPage() {
             <option value="bedtime">{t('glucose.bedtime')}</option>
             <option value="random">{t('glucose.random')}</option>
           </select>
-          <button type="submit" style={{
-            padding: '0.6rem 1.5rem', background: '#10b981', color: 'white',
-            border: 'none', borderRadius: '6px', fontWeight: '700', cursor: 'pointer', fontSize: '0.95rem',
-          }}>
-            {t('glucose.add')}
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem', flex: '1 1 100%' }}>
+            <button type="submit" style={{
+              flex: 1, padding: '0.6rem 1.5rem', background: '#10b981', color: 'white',
+              border: 'none', borderRadius: '6px', fontWeight: '700', cursor: 'pointer', fontSize: '0.95rem',
+            }}>
+              {t('glucose.add')}
+            </button>
+            <VoiceInput
+              context="glucose"
+              onResult={handleVoiceGlucose}
+              showTranscript={false}
+              buttonStyle={{ padding: '0.6rem 1rem' }}
+            />
+          </div>
         </form>
       </div>
 
