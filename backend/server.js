@@ -61,6 +61,7 @@ app.use('/api/dishes', dishesRoutes);
 const nutritionRoutes = require('./routes/nutrition');
 app.use('/api/nutrition', nutritionRoutes);
 app.use('/api/modifiers', require('./routes/modifiers'));
+app.use('/api/weight', require('./routes/weight'));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', version: '1.0.0' }));

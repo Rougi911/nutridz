@@ -152,6 +152,19 @@ async function initDB() {
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   )`);
 
+  await db.exec(`CREATE TABLE IF NOT EXISTS weight_entries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    weight_kg REAL NOT NULL,
+    body_fat_pct REAL,
+    date TEXT NOT NULL,
+    notes TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, date)
+  )`);
+
+  await db.exec(`CREATE INDEX IF NOT EXISTS idx_weight_user_date ON weight_entries(user_id, date DESC)`);
+
   await db.exec(`CREATE TABLE IF NOT EXISTS dish_analyses (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
