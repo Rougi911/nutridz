@@ -3,10 +3,12 @@ import toast from 'react-hot-toast';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ReferenceLine, ResponsiveContainer,
+  LineChart, Line, AreaChart, Area,
 } from 'recharts';
 import { useTranslation } from '../i18n';
 import { useActivityStore, useProfileStore } from '../store';
 import { calcBMR, calcTDEE, calcTarget } from '../utils/api';
+import api from '../utils/api';
 import ActivityForm from '../components/ActivityForm';
 
 const SPORT_ICONS  = { marche: '🚶', course: '🏃', velo: '🚴', natation: '🏊', muscu: '💪' };
@@ -246,6 +248,10 @@ export default function BilanPage() {
   const [syncingStrava, setSyncingStrava] = useState(false);
   const [syncResult, setSyncResult] = useState(null);
 
+  const [evolutionData, setEvolutionData] = useState(null);
+  const [evolutionPeriod, setEvolutionPeriod] = useState(30);
+  const [loadingEvolution, setLoadingEvolution] = useState(false);
+
   const today = new Date().toISOString().split('T')[0];
 
   const target_kcal = profile
@@ -265,6 +271,42 @@ export default function BilanPage() {
       fetchMonthlyStats(monthYear.year, monthYear.month);
     }
   }, [view, monthYear.year, monthYear.month]);
+
+  useEffect(() => {
+    if (view === 'evolution') {
+      fetchEvolution();
+    }
+  }, [view, evolutionPeriod]);
+
+  const fetchEvolution = async () => {
+    setLoadingEvolution(true);
+    try {
+      const res = await api.get(`/weight/evolution?days=${evolutionPeriod}`);
+      setEvolutionData(res.data);
+    } catch {
+      toast.error(t('evolution.error'));
+    } finally {
+      setLoadingEvolution(false);
+    }
+  };
+
+  const prepareCompositionData = (data) => {
+    if (!data.weight_entries || !data.weight_entries.length || !data.current_bf_pct) return [];
+    const baseWeight = data.weight_entries[0].weight_kg;
+    const baseLean = baseWeight * (1 - data.current_bf_pct / 100);
+    const baseFat  = baseWeight * (data.current_bf_pct / 100);
+    return data.weight_entries.map((entry, idx) => {
+      const cum = (data.period.daily || []).slice(0, idx + 1).reduce(
+        (acc, day) => ({ lean: acc.lean + day.delta_lean_kg, fat: acc.fat + day.delta_fat_kg }),
+        { lean: 0, fat: 0 }
+      );
+      return {
+        date: entry.date,
+        lean_kg: +(baseLean + cum.lean).toFixed(1),
+        fat_kg:  +(baseFat  + cum.fat).toFixed(1),
+      };
+    });
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -358,12 +400,12 @@ export default function BilanPage() {
 
       {/* View toggle */}
       <div style={{ display: 'flex', background: '#efefed', borderRadius: 12, padding: 4, marginBottom: 16, gap: 4 }}>
-        {[['jour', 'Jour'], ['semaine', 'Semaine'], ['mois', 'Mois']].map(([v, label]) => (
+        {[['jour', 'Jour'], ['semaine', 'Semaine'], ['mois', 'Mois'], ['evolution', t('evolution.title')]].map(([v, label]) => (
           <button key={v} onClick={() => setView(v)} style={{
             flex: 1, padding: '8px 0', borderRadius: 8, border: 'none',
             background: view === v ? '#1A6B3C' : 'transparent',
             color: view === v ? '#fff' : '#888',
-            fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s',
+            fontWeight: 600, fontSize: 11, cursor: 'pointer', transition: 'all 0.2s',
           }}>
             {label}
           </button>
@@ -717,6 +759,124 @@ export default function BilanPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* ═══ VUE ÉVOLUTION ═══ */}
+      {view === 'evolution' && (
+        <div>
+          {loadingEvolution ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#aaa' }}>
+              <i className="ti ti-loader-2" style={{ fontSize: 28 }} /> {t('common.loading')}
+            </div>
+          ) : evolutionData ? (
+            <>
+              {/* Sélecteur période */}
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', justifyContent: 'center' }}>
+                {[7, 30, 90, 365].map(days => (
+                  <button
+                    key={days}
+                    onClick={() => {
+                      setEvolutionPeriod(days);
+                      setEvolutionData(null);
+                    }}
+                    style={{
+                      padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer',
+                      border: evolutionPeriod === days ? '2px solid #1A6B3C' : '1px solid #e5e7eb',
+                      background: evolutionPeriod === days ? '#EAF3DE' : 'white',
+                      fontWeight: evolutionPeriod === days ? '600' : '400',
+                      color: evolutionPeriod === days ? '#1A6B3C' : '#555',
+                      fontSize: 13,
+                    }}
+                  >
+                    {days}j
+                  </button>
+                ))}
+              </div>
+
+              {/* Graphique poids */}
+              <div style={{ background: 'white', borderRadius: '12px', padding: '1rem', marginBottom: '1rem', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+                <h3 style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: 700, color: '#333' }}>
+                  {t('evolution.weightChart')}
+                </h3>
+                {evolutionData.weight_entries.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={220}>
+                    <LineChart data={evolutionData.weight_entries}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
+                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#aaa' }} tickFormatter={d => d.slice(5)} />
+                      <YAxis domain={['dataMin - 1', 'dataMax + 1']} tick={{ fontSize: 10 }} unit=" kg" width={50} />
+                      <Tooltip formatter={(v) => [`${v} kg`, t('evolution.weightChart')]} labelFormatter={l => l} />
+                      <Line type="monotone" dataKey="weight_kg" stroke="#1A6B3C" strokeWidth={2} dot={{ r: 4, fill: '#1A6B3C' }} activeDot={{ r: 6 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '2rem', color: '#bbb', fontSize: 13 }}>
+                    Aucune entrée de poids sur cette période
+                  </div>
+                )}
+              </div>
+
+              {/* Graphique composition */}
+              {evolutionData.period && evolutionData.weight_entries.length > 1 && (
+                <div style={{ background: 'white', borderRadius: '12px', padding: '1rem', marginBottom: '1rem', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+                  <h3 style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: 700, color: '#333' }}>
+                    {t('evolution.compositionChart')}
+                  </h3>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <AreaChart data={prepareCompositionData(evolutionData)}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
+                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#aaa' }} tickFormatter={d => d.slice(5)} />
+                      <YAxis tick={{ fontSize: 10 }} unit=" kg" width={50} />
+                      <Tooltip formatter={(v, name) => [`${v} kg`, name]} />
+                      <Area type="monotone" dataKey="lean_kg" stackId="1" stroke="#1A6B3C" fill="#EAF3DE" name={t('evolution.leanMass')} />
+                      <Area type="monotone" dataKey="fat_kg"  stackId="1" stroke="#ef4444" fill="#fee2e2" name={t('evolution.fatMass')} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                  <p style={{ fontSize: '0.78rem', color: '#9ca3af', marginTop: '0.5rem', fontStyle: 'italic' }}>
+                    {t('evolution.disclaimer')}
+                  </p>
+                </div>
+              )}
+
+              {/* Récap période */}
+              {evolutionData.period && (
+                <div style={{ background: 'white', borderRadius: '12px', padding: '1rem', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+                  <h3 style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: 700, color: '#333' }}>
+                    {t('evolution.summary')}
+                  </h3>
+                  <div style={{ display: 'grid', gap: '0.75rem' }}>
+                    {[
+                      { label: 'Poids', val: evolutionData.period.total_delta_weight_kg, unit: 'kg', dec: 1 },
+                      { label: t('evolution.leanMass'), val: evolutionData.period.total_delta_lean_kg, unit: 'kg', dec: 2 },
+                      { label: t('evolution.fatMass'),  val: evolutionData.period.total_delta_fat_kg,  unit: 'kg', dec: 2 },
+                    ].map(({ label, val, unit, dec }) => (
+                      <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderRadius: 10, background: '#f9f9f9' }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#444' }}>{label}</span>
+                        <span style={{ fontSize: 15, fontWeight: 800, color: val < 0 ? '#1A6B3C' : val > 0 ? '#ef4444' : '#888' }}>
+                          {val > 0 ? '+' : ''}{val.toFixed(dec)} {unit}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ marginTop: 10, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <div style={{ padding: '10px 12px', borderRadius: 10, background: '#f0f9ff', textAlign: 'center' }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#0369a1' }}>{evolutionData.current_bf_pct}%</div>
+                      <div style={{ fontSize: 10, color: '#888', marginTop: 2 }}>Masse grasse estimée</div>
+                    </div>
+                    <div style={{ padding: '10px 12px', borderRadius: 10, background: '#f5f9f2', textAlign: 'center' }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#1A6B3C' }}>{evolutionData.tdee} kcal</div>
+                      <div style={{ fontSize: 10, color: '#888', marginTop: 2 }}>TDEE estimé</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+              <div style={{ fontSize: 40, marginBottom: 8 }}>⚖️</div>
+              <p style={{ fontSize: 13, margin: 0 }}>Aucune donnée disponible</p>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

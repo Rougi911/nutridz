@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, addDays, subDays, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
 import { useJournalStore, useProfileStore } from '../store';
 import { useTranslation } from '../i18n';
+import api from '../utils/api';
 
 const MEAL_ICONS = { pdej: 'ti-coffee', dej: 'ti-soup', coll: 'ti-apple', diner: 'ti-moon' };
 
@@ -14,7 +15,42 @@ export default function JournalPage() {
   const { t, dateFnsLocale } = useTranslation();
   const target = profile.target_kcal || 2310;
 
+  const [todayWeight, setTodayWeight] = useState('');
+  const [yesterdayWeight, setYesterdayWeight] = useState(null);
+  const weightDelta = todayWeight && yesterdayWeight ? parseFloat(todayWeight) - yesterdayWeight : 0;
+
   useEffect(() => { fetchJournal(); }, []);
+
+  useEffect(() => {
+    const fetchWeights = async () => {
+      try {
+        const today = format(parseISO(date), 'yyyy-MM-dd');
+        const yesterday = format(subDays(parseISO(date), 1), 'yyyy-MM-dd');
+        const [todayRes, yesterdayRes] = await Promise.all([
+          api.get(`/weight?from=${today}&to=${today}`),
+          api.get(`/weight?from=${yesterday}&to=${yesterday}`),
+        ]);
+        setTodayWeight(todayRes.data.length > 0 ? todayRes.data[0].weight_kg : '');
+        setYesterdayWeight(yesterdayRes.data.length > 0 ? yesterdayRes.data[0].weight_kg : null);
+      } catch (err) {
+        console.error('Weight fetch error:', err);
+      }
+    };
+    fetchWeights();
+  }, [date]);
+
+  const handleWeightSubmit = async () => {
+    if (!todayWeight || parseFloat(todayWeight) < 20 || parseFloat(todayWeight) > 300) return;
+    try {
+      await api.post('/weight', {
+        weight_kg: parseFloat(todayWeight),
+        date: format(parseISO(date), 'yyyy-MM-dd'),
+      });
+      toast.success(t('weight.saved'));
+    } catch {
+      toast.error(t('weight.error'));
+    }
+  };
 
   const MEALS = ['pdej', 'dej', 'coll', 'diner'].map(id => ({ id, label: t(`journal.meals.${id}`), icon: MEAL_ICONS[id] }));
 
@@ -84,6 +120,30 @@ export default function JournalPage() {
             );
           })}
         </div>
+      </div>
+
+      {/* Poids du jour */}
+      <div style={{ margin: '0.8rem 1.25rem 0', padding: '1rem', borderRadius: '8px', background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.95rem', fontWeight: '600' }}>
+            ⚖️ {t('weight.title')}
+          </span>
+          {yesterdayWeight && (
+            <span style={{ fontSize: '0.85rem', color: weightDelta >= 0 ? '#ef4444' : '#10b981', fontWeight: '500' }}>
+              {weightDelta > 0 ? '+' : ''}{weightDelta.toFixed(1)} kg
+            </span>
+          )}
+        </div>
+        <input
+          type="number"
+          step="0.1"
+          placeholder={t('weight.enterWeight')}
+          value={todayWeight}
+          onChange={(e) => setTodayWeight(e.target.value)}
+          onBlur={handleWeightSubmit}
+          onKeyPress={(e) => e.key === 'Enter' && handleWeightSubmit()}
+          style={{ marginTop: '0.5rem', width: '100%', padding: '0.6rem', border: '1px solid #e5e7eb', borderRadius: '6px', fontSize: '1rem', boxSizing: 'border-box' }}
+        />
       </div>
 
       {/* Repas */}
