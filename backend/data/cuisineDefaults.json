@@ -1,0 +1,13 @@
+{
+  "française": [{"id":"olive_oil","amount_g":10},{"id":"butter","amount_g":5}],
+  "italienne": [{"id":"olive_oil","amount_g":15},{"id":"parmesan","amount_g":10}],
+  "maghrébine": [{"id":"olive_oil","amount_g":15},{"id":"smen","amount_g":5}],
+  "asiatique": [{"id":"soy_sauce","amount_g":10},{"id":"sesame_oil","amount_g":5}],
+  "moyen-orient": [{"id":"olive_oil","amount_g":15}],
+  "américaine": [{"id":"ketchup","amount_g":20},{"id":"mayonnaise","amount_g":15}],
+  "indienne": [{"id":"olive_oil","amount_g":10}],
+  "mexicaine": [{"id":"olive_oil","amount_g":10}],
+  "turque": [{"id":"olive_oil","amount_g":15},{"id":"plain_yogurt","amount_g":30}],
+  "japonaise": [{"id":"soy_sauce","amount_g":10},{"id":"sesame_oil","amount_g":5}],
+  "divers": []
+}

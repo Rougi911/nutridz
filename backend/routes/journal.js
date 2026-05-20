@@ -2,12 +2,23 @@ const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { getDB } = require('../db');
 const auth = require('../middleware/auth');
+const { findById, localizeModifier } = require('../data/dishModifiers');
 
 const router = express.Router();
+
+const SUPPORTED_LANGS = ['fr', 'ar', 'en'];
+
+function getLang(req) {
+  const q = req.query.lang;
+  if (q && SUPPORTED_LANGS.includes(q)) return q;
+  const al = (req.headers['accept-language'] || '').slice(0, 2).toLowerCase();
+  return SUPPORTED_LANGS.includes(al) ? al : 'fr';
+}
 
 // GET /api/journal?date=2025-01-15
 router.get('/', auth, async (req, res) => {
   const date = req.query.date || new Date().toISOString().split('T')[0];
+  const lang = getLang(req);
   const db = getDB();
 
   const entries = await db.prepare(`
@@ -23,7 +34,7 @@ router.get('/', auth, async (req, res) => {
   let totals = { kcal: 0, glucides: 0, proteines: 0, lipides: 0, fibres: 0 };
 
   entries.forEach(e => {
-    const entry = formatEntry(e);
+    const entry = formatEntry(e, lang);
     if (byMeal[e.meal_type]) byMeal[e.meal_type].push(entry);
     totals.kcal += e.kcal;
     totals.glucides += e.glucides;
@@ -38,7 +49,7 @@ router.get('/', auth, async (req, res) => {
 
 // POST /api/journal — ajouter une entrée
 router.post('/', auth, async (req, res) => {
-  const { product_id, grams, meal_type, date } = req.body;
+  const { product_id, grams, meal_type, date, modifiers = [] } = req.body;
   if (!product_id || !grams || !meal_type) return res.status(400).json({ error: 'Champs manquants' });
 
   const db = getDB();
@@ -46,6 +57,25 @@ router.post('/', auth, async (req, res) => {
   if (!product) return res.status(404).json({ error: 'Produit non trouvé' });
 
   const ratio = grams / 100;
+  let kcal      = product.kcal_per100  * ratio;
+  let glucides  = product.glucides     * ratio;
+  let proteines = product.proteines    * ratio;
+  let lipides   = product.lipides      * ratio;
+  let fibres    = product.fibres       * ratio;
+
+  const validModifiers = [];
+  for (const mod of modifiers) {
+    const def = findById(mod.id);
+    if (!def || !mod.amount_g || mod.amount_g <= 0) continue;
+    const r = mod.amount_g / 100;
+    kcal      += def.kcal_per_100g * r;
+    glucides  += def.glucides      * r;
+    proteines += def.proteines     * r;
+    lipides   += def.lipides       * r;
+    fibres    += def.fibres        * r;
+    validModifiers.push({ id: mod.id, amount_g: mod.amount_g });
+  }
+
   const entry = {
     id: uuidv4(),
     user_id: req.userId,
@@ -53,15 +83,18 @@ router.post('/', auth, async (req, res) => {
     meal_type,
     product_id,
     grams,
-    kcal: Math.round(product.kcal_per100 * ratio),
-    glucides: Math.round(product.glucides * ratio * 10) / 10,
-    proteines: Math.round(product.proteines * ratio * 10) / 10,
-    lipides: Math.round(product.lipides * ratio * 10) / 10,
-    fibres: Math.round(product.fibres * ratio * 10) / 10
+    kcal:      Math.round(kcal),
+    glucides:  Math.round(glucides  * 10) / 10,
+    proteines: Math.round(proteines * 10) / 10,
+    lipides:   Math.round(lipides   * 10) / 10,
+    fibres:    Math.round(fibres    * 10) / 10,
+    modifiers_json: JSON.stringify(validModifiers),
   };
 
-  await db.prepare(`INSERT INTO journal_entries (id, user_id, date, meal_type, product_id, grams, kcal, glucides, proteines, lipides, fibres)
-    VALUES (@id, @user_id, @date, @meal_type, @product_id, @grams, @kcal, @glucides, @proteines, @lipides, @fibres)`).run(entry);
+  await db.prepare(`
+    INSERT INTO journal_entries (id, user_id, date, meal_type, product_id, grams, kcal, glucides, proteines, lipides, fibres, modifiers_json)
+    VALUES (@id, @user_id, @date, @meal_type, @product_id, @grams, @kcal, @glucides, @proteines, @lipides, @fibres, @modifiers_json)
+  `).run(entry);
 
   res.status(201).json(entry);
 });
@@ -90,10 +123,22 @@ router.get('/history', auth, async (req, res) => {
   res.json(rows);
 });
 
-function formatEntry(e) {
+function formatEntry(e, lang = 'fr') {
+  let parsedModifiers = [];
+  try {
+    const raw = JSON.parse(e.modifiers_json || '[]');
+    parsedModifiers = raw.map(({ id, amount_g }) => {
+      const def = findById(id);
+      if (!def) return null;
+      const loc = localizeModifier(def, lang);
+      return { id, name: loc.name, emoji: loc.emoji, amount_g, kcal: Math.round(def.kcal_per_100g * amount_g / 100) };
+    }).filter(Boolean);
+  } catch {}
+
   return {
     id: e.id, meal_type: e.meal_type, grams: e.grams, kcal: e.kcal,
     glucides: e.glucides, proteines: e.proteines, lipides: e.lipides, fibres: e.fibres,
+    modifiers: parsedModifiers,
     product: {
       id: e.product_id, name: e.name, brand: e.brand, emoji: e.emoji,
       score: e.score, kcal_per100: e.kcal_per100,

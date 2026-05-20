@@ -138,6 +138,7 @@ async function initDB() {
     proteines REAL DEFAULT 0,
     lipides REAL DEFAULT 0,
     fibres REAL DEFAULT 0,
+    modifiers_json TEXT DEFAULT '[]',
     logged_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id)
