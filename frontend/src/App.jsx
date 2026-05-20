@@ -16,6 +16,7 @@ import ScannerPage from './pages/ScannerPage';
 import BilanPage from './pages/BilanPage';
 import DishesPage from './pages/DishesPage';
 import DishDetailPage from './pages/DishDetailPage';
+import GlucoseTrackingPage from './pages/GlucoseTrackingPage';
 import PrivacyPage from './pages/PrivacyPage';
 import LegalPage from './pages/LegalPage';
 import Layout from './components/Layout';
@@ -50,6 +51,7 @@ export default function App() {
           <Route path="dishes" element={<DishesPage />} />
           <Route path="dishes/:id" element={<DishDetailPage />} />
           <Route path="bilan" element={<BilanPage />} />
+          <Route path="glucose" element={<GlucoseTrackingPage />} />
           <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Routes>

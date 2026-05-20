@@ -12,6 +12,7 @@ const NAV = [
   { to: '/vision',   icon: 'ti-camera',      key: 'vision' },
   { to: '/bilan',    icon: 'ti-heartbeat',   key: 'bilan' },
   { to: '/history',  icon: 'ti-chart-bar',   key: 'history' },
+  { to: '/glucose',  icon: 'ti-droplet',     key: 'glucose' },
   { to: '/profile',  icon: 'ti-user',        key: 'profile' },
 ];
 
