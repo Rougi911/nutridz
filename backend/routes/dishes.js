@@ -5,6 +5,24 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
+const SUPPORTED_LANGS = ['fr', 'ar', 'en'];
+
+function getLang(req) {
+  const q = req.query.lang;
+  if (q && SUPPORTED_LANGS.includes(q)) return q;
+  const al = (req.headers['accept-language'] || '').slice(0, 2).toLowerCase();
+  return SUPPORTED_LANGS.includes(al) ? al : 'fr';
+}
+
+function localizeDish(dish, lang) {
+  return {
+    ...dish,
+    name: dish[`name_${lang}`] || dish.name_fr || dish.name,
+    description: dish[`description_${lang}`] || dish.description_fr || dish.description,
+    _translations: { fr: dish.name_fr, ar: dish.name_ar, en: dish.name_en },
+  };
+}
+
 const CUISINE_FLAGS = {
   française: '🇫🇷', italienne: '🇮🇹', maghrébine: '🇩🇿',
   'moyen-orient': '🇸🇦', asiatique: '🇨🇳', américaine: '🇺🇸',
@@ -32,8 +50,9 @@ router.get('/', auth, async (req, res) => {
   sql += ' ORDER BY (created_by_user_id = ?) DESC, cuisine, name';
   params.push(req.userId);
 
+  const lang = getLang(req);
   const dishes = await db.prepare(sql).all(...params);
-  res.json(dishes.map(d => ({ ...d, flag: CUISINE_FLAGS[d.cuisine] || '🌍' })));
+  res.json(dishes.map(d => ({ ...localizeDish(d, lang), flag: CUISINE_FLAGS[d.cuisine] || '🌍' })));
 });
 
 // GET /api/dishes/cuisines  — must be before /:id
@@ -50,7 +69,8 @@ router.get('/:id', auth, async (req, res) => {
   const db = getDB();
   const dish = await db.prepare('SELECT * FROM dishes WHERE id = ?').get(req.params.id);
   if (!dish) return res.status(404).json({ error: 'Plat non trouvé' });
-  res.json({ ...dish, ingredients: JSON.parse(dish.ingredients_json || '[]'), flag: CUISINE_FLAGS[dish.cuisine] || '🌍' });
+  const lang = getLang(req);
+  res.json({ ...localizeDish(dish, lang), ingredients: JSON.parse(dish.ingredients_json || '[]'), flag: CUISINE_FLAGS[dish.cuisine] || '🌍' });
 });
 
 // POST /api/dishes — create custom dish (ingredients from products table)
@@ -88,12 +108,12 @@ router.post('/', auth, async (req, res) => {
   }
 
   const result = await db.prepare(`
-    INSERT INTO dishes (name, emoji, cuisine, category, description, default_portion_g,
+    INSERT INTO dishes (name, name_fr, emoji, cuisine, category, description, description_fr, default_portion_g,
       kcal_per_portion, glucides, proteines, lipides, fibres, ingredients_json,
       difficulty, prep_time_min, cook_time_min, is_user_created, created_by_user_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
   `).run(
-    name, emoji || '🍽️', cuisine || 'divers', category || 'plat', description || '',
+    name, name, emoji || '🍽️', cuisine || 'divers', category || 'plat', description || '', description || '',
     Math.round(total_g) || 300, Math.round(total_kcal),
     Math.round(total_glucides * 10) / 10, Math.round(total_proteines * 10) / 10,
     Math.round(total_lipides * 10) / 10, Math.round(total_fibres * 10) / 10,

@@ -1,6 +1,7 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
+const { applyTranslations } = require('./scripts/applyDishTranslations');
 
 const DB_PATH = path.join(__dirname, 'nutridz.db');
 
@@ -177,8 +178,12 @@ async function initDB() {
   await db.exec(`CREATE TABLE IF NOT EXISTS dishes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
+    name_fr TEXT,
     name_ar TEXT,
     name_en TEXT,
+    description_fr TEXT,
+    description_ar TEXT,
+    description_en TEXT,
     emoji TEXT,
     cuisine TEXT,
     category TEXT,
@@ -224,6 +229,7 @@ async function initDB() {
   } catch (_) {}
 
   await seedDishes();
+  await applyDishTranslationsFromFile();
   console.log('✅ Base de données initialisée');
 }
 
@@ -321,6 +327,15 @@ async function seedDishes() {
     );
   }
   console.log(`🍽️ ${dishes.length} plats de seed insérés`);
+}
+
+async function applyDishTranslationsFromFile() {
+  try {
+    const db = getDB();
+    await applyTranslations(db);
+  } catch (err) {
+    console.warn('⚠️  Traductions plats non appliquées (JSON manquant ?) :', err.message);
+  }
 }
 
 module.exports = { getDB, initDB };

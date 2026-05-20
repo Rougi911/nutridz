@@ -1,0 +1,362 @@
+[
+  {
+    "id": 1,
+    "name_fr": "Steak Frites",
+    "name_ar": "ةيلقملا سطاطبلا عم كيتس",
+    "name_en": "Steak and Fries"
+  },
+  {
+    "id": 2,
+    "name_fr": "Ratatouille",
+    "name_ar": "يوتاتار",
+    "name_en": "Ratatouille"
+  },
+  {
+    "id": 3,
+    "name_fr": "Blanquette de Veau",
+    "name_ar": "لجعلا تيكنالب",
+    "name_en": "Veal Blanquette"
+  },
+  {
+    "id": 4,
+    "name_fr": "Quiche Lorraine",
+    "name_ar": "نيرول شيك",
+    "name_en": "Quiche Lorraine"
+  },
+  {
+    "id": 5,
+    "name_fr": "Salade Niçoise",
+    "name_ar": "زاوسين ةطلس",
+    "name_en": "Niçoise Salad"
+  },
+  {
+    "id": 6,
+    "name_fr": "Croque-Monsieur",
+    "name_ar": "ويسم كورك",
+    "name_en": "Croque-Monsieur"
+  },
+  {
+    "id": 7,
+    "name_fr": "Pizza Margherita",
+    "name_ar": "اتيرغرام ازتيب",
+    "name_en": "Margherita Pizza"
+  },
+  {
+    "id": 8,
+    "name_fr": "Spaghetti Carbonara",
+    "name_ar": "ارانوبراك يتيغابس",
+    "name_en": "Spaghetti Carbonara"
+  },
+  {
+    "id": 9,
+    "name_fr": "Lasagne",
+    "name_ar": "اينازال",
+    "name_en": "Lasagna"
+  },
+  {
+    "id": 10,
+    "name_fr": "Risotto",
+    "name_ar": "وتوزير",
+    "name_en": "Risotto"
+  },
+  {
+    "id": 11,
+    "name_fr": "Tiramisu",
+    "name_ar": "وسيماريت",
+    "name_en": "Tiramisu"
+  },
+  {
+    "id": 12,
+    "name_fr": "Couscous Royal",
+    "name_ar": "يكلم سكسك",
+    "name_en": "Royal Couscous"
+  },
+  {
+    "id": 13,
+    "name_fr": "Chorba Frik",
+    "name_ar": "كيرف ةبرش",
+    "name_en": "Frik Soup"
+  },
+  {
+    "id": 14,
+    "name_fr": "Tajine Poulet",
+    "name_ar": "جاجدلا نيجاط",
+    "name_en": "Chicken Tagine"
+  },
+  {
+    "id": 15,
+    "name_fr": "Méchoui",
+    "name_ar": "يوشم",
+    "name_en": "Roast Lamb (Mechoui)"
+  },
+  {
+    "id": 16,
+    "name_fr": "Harira",
+    "name_ar": "ةريرح",
+    "name_en": "Harira Soup"
+  },
+  {
+    "id": 17,
+    "name_fr": "Chakhchoukha",
+    "name_ar": "ةخوشخش",
+    "name_en": "Chakhchoukha"
+  },
+  {
+    "id": 18,
+    "name_fr": "Rechta",
+    "name_ar": "ةتشر",
+    "name_en": "Rechta"
+  },
+  {
+    "id": 19,
+    "name_fr": "Bourek",
+    "name_ar": "كروب",
+    "name_en": "Bourek (Algerian Brik)"
+  },
+  {
+    "id": 20,
+    "name_fr": "Kefta",
+    "name_ar": "ةتفك",
+    "name_en": "Kefta"
+  },
+  {
+    "id": 21,
+    "name_fr": "Dolma",
+    "name_ar": "ةملود",
+    "name_en": "Dolma (Stuffed Vegetables)"
+  },
+  {
+    "id": 22,
+    "name_fr": "Shawarma",
+    "name_ar": "امرواش",
+    "name_en": "Shawarma"
+  },
+  {
+    "id": 23,
+    "name_fr": "Falafel",
+    "name_ar": "لفالف",
+    "name_en": "Falafel"
+  },
+  {
+    "id": 24,
+    "name_fr": "Hummus",
+    "name_ar": "صمح",
+    "name_en": "Hummus"
+  },
+  {
+    "id": 25,
+    "name_fr": "Mansaf",
+    "name_ar": "فسنم",
+    "name_en": "Mansaf"
+  },
+  {
+    "id": 26,
+    "name_fr": "Kebab",
+    "name_ar": "بابك",
+    "name_en": "Kebab"
+  },
+  {
+    "id": 27,
+    "name_fr": "Fattoush",
+    "name_ar": "شوتف",
+    "name_en": "Fattoush"
+  },
+  {
+    "id": 28,
+    "name_fr": "Taboulé",
+    "name_ar": "ةلوبت",
+    "name_en": "Tabbouleh"
+  },
+  {
+    "id": 29,
+    "name_fr": "Sushi",
+    "name_ar": "يشوس",
+    "name_en": "Sushi"
+  },
+  {
+    "id": 30,
+    "name_fr": "Ramen",
+    "name_ar": "نمار",
+    "name_en": "Ramen"
+  },
+  {
+    "id": 31,
+    "name_fr": "Pad Thaï",
+    "name_ar": "يات داب",
+    "name_en": "Pad Thai"
+  },
+  {
+    "id": 32,
+    "name_fr": "Riz Cantonais",
+    "name_ar": "ينوتناك زرأ",
+    "name_en": "Cantonese Fried Rice"
+  },
+  {
+    "id": 33,
+    "name_fr": "Dim Sum",
+    "name_ar": "موس ميد",
+    "name_en": "Dim Sum"
+  },
+  {
+    "id": 34,
+    "name_fr": "Curry Indien",
+    "name_ar": "يدنه يراك",
+    "name_en": "Indian Curry"
+  },
+  {
+    "id": 35,
+    "name_fr": "Biryani",
+    "name_ar": "ينايرب",
+    "name_en": "Biryani"
+  },
+  {
+    "id": 36,
+    "name_fr": "Burger",
+    "name_ar": "رغرب",
+    "name_en": "Burger"
+  },
+  {
+    "id": 37,
+    "name_fr": "Hot-Dog",
+    "name_ar": "غود توه",
+    "name_en": "Hot Dog"
+  },
+  {
+    "id": 38,
+    "name_fr": "Fried Chicken",
+    "name_ar": "يلقم جاجد",
+    "name_en": "Fried Chicken"
+  },
+  {
+    "id": 39,
+    "name_fr": "Mac and Cheese",
+    "name_ar": "زيشت دنأ كام",
+    "name_en": "Mac and Cheese"
+  },
+  {
+    "id": 40,
+    "name_fr": "Pancakes",
+    "name_ar": "كيكناب",
+    "name_en": "Pancakes"
+  },
+  {
+    "id": 41,
+    "name_fr": "Döner Kebab",
+    "name_ar": "بابك رنود",
+    "name_en": "Doner Kebab"
+  },
+  {
+    "id": 42,
+    "name_fr": "Lahmacun",
+    "name_ar": "نيجعب محل",
+    "name_en": "Lahmacun (Turkish Pizza)"
+  },
+  {
+    "id": 43,
+    "name_fr": "Pide",
+    "name_ar": "اديب",
+    "name_en": "Pide (Turkish Flatbread)"
+  },
+  {
+    "id": 44,
+    "name_fr": "Köfte",
+    "name_ar": "ةيكرت ةتفك",
+    "name_en": "Köfte"
+  },
+  {
+    "id": 45,
+    "name_fr": "Baklava",
+    "name_ar": "ةوالقب",
+    "name_en": "Baklava"
+  },
+  {
+    "id": 46,
+    "name_fr": "Butter Chicken",
+    "name_ar": "ةدبزلاب جاجد",
+    "name_en": "Butter Chicken"
+  },
+  {
+    "id": 47,
+    "name_fr": "Naan",
+    "name_ar": "نان",
+    "name_en": "Naan"
+  },
+  {
+    "id": 48,
+    "name_fr": "Dal Tadka",
+    "name_ar": "اكدات لاد",
+    "name_en": "Dal Tadka (Lentil Curry)"
+  },
+  {
+    "id": 49,
+    "name_fr": "Samosa",
+    "name_ar": "ةسوبمس",
+    "name_en": "Samosa"
+  },
+  {
+    "id": 50,
+    "name_fr": "Tacos",
+    "name_ar": "وكات",
+    "name_en": "Tacos"
+  },
+  {
+    "id": 51,
+    "name_fr": "Burrito",
+    "name_ar": "وتيروب",
+    "name_en": "Burrito"
+  },
+  {
+    "id": 52,
+    "name_fr": "Guacamole",
+    "name_ar": "يلوماكاوغ",
+    "name_en": "Guacamole"
+  },
+  {
+    "id": 53,
+    "name_fr": "Quesadilla",
+    "name_ar": "ايداسيك",
+    "name_en": "Quesadilla"
+  },
+  {
+    "id": 54,
+    "name_fr": "Tempura",
+    "name_ar": "اروبميت",
+    "name_en": "Tempura"
+  },
+  {
+    "id": 55,
+    "name_fr": "Onigiri",
+    "name_ar": "يريغينوأ",
+    "name_en": "Onigiri (Rice Ball)"
+  },
+  {
+    "id": 56,
+    "name_fr": "Teriyaki Poulet",
+    "name_ar": "يكايريت جاجد",
+    "name_en": "Teriyaki Chicken"
+  },
+  {
+    "id": 57,
+    "name_fr": "Miso Soupe",
+    "name_ar": "وزيملا ةبروش",
+    "name_en": "Miso Soup"
+  },
+  {
+    "id": 58,
+    "name_fr": "Omelette",
+    "name_ar": "ةجع",
+    "name_en": "Omelette"
+  },
+  {
+    "id": 59,
+    "name_fr": "Salade César",
+    "name_ar": "رزيس ةطلس",
+    "name_en": "Caesar Salad"
+  },
+  {
+    "id": 60,
+    "name_fr": "Soupe à l'Oignon",
+    "name_ar": "لصبلا ةبروش",
+    "name_en": "Onion Soup"
+  }
+]
