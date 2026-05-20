@@ -75,14 +75,19 @@ nutridz/
 │   │   ├── vision.js                 # Analyse de plat par photo
 │   │   ├── activity.js               # Strava + bilan calories ingérées/dépensées
 │   │   ├── dishes.js                 # Base de 60 plats avec recettes
-│   │   └── nutrition.js              # Recherche cascade NUTRITION_DB → CIQUAL → USDA
+│   │   ├── nutrition.js              # Recherche cascade NUTRITION_DB → CIQUAL → USDA
+│   │   ├── weight.js                 # CRUD entrées de poids + estimation composition Forbes
+│   │   ├── glucose.js                # CRUD lectures glycémie + import CSV LibreView + métriques GMI/TIR/CV
+│   │   └── voice.js                  # POST /parse — parsing saisie vocale (aliments/poids/glucose)
 │   ├── services/
 │   │   ├── openfoodfacts.js          # Lookup code-barres mondial
 │   │   ├── ocr.js                    # Tesseract.js OCR étiquettes (FR/AR/EN)
 │   │   ├── foodvision.js             # Clarifai food-item-recognition + NUTRITION_DB locale
 │   │   ├── strava.js                 # OAuth2 + récupération activités
-│   │   ├── ciqual.js                 # Base ANSES France (200 aliments, recherche fuzzy)
-│   │   └── usda.js                   # USDA FoodData (350k aliments mondiaux)
+│   │   ├── ciqual.js                 # Base ANSES France (3186 aliments, recherche fuzzy)
+│   │   ├── usda.js                   # USDA FoodData (350k aliments mondiaux)
+│   │   ├── glucoseMetrics.js         # GMI, TIR, CV, distribution + parsing LibreView CSV
+│   │   └── voiceParser.js            # parseFoodInput / parseWeightInput / parseGlucoseInput (FR/EN/AR)
 │   ├── data/
 │   │   ├── ciqual.json               # 200 aliments CIQUAL pré-chargés
 │   │   └── translations.json         # EN↔FR↔AR pour 200 labels
@@ -97,27 +102,28 @@ nutridz/
     │   ├── _redirects                # /* /index.html 200 (SPA fallback Render)
     │   └── icons/                    # icon-72.png à icon-512.png
     ├── src/
-    │   ├── App.jsx                   # Routes : /journal /products /dishes /vision /history /bilan /profile + RGPD pages
+    │   ├── App.jsx                   # Routes : /journal /products /dishes /vision /history /bilan /glucose /profile + RGPD pages
     │   ├── index.js                  # Enregistrement Service Worker
     │   ├── i18n.js                   # Traductions FR/AR/EN + support RTL pour arabe
     │   ├── store/index.js            # Zustand : authStore, profileStore, journalStore, productsStore
     │   ├── utils/api.js              # axios instance + formules calcBMR/calcTDEE/calcTarget/calcWalkTime
     │   ├── components/
-    │   │   ├── Layout.jsx            # Bottom nav 5 onglets : Journal/Produits/Plats/Bilan/Profil + footer RGPD
+    │   │   ├── Layout.jsx            # Bottom nav 9 onglets : Journal/Produits/Plats/Scanner/Vision/Bilan/Historique/Glycémie/Profil + footer RGPD
     │   │   ├── LanguageSelector.jsx  # AR/FR/EN
     │   │   ├── CookieBanner.jsx      # Bannière CNIL conforme
     │   │   ├── ActivityForm.jsx      # Ajout activité manuelle
     │   │   └── BarcodeScanner.jsx    # Quagga2 scanner (eslint-disable react-hooks/exhaustive-deps en haut)
     │   └── pages/
-    │       ├── JournalPage.jsx       # Tableau de bord quotidien + bouton "+ Ajouter un plat"
+    │       ├── JournalPage.jsx       # Tableau de bord quotidien + saisie poids du jour + bouton "+ Ajouter un plat"
     │       ├── ProductsPage.jsx      # Catalogue produits
     │       ├── ProductDetailPage.jsx # Fiche produit + add to journal
     │       ├── DishesPage.jsx        # Base de 60 plats + création custom avec autocomplete CIQUAL/USDA
     │       ├── DishDetailPage.jsx    # Fiche plat avec slider portion
     │       ├── FoodVisionPage.jsx    # Analyse photo plat (Clarifai) + 6 cuisines reconnues
     │       ├── HistoryPage.jsx       # Graphiques 7 jours
-    │       ├── BilanPage.jsx         # 3 vues : Jour/Semaine/Mois (calendrier billet d'avion)
+    │       ├── BilanPage.jsx         # 4 vues : Jour/Semaine/Mois (calendrier billet d'avion) + Évolution poids/composition
     │       ├── ProfilePage.jsx       # Profil + 4 onglets + section RGPD export/suppression
+    │       ├── GlucoseTrackingPage.jsx # Saisie manuelle + import LibreView CSV + métriques GMI/TIR/CV + ScatterChart
     │       ├── LoginPage.jsx
     │       ├── RegisterPage.jsx      # 2 cases RGPD obligatoires
     │       ├── PrivacyPage.jsx       # Politique confidentialité
@@ -159,15 +165,18 @@ Utilise regex `\u0300-\u036f` pour la suppression des accents (pas les caractèr
 |---|---|---|
 | Auth JWT | ✅ | Login/register + Strava OAuth |
 | Profil + BMR/TDEE | ✅ | Calcul automatique objectifs |
-| Journal alimentaire | ✅ | 4 repas par jour + macros |
+| Journal alimentaire | ✅ | 4 repas par jour + macros + **modifiers personnalisables** + **saisie vocale** |
 | Scanner code-barres | ✅ | Quagga2 + OpenFoodFacts + base locale |
 | OCR étiquettes | ✅ | Tesseract.js FR/AR/EN |
 | Analyse photo plat | ✅ | Clarifai food-item-recognition (1000 appels/mois gratuit) |
 | 6 cuisines reconnues | ✅ | France/Italie/Maghreb/Asie/USA/Moyen-Orient |
 | Base de 60 plats | ✅ | 11 cuisines + création custom |
-| Bilan calories | ✅ | 3 vues : Jour/Semaine/Mois (calendrier billet d'avion) |
+| Bilan calories | ✅ | 4 vues : Jour/Semaine/Mois + Évolution poids (Recharts) |
 | Intégration Strava | ✅ | OAuth + sync activités |
-| Bases nutritionnelles | ✅ | NUTRITION_DB → CIQUAL → USDA (cascade) |
+| Bases nutritionnelles | ✅ | NUTRITION_DB → CIQUAL (3186 aliments) → USDA (cascade) |
+| Suivi du poids | ✅ | Saisie quotidienne + courbe évolution + estimation composition corporelle (Forbes) |
+| Suivi glycémique | ✅ | Saisie manuelle + import LibreView CSV + métriques GMI/TIR/CV + ScatterChart |
+| Parser vocal | ✅ | Texte transcrit → aliments/poids/glycémie structurés (FR/EN/AR, POST /api/voice/parse) |
 | Multilingue | ✅ | FR/AR/EN avec RTL pour arabe |
 | Conformité RGPD | ✅ | Bannière cookies + export/suppression données |
 | PWA installable | ✅ | iOS/Android, icônes, service worker, splash |
@@ -202,14 +211,41 @@ Réponse attendue : `{"status":"ok","version":"1.0.0"}`
 
 ## Idées futures à creuser
 
-- Migrer Clarifai → Gemini API (gratuit avec quotas plus généreux, meilleure reconnaissance)
-- Notifications push de rappel de repas
-- Mode hors ligne complet avec sync
-- Dashboard admin (/admin) avec stats utilisateurs
-- Intégration Apple Health / Google Fit (en plus de Strava)
+**Fonctionnalités** :
+- Notifications push de rappel de repas/mesure glycémie
+- Mode hors ligne complet avec sync intelligente
+- Favoris dans les plats + duplication repas jour à jour
+- Export PDF des rapports (BilanPage)
 - Recettes communautaires (utilisateurs partagent leurs plats)
-- Domaine personnalisé `nutrivita.fr` (~10€/an sur OVH)
-- Publication sur Google Play (25$ unique)
+- Intégration Apple Health / Google Fit (en plus de Strava)
+- Corrélation glycémie ↔ repas avec alertes/patterns
+
+**Performance & UX** :
+- Lazy loading des pages lourdes (BilanPage, GlucoseTrackingPage)
+- Optimisation bundle size (tree shaking, code splitting)
+- Service worker plus agressif (cache stratégies)
+- Animations de transition entre pages
+- Skeleton loaders pendant fetch
+- Dark mode
+
+**SEO & Marketing** :
+- Page landing `/` publique avec démo
+- Meta tags OpenGraph pour partage social
+- Blog intégré pour SEO
+- Domaine custom `nutrivita.fr` (~10€/an OVH)
+- Publication Google Play (25$ unique)
+- Dashboard admin (/admin) avec stats utilisateurs
+
+## Historique des chantiers
+
+| Chantier | Phase | Fonctionnalité | Commit |
+|---|---|---|---|
+| #1–#2 | — | Auth, journal, scanner, vision, plats, RGPD, CIQUAL+USDA | `fd32ade`…`62b471b` |
+| #3 | Phase 1 | Suivi du poids backend (weight_history, /api/weight, composition Forbes) | `228ab3f` |
+| #3 | Phase 2 | UI poids : card JournalPage + onglet Évolution BilanPage (Recharts) | `6564ad3` |
+| #4 | Phase 1 | Suivi glycémique backend (glucose_readings, métriques GMI/TIR/CV, LibreView CSV) | `7dab676` |
+| #4 | Phase 2 | UI glycémie : GlucoseTrackingPage (saisie, import CSV, ScatterChart, métriques) | `da5bef8` |
+| #5 | Phase 1 | Parser vocal backend : voiceParser.js + POST /api/voice/parse (FR/EN/AR) | `02810a6` |
 
 ## Notes importantes
 
