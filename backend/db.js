@@ -165,6 +165,19 @@ async function initDB() {
 
   await db.exec(`CREATE INDEX IF NOT EXISTS idx_weight_user_date ON weight_entries(user_id, date DESC)`);
 
+  await db.exec(`CREATE TABLE IF NOT EXISTS glucose_readings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    glucose_mg_dl REAL NOT NULL,
+    reading_type TEXT CHECK(reading_type IN ('fasting', 'pre_meal', 'post_meal', 'bedtime', 'random', 'cgm')) NOT NULL,
+    timestamp TEXT NOT NULL,
+    notes TEXT,
+    source TEXT DEFAULT 'manual',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  await db.exec(`CREATE INDEX IF NOT EXISTS idx_glucose_user_timestamp ON glucose_readings(user_id, timestamp DESC)`);
+
   await db.exec(`CREATE TABLE IF NOT EXISTS dish_analyses (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,

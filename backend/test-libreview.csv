@@ -1,0 +1,6 @@
+Device,Serial Number,Device Timestamp,Record Type,Historic Glucose mg/dL,Scan Glucose mg/dL,Notes
+FreeStyle Libre,12345678,20-05-2026 08:30,,120,,
+FreeStyle Libre,12345678,20-05-2026 09:00,0,135,,
+FreeStyle Libre,12345678,20-05-2026 12:45,0,,165,Après déjeuner
+FreeStyle Libre,12345678,20-05-2026 15:20,0,98,,
+FreeStyle Libre,12345678,20-05-2026 18:00,0,145,,
