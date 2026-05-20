@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
@@ -24,6 +24,11 @@ export default function DishDetailPage() {
   const [mealType, setMealType] = useState(searchParams.get('meal') || 'dej');
   const [logging, setLogging] = useState(false);
 
+  const [modifierCatalog, setModifierCatalog] = useState(null);
+  const [modifiers, setModifiers] = useState([]);
+  const [openCategory, setOpenCategory] = useState(null);
+  const [showPanel, setShowPanel] = useState(false);
+
   useEffect(() => {
     api.get(`/dishes/${id}`)
       .then(res => {
@@ -34,6 +39,62 @@ export default function DishDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  useEffect(() => {
+    api.get('/modifiers')
+      .then(({ data }) => setModifierCatalog(data))
+      .catch(() => setModifierCatalog({}));
+  }, []);
+
+  useEffect(() => {
+    if (dish?.cuisine) {
+      api.get(`/modifiers/defaults/${encodeURIComponent(dish.cuisine)}`)
+        .then(({ data }) => {
+          if (Array.isArray(data) && data.length) {
+            setModifiers(data.map(d => ({ id: d.id, amount_g: d.amount_g })));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [dish?.cuisine]);
+
+  const findInCatalog = (modId) => {
+    if (!modifierCatalog) return null;
+    for (const items of Object.values(modifierCatalog)) {
+      const found = items.find(i => i.id === modId);
+      if (found) return found;
+    }
+    return null;
+  };
+
+  const computed = useMemo(() => {
+    if (!dish) return { kcal: 0, glucides: 0, proteines: 0, lipides: 0, fibres: 0 };
+    const ratio = portion / (dish.default_portion_g || 300);
+    let kcal      = (dish.kcal_per_portion || 0) * ratio;
+    let glucides  = (dish.glucides  || 0) * ratio;
+    let proteines = (dish.proteines || 0) * ratio;
+    let lipides   = (dish.lipides   || 0) * ratio;
+    let fibres    = (dish.fibres    || 0) * ratio;
+
+    for (const m of modifiers) {
+      const mod = findInCatalog(m.id);
+      if (!mod) continue;
+      const f = (m.amount_g || 0) / 100;
+      kcal      += (mod.kcal_per_100g || 0) * f;
+      glucides  += (mod.glucides  || 0) * f;
+      proteines += (mod.proteines || 0) * f;
+      lipides   += (mod.lipides   || 0) * f;
+      fibres    += (mod.fibres    || 0) * f;
+    }
+
+    return {
+      kcal:      Math.round(kcal),
+      glucides:  Math.round(glucides  * 10) / 10,
+      proteines: Math.round(proteines * 10) / 10,
+      lipides:   Math.round(lipides   * 10) / 10,
+      fibres:    Math.round(fibres    * 10) / 10,
+    };
+  }, [dish, portion, modifiers, modifierCatalog]);
+
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', color: '#888', fontSize: 14 }}>
       {t('common.loading')}
@@ -42,12 +103,6 @@ export default function DishDetailPage() {
   if (!dish) return null;
 
   const defaultPortion = dish.default_portion_g || 300;
-  const ratio = portion / defaultPortion;
-  const kcal      = Math.round(dish.kcal_per_portion * ratio);
-  const glucides  = Math.round(dish.glucides  * ratio * 10) / 10;
-  const proteines = Math.round(dish.proteines * ratio * 10) / 10;
-  const lipides   = Math.round(dish.lipides   * ratio * 10) / 10;
-  const fibres    = Math.round(dish.fibres    * ratio * 10) / 10;
 
   const dishName = lang === 'ar' && dish.name_ar ? dish.name_ar
     : lang === 'en' && dish.name_en ? dish.name_en
@@ -58,8 +113,12 @@ export default function DishDetailPage() {
   const handleLog = async () => {
     setLogging(true);
     try {
-      await api.post(`/dishes/${id}/log`, { meal_type: mealType, portion_g: portion });
-      toast.success(`${dishName} ajouté — ${kcal} kcal`);
+      await api.post(`/dishes/${id}/log`, {
+        meal_type: mealType,
+        portion_g: portion,
+        modifiers,
+      });
+      toast.success(`${dishName} ajouté — ${computed.kcal} kcal`);
       navigate('/journal');
     } catch {
       toast.error("Erreur lors de l'ajout au journal");
@@ -127,19 +186,101 @@ export default function DishDetailPage() {
           </div>
         </div>
 
+        {/* Modifier panel */}
+        {modifierCatalog && (
+          <div style={{ marginBottom: 10 }}>
+            <button
+              type="button"
+              onClick={() => setShowPanel(!showPanel)}
+              style={{ width: '100%', padding: '12px 16px', background: '#f5f5f3', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 13, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            >
+              <span>⚙️ {t('modifiers.title')} {modifiers.length > 0 && <span style={{ color: '#1A6B3C' }}>({modifiers.length})</span>}</span>
+              <span style={{ color: '#888' }}>{showPanel ? '▼' : '▶'}</span>
+            </button>
+
+            {showPanel && (
+              <div style={{ marginTop: 6, border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
+                {Object.entries(modifierCatalog).map(([category, items]) => {
+                  const isOpen = openCategory === category;
+                  const selectedInCategory = modifiers.filter(m => items.some(i => i.id === m.id));
+                  return (
+                    <div key={category} style={{ borderBottom: '0.5px solid #f0f0ec' }}>
+                      <button
+                        type="button"
+                        onClick={() => setOpenCategory(isOpen ? null : category)}
+                        style={{ width: '100%', padding: '11px 14px', background: '#fff', border: 'none', textAlign: 'left', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}
+                      >
+                        <span style={{ fontWeight: 500 }}>
+                          {t(`modifiers.categories.${category}`)}
+                          {selectedInCategory.length > 0 && <span style={{ marginLeft: 6, color: '#1A6B3C', fontWeight: 700 }}>· {selectedInCategory.length}</span>}
+                        </span>
+                        <span style={{ color: '#aaa', fontSize: 11 }}>{isOpen ? '▼' : '▶'}</span>
+                      </button>
+
+                      {isOpen && (
+                        <div style={{ padding: '8px 14px 12px', background: '#fafaf8' }}>
+                          {selectedInCategory.map(m => {
+                            const item = items.find(i => i.id === m.id);
+                            if (!item) return null;
+                            return (
+                              <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                                <span style={{ fontSize: 18, flexShrink: 0 }}>{item.emoji}</span>
+                                <span style={{ flex: 1, fontSize: 12, fontWeight: 500, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</span>
+                                <input
+                                  type="range"
+                                  min={0}
+                                  max={50}
+                                  step={1}
+                                  value={m.amount_g}
+                                  onChange={e => setModifiers(modifiers.map(x => x.id === m.id ? { ...x, amount_g: +e.target.value } : x))}
+                                  style={{ width: 80, accentColor: '#1A6B3C' }}
+                                />
+                                <span style={{ minWidth: 34, textAlign: 'right', fontSize: 12, color: '#555' }}>{m.amount_g}g</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setModifiers(modifiers.filter(x => x.id !== m.id))}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#cc4444', fontSize: 16, padding: 2, flexShrink: 0 }}
+                                >✕</button>
+                              </div>
+                            );
+                          })}
+                          <select
+                            value=""
+                            onChange={e => {
+                              if (!e.target.value) return;
+                              const item = items.find(i => i.id === e.target.value);
+                              if (item) setModifiers([...modifiers, { id: item.id, amount_g: item.default_amount_g || 10 }]);
+                            }}
+                            style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '0.5px solid rgba(0,0,0,0.15)', fontSize: 12, marginTop: 4, background: '#fff' }}
+                          >
+                            <option value="">+ {t('modifiers.add')}...</option>
+                            {items.filter(i => !modifiers.some(m => m.id === i.id)).map(i => (
+                              <option key={i.id} value={i.id}>{i.emoji} {i.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Calories card */}
         <div style={{ background: '#1A6B3C', color: 'white', borderRadius: 12, padding: '16px 20px', marginBottom: 10, textAlign: 'center' }}>
-          <div style={{ fontSize: 40, fontWeight: 700 }}>{kcal} <span style={{ fontSize: 16, opacity: 0.8 }}>kcal</span></div>
+          <div style={{ fontSize: 40, fontWeight: 700 }}>{computed.kcal} <span style={{ fontSize: 16, opacity: 0.8 }}>kcal</span></div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', marginTop: 12, borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: 12 }}>
-            {[['Glucides', glucides], ['Protéines', proteines], ['Lipides', lipides]].map(([label, val]) => (
+            {[['Glucides', computed.glucides], ['Protéines', computed.proteines], ['Lipides', computed.lipides]].map(([label, val]) => (
               <div key={label}>
                 <div style={{ fontSize: 16, fontWeight: 600 }}>{val}g</div>
                 <div style={{ fontSize: 10, opacity: 0.7, marginTop: 2 }}>{label}</div>
               </div>
             ))}
           </div>
-          {fibres > 0 && (
-            <div style={{ fontSize: 11, opacity: 0.65, marginTop: 8 }}>Fibres : {fibres}g</div>
+          {computed.fibres > 0 && (
+            <div style={{ fontSize: 11, opacity: 0.65, marginTop: 8 }}>Fibres : {computed.fibres}g</div>
           )}
         </div>
 
@@ -148,12 +289,15 @@ export default function DishDetailPage() {
           <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 12, padding: '14px 16px', marginBottom: 10 }}>
             <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 10px', color: '#333' }}>{t('dishes.ingredients')}</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-              {dish.ingredients.map((ing, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
-                  <span style={{ color: '#444' }}>{ing.name || `Ingrédient ${i + 1}`}</span>
-                  <span style={{ color: '#888', fontWeight: 500 }}>{Math.round(ing.grams * ratio)}g</span>
-                </div>
-              ))}
+              {dish.ingredients.map((ing, i) => {
+                const ratio = portion / defaultPortion;
+                return (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
+                    <span style={{ color: '#444' }}>{ing.name || `Ingrédient ${i + 1}`}</span>
+                    <span style={{ color: '#888', fontWeight: 500 }}>{Math.round(ing.grams * ratio)}g</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -185,7 +329,7 @@ export default function DishDetailPage() {
           cursor: logging ? 'not-allowed' : 'pointer',
           boxShadow: logging ? 'none' : '0 4px 14px rgba(26,107,60,0.3)',
         }}>
-          {logging ? 'Ajout en cours...' : `📓 ${t('dishes.addToJournal')} — ${kcal} kcal`}
+          {logging ? 'Ajout en cours...' : `📓 ${t('dishes.addToJournal')} — ${computed.kcal} kcal`}
         </button>
       </div>
     </div>

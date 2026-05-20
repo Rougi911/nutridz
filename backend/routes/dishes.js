@@ -2,6 +2,7 @@ const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { getDB } = require('../db');
 const auth = require('../middleware/auth');
+const { findById } = require('../data/dishModifiers');
 
 const router = express.Router();
 
@@ -127,7 +128,7 @@ router.post('/', auth, async (req, res) => {
 
 // POST /api/dishes/:id/log — add dish to journal at given portion
 router.post('/:id/log', auth, async (req, res) => {
-  const { meal_type, portion_g, date } = req.body;
+  const { meal_type, portion_g, date, modifiers = [] } = req.body;
   if (!meal_type) return res.status(400).json({ error: 'meal_type requis' });
 
   const db = getDB();
@@ -138,6 +139,25 @@ router.post('/:id/log', auth, async (req, res) => {
   const portion = portion_g || defaultPortion;
   const ratio = portion / defaultPortion;
   const today = date || new Date().toISOString().split('T')[0];
+
+  let kcal      = (dish.kcal_per_portion || 0) * ratio;
+  let glucides  = (dish.glucides  || 0) * ratio;
+  let proteines = (dish.proteines || 0) * ratio;
+  let lipides   = (dish.lipides   || 0) * ratio;
+  let fibres    = (dish.fibres    || 0) * ratio;
+
+  const validModifiers = [];
+  for (const m of modifiers) {
+    const mod = findById(m.id);
+    if (!mod || !m.amount_g || m.amount_g <= 0) continue;
+    const factor = m.amount_g / 100;
+    kcal      += mod.kcal_per_100g * factor;
+    glucides  += mod.glucides      * factor;
+    proteines += mod.proteines     * factor;
+    lipides   += mod.lipides       * factor;
+    fibres    += (mod.fibres || 0) * factor;
+    validModifiers.push({ id: m.id, amount_g: m.amount_g });
+  }
 
   // Reuse or create a product entry for this dish so journal_entries FK is satisfied
   let product = await db.prepare('SELECT * FROM products WHERE name = ? AND brand = ?').get(dish.name, 'Plat NutriVita');
@@ -161,16 +181,17 @@ router.post('/:id/log', auth, async (req, res) => {
   const entry = {
     id: uuidv4(), user_id: req.userId, date: today, meal_type,
     product_id: product.id, grams: portion,
-    kcal:      Math.round(dish.kcal_per_portion * ratio),
-    glucides:  Math.round(dish.glucides  * ratio * 10) / 10,
-    proteines: Math.round(dish.proteines * ratio * 10) / 10,
-    lipides:   Math.round(dish.lipides   * ratio * 10) / 10,
-    fibres:    Math.round(dish.fibres    * ratio * 10) / 10,
+    kcal:          Math.round(kcal),
+    glucides:      Math.round(glucides  * 10) / 10,
+    proteines:     Math.round(proteines * 10) / 10,
+    lipides:       Math.round(lipides   * 10) / 10,
+    fibres:        Math.round(fibres    * 10) / 10,
+    modifiers_json: JSON.stringify(validModifiers),
   };
 
   await db.prepare(`
-    INSERT INTO journal_entries (id, user_id, date, meal_type, product_id, grams, kcal, glucides, proteines, lipides, fibres)
-    VALUES (@id, @user_id, @date, @meal_type, @product_id, @grams, @kcal, @glucides, @proteines, @lipides, @fibres)
+    INSERT INTO journal_entries (id, user_id, date, meal_type, product_id, grams, kcal, glucides, proteines, lipides, fibres, modifiers_json)
+    VALUES (@id, @user_id, @date, @meal_type, @product_id, @grams, @kcal, @glucides, @proteines, @lipides, @fibres, @modifiers_json)
   `).run(entry);
 
   res.status(201).json({ success: true, kcal: entry.kcal, dish: dish.name });
