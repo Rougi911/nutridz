@@ -25,7 +25,7 @@ export default function Layout() {
         <LanguageSelector />
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 64 }}>
+      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 88 }}>
         <Outlet />
         <footer style={{ padding: '16px 20px 8px', borderTop: '0.5px solid rgba(0,0,0,0.07)', display: 'flex', justifyContent: 'center', gap: 20, flexWrap: 'wrap' }}>
           <Link to="/confidentialite" style={{ fontSize: 11, color: '#aaa', textDecoration: 'none' }}>Confidentialité</Link>
@@ -34,25 +34,38 @@ export default function Layout() {
         </footer>
       </div>
 
-      <nav style={{
+      {/* Floating pill navigation */}
+      <div style={{
         position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 480, background: 'var(--bg-primary)',
-        borderTop: '0.5px solid rgba(0,0,0,0.1)',
-        display: 'flex', zIndex: 100
+        width: '100%', maxWidth: 480, padding: '0 12px 12px', zIndex: 100,
+        paddingBottom: 'max(12px, env(safe-area-inset-bottom, 12px))',
       }}>
-        {NAV.map(({ to, icon, key }) => (
-          <NavLink key={to} to={to} style={({ isActive }) => ({
-            flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-            gap: 2, padding: '6px 0 8px', textDecoration: 'none',
-            color: isActive ? '#1A6B3C' : '#888780', fontSize: 9, fontWeight: 500,
-            borderTop: isActive ? '2px solid #1A6B3C' : '2px solid transparent',
-            transition: 'all 0.15s'
-          })}>
-            <i className={`ti ${icon}`} style={{ fontSize: 20 }} />
-            {t(`nav.${key}`)}
-          </NavLink>
-        ))}
-      </nav>
+        <nav style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-around',
+          background: 'var(--nav-glass)',
+          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+          border: '1px solid var(--border-color)',
+          borderRadius: 9999,
+          padding: '6px 8px',
+          boxShadow: '0 4px 24px var(--shadow)',
+        }}>
+          {NAV.map(({ to, icon, key }) => (
+            <NavLink key={to} to={to} title={t(`nav.${key}`)} style={({ isActive }) => ({
+              position: 'relative',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 36, height: 36, borderRadius: 9999,
+              textDecoration: 'none',
+              color: isActive ? '#fff' : 'var(--text-secondary)',
+              background: isActive ? 'var(--accent-blue)' : 'transparent',
+              transition: 'all 0.2s cubic-bezier(0.32, 0.72, 0, 1)',
+              flexShrink: 0,
+            })}>
+              <i className={`ti ${icon}`} style={{ fontSize: 18, lineHeight: 1 }} />
+            </NavLink>
+          ))}
+        </nav>
+      </div>
+
       <CookieBanner />
     </div>
   );

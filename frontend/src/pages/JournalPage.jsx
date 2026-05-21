@@ -131,7 +131,6 @@ export default function JournalPage() {
 
   const pct = Math.min(100, Math.round(totals.kcal / target * 100));
   const remaining = target - totals.kcal;
-  const barColor = pct > 110 ? '#993C1D' : pct > 90 ? '#BA7517' : '#1A6B3C';
 
   const changeDate = (delta) => {
     const newDate = format(addDays(parseISO(date), delta), 'yyyy-MM-dd');
@@ -143,73 +142,110 @@ export default function JournalPage() {
     catch { toast.error(t('common.error')); }
   };
 
+  // SVG calorie ring dimensions
+  const ringSize = 180;
+  const ringRadius = (ringSize - 20) / 2;
+  const ringCircumference = 2 * Math.PI * ringRadius;
+  const ringOffset = ringCircumference - (pct / 100) * ringCircumference;
+  const overTarget = totals.kcal > target;
+
   return (
     <div style={{ paddingBottom: 16 }}>
-      {/* Header */}
-      <div style={{ background: '#1A6B3C', color: 'white', padding: '1rem 1.25rem 1.5rem', borderRadius: '0 0 24px 24px' }}>
-        <h1 style={{ fontSize: 22, fontWeight: 500 }}>{t('journal.title')}</h1>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
-          <button onClick={() => changeDate(-1)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: 8, padding: '4px 12px', cursor: 'pointer', fontSize: 18 }}>‹</button>
-          <span style={{ fontSize: 14, opacity: 0.9 }}>
+      {/* Gradient header */}
+      <div className="gradient-hero" style={{ color: 'white', padding: '1.25rem 1.25rem 1.5rem', borderRadius: '0 0 28px 28px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 12 }}>
+          <button onClick={() => changeDate(-1)} style={{ background: 'rgba(255,255,255,0.18)', border: 'none', color: 'white', borderRadius: 9999, width: 36, height: 36, cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
+          <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: '-0.01em' }}>
             {format(parseISO(date), 'EEEE d MMMM', { locale: dateFnsLocale })}
           </span>
-          <button onClick={() => changeDate(1)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: 8, padding: '4px 12px', cursor: 'pointer', fontSize: 18 }}>›</button>
+          <button onClick={() => changeDate(1)} style={{ background: 'rgba(255,255,255,0.18)', border: 'none', color: 'white', borderRadius: 9999, width: 36, height: 36, cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
         </div>
+        <h1 style={{ fontSize: 20, fontWeight: 600, textAlign: 'center', opacity: 0.95 }}>{t('journal.title')}</h1>
       </div>
 
-      {/* Résumé calories */}
-      <div style={{ margin: '1rem 1.25rem 0', background: '#fff', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 12, overflow: 'hidden' }}>
-        <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <div style={{ fontSize: 28, fontWeight: 500, color: '#1A6B3C' }}>{totals.kcal} {t('common.kcal')}</div>
-            <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{t('journal.consumed')} / {target} {t('common.kcal')} {t('journal.target')}</div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 16, fontWeight: 500, color: remaining < 0 ? '#993C1D' : remaining < 200 ? '#BA7517' : '#1A6B3C' }}>
-              {Math.max(0, remaining)} {t('common.kcal')}
-            </div>
-            <div style={{ fontSize: 11, color: '#888' }}>{t('journal.remaining')}</div>
+      {/* Calorie ring */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '1.25rem 1.25rem 0', background: 'var(--bg-primary)', borderRadius: 20, border: '1px solid var(--border-color)', padding: '1.25rem', boxShadow: '0 2px 12px var(--shadow)' }}>
+        <div style={{ position: 'relative', width: ringSize, height: ringSize }}>
+          <svg width={ringSize} height={ringSize} style={{ transform: 'rotate(-90deg)' }}>
+            <circle cx={ringSize / 2} cy={ringSize / 2} r={ringRadius} fill="none" stroke="var(--bg-tertiary)" strokeWidth={12} />
+            <defs>
+              <linearGradient id="calGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor={overTarget ? '#ef4444' : '#6366f1'} />
+                <stop offset="100%" stopColor={overTarget ? '#f97316' : '#8b5cf6'} />
+              </linearGradient>
+            </defs>
+            <circle
+              cx={ringSize / 2} cy={ringSize / 2} r={ringRadius}
+              fill="none" stroke="url(#calGrad)" strokeWidth={12}
+              strokeLinecap="round"
+              strokeDasharray={ringCircumference}
+              strokeDashoffset={ringOffset}
+              style={{ transition: 'stroke-dashoffset 0.8s ease-out' }}
+            />
+          </svg>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <span className="hero-number" style={{ color: 'var(--text-primary)' }}>{totals.kcal}</span>
+            <span style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>/ {target} kcal</span>
           </div>
         </div>
-        <div style={{ padding: '0 16px 4px' }}>
-          <div style={{ height: 10, background: '#f0f0ec', borderRadius: 5, overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${pct}%`, background: barColor, borderRadius: 5, transition: 'width 0.4s' }} />
-          </div>
-        </div>
-        {/* Macros */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', borderTop: '0.5px solid rgba(0,0,0,0.06)' }}>
-          {[
-            { key: 'glucides', val: totals.glucides, color: '#BA7517', ratio: [0.5, 4] },
-            { key: 'proteines', val: totals.proteines, color: '#185FA5', ratio: [0.2, 4] },
-            { key: 'lipides', val: totals.lipides, color: '#993C1D', ratio: [0.3, 9] }
-          ].map(({ key, val, color, ratio }) => {
-            const tgt = Math.round(target * ratio[0] / ratio[1]);
-            return (
-              <div key={key} style={{ padding: '8px 10px', textAlign: 'center', borderRight: '0.5px solid rgba(0,0,0,0.06)' }}>
-                <div style={{ fontSize: 14, fontWeight: 500 }}>{val}g</div>
-                <div style={{ fontSize: 10, color: '#888', marginTop: 1 }}>{t(`common.${key}`)}</div>
-                <div style={{ height: 4, background: '#f0f0ec', borderRadius: 2, marginTop: 4, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${Math.min(100, Math.round(val / tgt * 100))}%`, background: color, borderRadius: 2 }} />
-                </div>
+        <span style={{ marginTop: 8, fontSize: 13, fontWeight: 600, color: overTarget ? 'var(--accent-red)' : 'var(--accent-green)' }}>
+          {overTarget ? `+${Math.abs(remaining)} kcal` : `${remaining} kcal ${t('journal.remaining')}`}
+        </span>
+      </div>
+
+      {/* Macro pills */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, margin: '0.75rem 1.25rem 0' }}>
+        {[
+          { key: 'glucides', val: totals.glucides, icon: '🍚', ratio: [0.5, 4], color: 'var(--accent-yellow)' },
+          { key: 'proteines', val: totals.proteines, icon: '🥩', ratio: [0.2, 4], color: 'var(--accent-blue)' },
+          { key: 'lipides', val: totals.lipides, icon: '🥑', ratio: [0.3, 9], color: 'var(--accent-green)' }
+        ].map(({ key, val, icon, ratio, color }) => {
+          const tgt = Math.round(target * ratio[0] / ratio[1]);
+          const pctMacro = Math.min(100, Math.round(val / tgt * 100));
+          return (
+            <div key={key} style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 16, padding: '10px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, boxShadow: '0 1px 6px var(--shadow)' }}>
+              <span style={{ fontSize: 22 }}>{icon}</span>
+              <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{val}<span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-secondary)' }}>g</span></span>
+              <span style={{ fontSize: 10, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>{t(`common.${key}`)}</span>
+              <div style={{ height: 4, width: '100%', background: 'var(--bg-tertiary)', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${pctMacro}%`, background: color, borderRadius: 2, transition: 'width 0.5s ease' }} />
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Quick actions */}
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '0.75rem 1.25rem 0', scrollbarWidth: 'none' }}>
+        {[
+          { icon: 'ti-camera', label: t('nav.vision'), action: () => navigate('/vision') },
+          { icon: 'ti-barcode', label: t('nav.scanner'), action: () => navigate('/scanner') },
+          { icon: 'ti-copy', label: t('journal.duplicateYesterday'), action: duplicateYesterdayMeals },
+        ].map(({ icon, label, action }, i) => (
+          <button key={i} onClick={action} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 9999, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', cursor: 'pointer', whiteSpace: 'nowrap', fontSize: 12, fontWeight: 500, color: 'var(--text-primary)', boxShadow: '0 1px 4px var(--shadow)', flexShrink: 0 }}>
+            <i className={`ti ${icon}`} style={{ fontSize: 14, color: 'var(--accent-blue)' }} />
+            {label}
+          </button>
+        ))}
+        <VoiceInput context="food" onResult={handleVoiceFood} showTranscript={false}
+          buttonStyle={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 9999, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', cursor: 'pointer', whiteSpace: 'nowrap', fontSize: 12, fontWeight: 500, boxShadow: '0 1px 4px var(--shadow)', flexShrink: 0 }}
+        />
       </div>
 
       {/* Poids du jour */}
-      <div style={{ margin: '0.8rem 1.25rem 0', padding: '1rem', borderRadius: '8px', background: 'var(--bg-primary)', boxShadow: '0 1px 3px var(--shadow)' }}>
+      <div style={{ margin: '0.75rem 1.25rem 0', padding: '1rem', borderRadius: 16, background: 'var(--bg-primary)', border: '1px solid var(--border-color)', boxShadow: '0 1px 6px var(--shadow)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.95rem', fontWeight: '600' }}>
-            ⚖️ {t('weight.title')}
+          <span style={{ fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <i className="ti ti-scale" style={{ fontSize: 16, color: 'var(--text-secondary)' }} />
+            {t('weight.title')}
           </span>
           {yesterdayWeight && (
-            <span style={{ fontSize: '0.85rem', color: weightDelta >= 0 ? '#ef4444' : '#10b981', fontWeight: '500' }}>
+            <span style={{ fontSize: '0.8rem', color: weightDelta >= 0 ? 'var(--accent-red)' : 'var(--accent-green)', fontWeight: 600 }}>
               {weightDelta > 0 ? '+' : ''}{weightDelta.toFixed(1)} {weightUnit}
             </span>
           )}
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
           <input
             type="number"
             step="0.1"
@@ -218,7 +254,7 @@ export default function JournalPage() {
             onChange={(e) => setTodayWeight(e.target.value)}
             onBlur={handleWeightSubmit}
             onKeyPress={(e) => e.key === 'Enter' && handleWeightSubmit()}
-            style={{ flex: 1, padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: '6px', fontSize: '1rem' }}
+            style={{ flex: 1, padding: '0.6rem 0.75rem', border: '1px solid var(--border-color)', borderRadius: 10, fontSize: '0.95rem', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
           />
           <VoiceInput
             context="weight"
@@ -229,40 +265,16 @@ export default function JournalPage() {
         </div>
       </div>
 
-      {/* Dupliquer repas d'hier */}
-      <div style={{ margin: '0.8rem 1.25rem 0', textAlign: 'center' }}>
-        <button onClick={duplicateYesterdayMeals} style={{
-          padding: '0.6rem 1.5rem', borderRadius: 20,
-          border: '1px solid var(--border-color)', background: 'var(--bg-primary)',
-          color: 'var(--text-primary)', fontWeight: 600, cursor: 'pointer',
-          display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: 13,
-        }}>
-          <span>📋</span>
-          <span>{t('journal.duplicateYesterday')}</span>
-        </button>
-      </div>
-
-      {/* Saisie vocale aliments */}
-      <div style={{ margin: '0.8rem 1.25rem 0', padding: '1rem', background: 'var(--bg-primary)', borderRadius: '8px', boxShadow: '0 1px 3px var(--shadow)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-          <h3 style={{ margin: 0, fontSize: '1rem' }}>🎤 {t('voice.addFoodVoice')}</h3>
-        </div>
-        <p style={{ fontSize: '0.85rem', color: '#6b7280', margin: '0 0 0.8rem' }}>
-          {t('voice.foodHelp')}
-        </p>
-        <VoiceInput context="food" onResult={handleVoiceFood} showTranscript={true} />
-      </div>
-
       {/* Repas */}
       {loading ? (
         <>
-          <SkeletonCard style={{ margin: '0.8rem 1.25rem 0' }}>
+          <SkeletonCard style={{ margin: '0.75rem 1.25rem 0' }}>
             <SkeletonLine width="40%" height="1.2rem" style={{ marginBottom: '0.8rem' }} />
             <SkeletonLine width="90%" />
             <SkeletonLine width="70%" style={{ marginTop: '0.5rem' }} />
           </SkeletonCard>
           {[1, 2, 3].map(i => (
-            <SkeletonCard key={i} style={{ margin: '0.8rem 1.25rem 0' }}>
+            <SkeletonCard key={i} style={{ margin: '0.75rem 1.25rem 0' }}>
               <SkeletonLine width="30%" height="1rem" style={{ marginBottom: '0.8rem' }} />
               <SkeletonLine width="80%" />
             </SkeletonCard>
@@ -273,35 +285,35 @@ export default function JournalPage() {
         const items = meals[id] || [];
         const mealKcal = items.reduce((s, e) => s + e.kcal, 0);
         return (
-          <div key={id} style={{ margin: '0.8rem 1.25rem 0', background: '#fff', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 12, overflow: 'hidden' }}>
-            <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: items.length ? '0.5px solid rgba(0,0,0,0.06)' : 'none' }}>
-              <span style={{ fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <i className={`ti ${icon}`} style={{ fontSize: 16, color: '#1A6B3C' }} />
+          <div key={id} style={{ margin: '0.75rem 1.25rem 0', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 6px var(--shadow)' }}>
+            <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: items.length ? '1px solid var(--border-color)' : 'none' }}>
+              <span style={{ fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 7, color: 'var(--text-primary)' }}>
+                <i className={`ti ${icon}`} style={{ fontSize: 17, color: 'var(--accent-blue)' }} />
                 {label}
               </span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                {mealKcal > 0 && <span style={{ fontSize: 12, color: '#888' }}>{mealKcal} {t('common.kcal')}</span>}
-                <button onClick={() => navigate(`/products?meal=${id}`)} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 20, border: '0.5px solid #1A6B3C', color: '#1A6B3C', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {mealKcal > 0 && <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 500 }}>{mealKcal} kcal</span>}
+                <button onClick={() => navigate(`/products?meal=${id}`)} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 9999, border: '1px solid var(--accent-blue)', color: 'var(--accent-blue)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontWeight: 500 }}>
                   <i className="ti ti-plus" style={{ fontSize: 12 }} /> {t('journal.add')}
                 </button>
-                <button onClick={() => navigate(`/dishes?meal=${id}`)} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 20, border: '0.5px solid #BA7517', color: '#BA7517', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
-                  <i className="ti ti-soup" style={{ fontSize: 12 }} /> {t('dishes.addDish')}
+                <button onClick={() => navigate(`/dishes?meal=${id}`)} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 9999, border: '1px solid var(--accent-yellow)', color: 'var(--accent-yellow)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontWeight: 500 }}>
+                  <i className="ti ti-soup" style={{ fontSize: 12 }} />
                 </button>
-                <button onClick={() => setVoiceMeal(id)} style={{ fontSize: 11, padding: '4px 8px', borderRadius: 20, border: '0.5px solid #6b7280', color: voiceMeal === id ? '#ef4444' : '#6b7280', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                <button onClick={() => setVoiceMeal(id)} style={{ fontSize: 14, width: 28, height: 28, borderRadius: 9999, border: '1px solid var(--border-color)', color: voiceMeal === id ? 'var(--accent-red)' : 'var(--text-secondary)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   🎤
                 </button>
               </div>
             </div>
-            {items.length === 0 && <div style={{ padding: 12, fontSize: 12, color: '#bbb', fontStyle: 'italic', paddingLeft: 16 }}>{t('journal.empty')}</div>}
+            {items.length === 0 && <div style={{ padding: '10px 16px', fontSize: 12, color: 'var(--text-tertiary)', fontStyle: 'italic' }}>{t('journal.empty')}</div>}
             {items.map((entry, idx) => (
-              <div key={entry.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 16px', borderTop: idx > 0 ? '0.5px solid rgba(0,0,0,0.05)' : 'none' }}>
+              <div key={entry.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderTop: idx > 0 ? '1px solid var(--border-color)' : 'none' }}>
                 <span style={{ fontSize: 20, width: 26, textAlign: 'center' }}>{entry.product.emoji}</span>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13 }}>{entry.product.name}</div>
-                  <div style={{ fontSize: 11, color: '#888', marginTop: 1 }}>{entry.grams}g · {entry.product.brand}</div>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{entry.product.name}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 1 }}>{entry.grams}g · {entry.product.brand}</div>
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 500 }}>{entry.kcal} {t('common.kcal')}</span>
-                <button onClick={() => handleDelete(entry.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#bbb', fontSize: 16, padding: 4 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{entry.kcal} kcal</span>
+                <button onClick={() => handleDelete(entry.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 16, padding: 4 }}>
                   <i className="ti ti-trash" />
                 </button>
               </div>
@@ -309,20 +321,23 @@ export default function JournalPage() {
           </div>
         );
       })}
+
       {/* Floating voice recorder for specific meal */}
       {voiceMeal && (
-        <div style={{
-          position: 'fixed', bottom: 0, left: 0, right: 0,
-          background: 'var(--bg-primary)', borderRadius: '16px 16px 0 0',
-          padding: '1.25rem', boxShadow: '0 -2px 16px rgba(0,0,0,0.15)', zIndex: 500,
+        <div className="slide-up" style={{
+          position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)',
+          width: 'calc(100% - 2rem)', maxWidth: 448,
+          background: 'var(--bg-primary)', borderRadius: 20,
+          padding: '1.25rem', boxShadow: '0 -4px 24px var(--shadow)', zIndex: 500,
+          border: '1px solid var(--border-color)',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+            <span style={{ fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
               🎤 {MEALS.find(m => m.id === voiceMeal)?.label}
             </span>
-            <button onClick={() => setVoiceMeal(null)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: 'var(--text-secondary)' }}>✕</button>
+            <button onClick={() => setVoiceMeal(null)} style={{ background: 'var(--bg-tertiary)', border: 'none', width: 28, height: 28, borderRadius: 9999, fontSize: '1rem', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
           </div>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.75rem' }}>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0 0 0.75rem' }}>
             {t('voice.foodHelp')}
           </p>
           <VoiceInput
