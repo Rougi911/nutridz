@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
 import { useTranslation } from '../i18n';
+import useFavoritesStore from '../store/useFavoritesStore';
+import { SkeletonCard, SkeletonCircle, SkeletonLine } from '../components/Skeleton';
 
 const DIFF_COLORS = { facile: '#1A6B3C', moyen: '#BA7517', difficile: '#993C1D' };
 const DIFF_BG     = { facile: '#EAF3DE', moyen: '#FFF3DC', difficile: '#FAECE7' };
@@ -11,12 +13,14 @@ export default function DishesPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
+  const { favorites, fetchFavorites } = useFavoritesStore();
 
   const [dishes, setDishes]       = useState([]);
   const [cuisines, setCuisines]   = useState([]);
   const [loading, setLoading]     = useState(true);
   const [query, setQuery]         = useState('');
   const [cuisine, setCuisine]     = useState('');
+  const [filter, setFilter]       = useState('all');
   const [showModal, setShowModal] = useState(false);
 
   // meal pre-selected via ?meal=dej
@@ -36,7 +40,8 @@ export default function DishesPage() {
 
   useEffect(() => {
     api.get('/dishes/cuisines').then(({ data }) => setCuisines(data)).catch(() => {});
-  }, []);
+    fetchFavorites();
+  }, [fetchFavorites]);
 
   useEffect(() => {
     const t = setTimeout(fetchDishes, 250);
@@ -44,7 +49,7 @@ export default function DishesPage() {
   }, [fetchDishes]);
 
   return (
-    <div style={{ background: '#f7f7f5', minHeight: '100vh', paddingBottom: 32 }}>
+    <div style={{ background: 'var(--bg-secondary)', minHeight: '100vh', paddingBottom: 32 }}>
       {/* Header */}
       <div style={{ background: '#1A6B3C', color: '#fff', padding: '1rem 1.25rem 1.5rem', borderRadius: '0 0 24px 24px' }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>{t('dishes.title')}</h1>
@@ -79,22 +84,44 @@ export default function DishesPage() {
         ))}
       </div>
 
+      {/* Filtre Favoris */}
+      <div style={{ display: 'flex', gap: '0.5rem', padding: '0 16px 8px', justifyContent: 'center' }}>
+        <button onClick={() => setFilter('all')} style={{
+          padding: '0.4rem 1rem', borderRadius: 20, cursor: 'pointer', fontSize: 12, fontWeight: 600,
+          border: filter === 'all' ? '2px solid #1A6B3C' : '1px solid var(--border-color)',
+          background: filter === 'all' ? '#1A6B3C' : 'var(--bg-primary)',
+          color: filter === 'all' ? 'white' : 'var(--text-primary)',
+        }}>Tous</button>
+        <button onClick={() => setFilter('favorites')} style={{
+          padding: '0.4rem 1rem', borderRadius: 20, cursor: 'pointer', fontSize: 12, fontWeight: 600,
+          border: filter === 'favorites' ? '2px solid var(--accent-yellow)' : '1px solid var(--border-color)',
+          background: filter === 'favorites' ? 'var(--accent-yellow)' : 'var(--bg-primary)',
+          color: filter === 'favorites' ? 'white' : 'var(--text-primary)',
+        }}>⭐ Favoris ({favorites.length})</button>
+      </div>
+
       {/* Dish list */}
       <div style={{ padding: '0 16px' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px 0', color: '#aaa' }}>
-            <i className="ti ti-loader-2" style={{ fontSize: 28 }} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            {[...Array(6)].map((_, i) => (
+              <SkeletonCard key={i}>
+                <SkeletonCircle size="56px" style={{ margin: '0 auto 0.5rem' }} />
+                <SkeletonLine width="80%" style={{ margin: '0 auto' }} />
+                <SkeletonLine width="50%" style={{ margin: '0.5rem auto 0' }} />
+              </SkeletonCard>
+            ))}
           </div>
-        ) : dishes.length === 0 ? (
+        ) : dishes.filter(d => filter === 'favorites' ? favorites.some(f => f.dish_id === d.id) : true).length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 0', color: '#bbb' }}>
             <div style={{ fontSize: 40, marginBottom: 8 }}>🍽️</div>
             <p style={{ fontSize: 13, margin: 0 }}>{t('dishes.notFound')}</p>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            {dishes.map(dish => (
+            {dishes.filter(d => filter === 'favorites' ? favorites.some(f => f.dish_id === d.id) : true).map(dish => (
               <button key={dish.id} onClick={() => navigate(`/dishes/${dish.id}?meal=${presetMeal}`)}
-                style={{ background: '#fff', borderRadius: 16, padding: '14px 12px', border: 'none', cursor: 'pointer', textAlign: 'left', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
+                style={{ background: 'var(--bg-primary)', borderRadius: 16, padding: '14px 12px', border: 'none', cursor: 'pointer', textAlign: 'left', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
                 <div style={{ fontSize: 36, marginBottom: 6 }}>{dish.emoji}</div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: '#1a1a1a', marginBottom: 4, lineHeight: 1.3 }}>{dish.name}</div>
                 <div style={{ fontSize: 11, color: '#888', marginBottom: 6 }}>{dish.flag} {dish.cuisine}</div>
@@ -197,7 +224,7 @@ function CreateDishModal({ onClose, onCreated, t }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-      <div style={{ background: '#fff', borderRadius: '20px 20px 0 0', padding: '20px 20px 32px', maxHeight: '90vh', overflowY: 'auto' }}>
+      <div style={{ background: 'var(--bg-primary)', borderRadius: '20px 20px 0 0', padding: '20px 20px 32px', maxHeight: '90vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>{t('dishes.createTitle')}</h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#888' }}>✕</button>
@@ -232,10 +259,10 @@ function CreateDishModal({ onClose, onCreated, t }) {
             placeholder={t('dishes.ingredientSearch')}
             style={{ width: '100%', padding: '9px 12px', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: 10, fontSize: 13, boxSizing: 'border-box' }} />
           {suggestions.length > 0 && (
-            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: 10, zIndex: 10, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--bg-primary)', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: 10, zIndex: 10, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
               {suggestions.map((p, i) => (
                 <button key={i} onClick={() => addIngredient(p)}
-                  style={{ width: '100%', padding: '10px 14px', border: 'none', background: '#fff', cursor: 'pointer', textAlign: 'left', fontSize: 13, display: 'flex', alignItems: 'center', gap: 10, borderBottom: '0.5px solid #f5f5f5' }}>
+                  style={{ width: '100%', padding: '10px 14px', border: 'none', background: 'var(--bg-primary)', cursor: 'pointer', textAlign: 'left', fontSize: 13, display: 'flex', alignItems: 'center', gap: 10, borderBottom: '0.5px solid #f5f5f5' }}>
                   <span style={{ fontSize: 20 }}>{p.emoji || '🥘'}</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.nom_fr || p.name}</div>

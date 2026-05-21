@@ -178,6 +178,16 @@ async function initDB() {
 
   await db.exec(`CREATE INDEX IF NOT EXISTS idx_glucose_user_timestamp ON glucose_readings(user_id, timestamp DESC)`);
 
+  await db.exec(`CREATE TABLE IF NOT EXISTS favorites (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    dish_id INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, dish_id),
+    FOREIGN KEY (dish_id) REFERENCES dishes(id)
+  )`);
+  await db.exec(`CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id)`);
+
   await db.exec(`CREATE TABLE IF NOT EXISTS dish_analyses (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,

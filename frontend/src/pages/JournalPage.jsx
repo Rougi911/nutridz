@@ -6,6 +6,7 @@ import { useJournalStore, useProfileStore } from '../store';
 import { useTranslation } from '../i18n';
 import api from '../utils/api';
 import VoiceInput from '../components/VoiceInput';
+import { SkeletonLine, SkeletonCard } from '../components/Skeleton';
 
 const MEAL_ICONS = { pdej: 'ti-coffee', dej: 'ti-soup', coll: 'ti-apple', diner: 'ti-moon' };
 
@@ -50,6 +51,30 @@ export default function JournalPage() {
       toast.success(t('weight.saved'));
     } catch {
       toast.error(t('weight.error'));
+    }
+  };
+
+  const duplicateYesterdayMeals = async () => {
+    try {
+      const yesterday = format(subDays(parseISO(date), 1), 'yyyy-MM-dd');
+      const res = await api.get(`/journal?date=${yesterday}`);
+      if (!res.data || res.data.length === 0) {
+        toast.error(t('journal.noMealsYesterday'));
+        return;
+      }
+      for (const entry of res.data) {
+        await api.post('/journal', {
+          product_id: entry.product_id,
+          meal_type: entry.meal_type,
+          grams: entry.grams,
+          date,
+        });
+      }
+      toast.success(`${res.data.length} ${t('journal.duplicated')}`);
+      fetchJournal();
+    } catch (err) {
+      console.error(err);
+      toast.error(t('journal.duplicateError'));
     }
   };
 
@@ -156,7 +181,7 @@ export default function JournalPage() {
       </div>
 
       {/* Poids du jour */}
-      <div style={{ margin: '0.8rem 1.25rem 0', padding: '1rem', borderRadius: '8px', background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+      <div style={{ margin: '0.8rem 1.25rem 0', padding: '1rem', borderRadius: '8px', background: 'var(--bg-primary)', boxShadow: '0 1px 3px var(--shadow)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '0.95rem', fontWeight: '600' }}>
             ⚖️ {t('weight.title')}
@@ -176,7 +201,7 @@ export default function JournalPage() {
             onChange={(e) => setTodayWeight(e.target.value)}
             onBlur={handleWeightSubmit}
             onKeyPress={(e) => e.key === 'Enter' && handleWeightSubmit()}
-            style={{ flex: 1, padding: '0.6rem', border: '1px solid #e5e7eb', borderRadius: '6px', fontSize: '1rem' }}
+            style={{ flex: 1, padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: '6px', fontSize: '1rem' }}
           />
           <VoiceInput
             context="weight"
@@ -187,8 +212,21 @@ export default function JournalPage() {
         </div>
       </div>
 
+      {/* Dupliquer repas d'hier */}
+      <div style={{ margin: '0.8rem 1.25rem 0', textAlign: 'center' }}>
+        <button onClick={duplicateYesterdayMeals} style={{
+          padding: '0.6rem 1.5rem', borderRadius: 20,
+          border: '1px solid var(--border-color)', background: 'var(--bg-primary)',
+          color: 'var(--text-primary)', fontWeight: 600, cursor: 'pointer',
+          display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: 13,
+        }}>
+          <span>📋</span>
+          <span>{t('journal.duplicateYesterday')}</span>
+        </button>
+      </div>
+
       {/* Saisie vocale aliments */}
-      <div style={{ margin: '0.8rem 1.25rem 0', padding: '1rem', background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+      <div style={{ margin: '0.8rem 1.25rem 0', padding: '1rem', background: 'var(--bg-primary)', borderRadius: '8px', boxShadow: '0 1px 3px var(--shadow)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
           <h3 style={{ margin: 0, fontSize: '1rem' }}>🎤 {t('voice.addFoodVoice')}</h3>
         </div>
@@ -199,6 +237,21 @@ export default function JournalPage() {
       </div>
 
       {/* Repas */}
+      {loading ? (
+        <>
+          <SkeletonCard style={{ margin: '0.8rem 1.25rem 0' }}>
+            <SkeletonLine width="40%" height="1.2rem" style={{ marginBottom: '0.8rem' }} />
+            <SkeletonLine width="90%" />
+            <SkeletonLine width="70%" style={{ marginTop: '0.5rem' }} />
+          </SkeletonCard>
+          {[1, 2, 3].map(i => (
+            <SkeletonCard key={i} style={{ margin: '0.8rem 1.25rem 0' }}>
+              <SkeletonLine width="30%" height="1rem" style={{ marginBottom: '0.8rem' }} />
+              <SkeletonLine width="80%" />
+            </SkeletonCard>
+          ))}
+        </>
+      ) : null}
       {MEALS.map(({ id, label, icon }) => {
         const items = meals[id] || [];
         const mealKcal = items.reduce((s, e) => s + e.kcal, 0);

@@ -19,9 +19,9 @@ const NAV = [
 export default function Layout() {
   const { t } = useTranslation();
   return (
-    <div style={{ maxWidth: 480, margin: '0 auto', minHeight: '100dvh', display: 'flex', flexDirection: 'column', background: '#f7f7f5' }}>
+    <div style={{ maxWidth: 480, margin: '0 auto', minHeight: '100dvh', display: 'flex', flexDirection: 'column', background: 'var(--bg-secondary)' }}>
       {/* Language bar */}
-      <div style={{ background: '#f7f7f5', borderBottom: '0.5px solid rgba(0,0,0,0.07)', padding: '5px 14px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+      <div style={{ background: 'var(--bg-secondary)', borderBottom: '0.5px solid rgba(0,0,0,0.07)', padding: '5px 14px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
         <LanguageSelector />
       </div>
 
@@ -36,7 +36,7 @@ export default function Layout() {
 
       <nav style={{
         position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 480, background: '#fff',
+        width: '100%', maxWidth: 480, background: 'var(--bg-primary)',
         borderTop: '0.5px solid rgba(0,0,0,0.1)',
         display: 'flex', zIndex: 100
       }}>

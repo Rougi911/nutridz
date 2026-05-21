@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import api from '../utils/api';
 import { useTranslation } from '../i18n';
 import VoiceInput from '../components/VoiceInput';
+import { SkeletonCard, SkeletonLine } from '../components/Skeleton';
 import {
   ScatterChart, Scatter,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -114,7 +115,7 @@ export default function GlucoseTrackingPage() {
       </div>
 
       {/* Saisie manuelle */}
-      <div style={{ margin: '1rem 1.25rem', padding: '1rem', background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+      <div style={{ margin: '1rem 1.25rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
         <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', fontWeight: 700, color: '#333' }}>
           ➕ {t('glucose.manualEntry')}
         </h3>
@@ -125,12 +126,12 @@ export default function GlucoseTrackingPage() {
             placeholder={t('glucose.valuePlaceholder')}
             value={glucoseValue}
             onChange={(e) => setGlucoseValue(e.target.value)}
-            style={{ flex: '1 1 140px', padding: '0.6rem', border: '1px solid #e5e7eb', borderRadius: '6px', fontSize: '1rem' }}
+            style={{ flex: '1 1 140px', padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: '6px', fontSize: '1rem' }}
           />
           <select
             value={readingType}
             onChange={(e) => setReadingType(e.target.value)}
-            style={{ flex: '1 1 140px', padding: '0.6rem', border: '1px solid #e5e7eb', borderRadius: '6px', fontSize: '0.9rem' }}
+            style={{ flex: '1 1 140px', padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: '6px', fontSize: '0.9rem' }}
           >
             <option value="fasting">{t('glucose.fasting')}</option>
             <option value="pre_meal">{t('glucose.preMeal')}</option>
@@ -156,7 +157,7 @@ export default function GlucoseTrackingPage() {
       </div>
 
       {/* Import CSV */}
-      <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+      <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
         <h3 style={{ margin: '0 0 0.4rem', fontSize: '0.95rem', fontWeight: 700, color: '#333' }}>
           📂 {t('glucose.importCSV')}
         </h3>
@@ -168,7 +169,7 @@ export default function GlucoseTrackingPage() {
           accept=".csv"
           onChange={handleCSVImport}
           disabled={importing}
-          style={{ padding: '0.5rem', border: '1px solid #e5e7eb', borderRadius: '6px', width: '100%', fontSize: '0.85rem', boxSizing: 'border-box' }}
+          style={{ padding: '0.5rem', border: '1px solid var(--border-color)', borderRadius: '6px', width: '100%', fontSize: '0.85rem', boxSizing: 'border-box' }}
         />
         {importing && <p style={{ marginTop: '0.5rem', color: '#3b82f6', fontSize: '0.85rem' }}>Import en cours...</p>}
       </div>
@@ -189,8 +190,14 @@ export default function GlucoseTrackingPage() {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '2rem', color: '#aaa' }}>
-          <i className="ti ti-loader-2" style={{ fontSize: 26 }} /> {t('common.loading')}
+        <div style={{ padding: '1rem' }}>
+          <SkeletonCard style={{ marginBottom: '1rem' }}>
+            <SkeletonLine width="40%" height="1.2rem" style={{ marginBottom: '0.8rem' }} />
+            <SkeletonLine height="250px" />
+          </SkeletonCard>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.7rem' }}>
+            {[1, 2, 3, 4].map(i => <SkeletonCard key={i}><SkeletonLine height="3rem" /></SkeletonCard>)}
+          </div>
         </div>
       ) : (
         <>
@@ -213,7 +220,7 @@ export default function GlucoseTrackingPage() {
 
           {/* Distribution */}
           {metrics && metrics.distribution && (
-            <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+            <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
               <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', fontWeight: 700, color: '#333' }}>
                 {t('glucose.distribution')}
               </h3>
@@ -229,7 +236,7 @@ export default function GlucoseTrackingPage() {
 
           {/* Graphique scatter */}
           {chartData.length > 0 && (
-            <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+            <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
               <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', fontWeight: 700, color: '#333' }}>
                 {t('glucose.chart')}
               </h3>
@@ -251,7 +258,7 @@ export default function GlucoseTrackingPage() {
                       if (!active || !payload || !payload[0]) return null;
                       const d = payload[0].payload;
                       return (
-                        <div style={{ background: 'white', border: '1px solid #e5e7eb', padding: '8px 12px', borderRadius: 8, fontSize: 12 }}>
+                        <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', padding: '8px 12px', borderRadius: 8, fontSize: 12 }}>
                           <div style={{ fontWeight: 700 }}>{d.glucose_mg_dl} mg/dL</div>
                           <div style={{ color: '#888' }}>{format(new Date(d.timestamp), 'dd/MM/yyyy HH:mm')}</div>
                           <div style={{ color: '#666' }}>{d.reading_type}</div>
@@ -280,7 +287,7 @@ export default function GlucoseTrackingPage() {
 
           {/* Liste lectures récentes */}
           {readings.length > 0 && (
-            <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+            <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
               <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', fontWeight: 700, color: '#333' }}>
                 {t('glucose.recentReadings')}
               </h3>
@@ -322,7 +329,7 @@ export default function GlucoseTrackingPage() {
 
 function MetricCard({ label, value, color, subtitle }) {
   return (
-    <div style={{ padding: '1rem', background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', textAlign: 'center', border: `2px solid ${color}18` }}>
+    <div style={{ padding: '1rem', background: 'var(--bg-primary)', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', textAlign: 'center', border: `2px solid ${color}18` }}>
       <div style={{ fontSize: '0.78rem', color: '#6b7280', marginBottom: '0.3rem', fontWeight: 600 }}>{label}</div>
       <div style={{ fontSize: '1.6rem', fontWeight: 800, color }}>{value}</div>
       {subtitle && <div style={{ fontSize: '0.7rem', color: '#9ca3af', marginTop: '0.2rem' }}>{subtitle}</div>}

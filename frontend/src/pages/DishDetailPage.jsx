@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
 import { useTranslation } from '../i18n';
+import useFavoritesStore from '../store/useFavoritesStore';
 
 const MEAL_IDS = ['pdej', 'dej', 'coll', 'diner'];
 
@@ -23,6 +24,11 @@ export default function DishDetailPage() {
   const [portion, setPortion] = useState(300);
   const [mealType, setMealType] = useState(searchParams.get('meal') || 'dej');
   const [logging, setLogging] = useState(false);
+
+  const { isFavorite, addFavorite, removeFavorite, fetchFavorites } = useFavoritesStore();
+  const favorite = isFavorite(parseInt(id));
+
+  useEffect(() => { fetchFavorites(); }, [fetchFavorites]);
 
   const [modifierCatalog, setModifierCatalog] = useState(null);
   const [modifiers, setModifiers] = useState([]);
@@ -131,9 +137,17 @@ export default function DishDetailPage() {
     <div style={{ paddingBottom: 100 }}>
       {/* Header */}
       <div style={{ background: '#1A6B3C', color: 'white', padding: '1rem 1.25rem 2rem', borderRadius: '0 0 24px 24px' }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: 14, marginBottom: 12 }}>
-          ‹ Retour
-        </button>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <button onClick={() => navigate(-1)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: 14 }}>
+            ‹ Retour
+          </button>
+          <button
+            onClick={() => favorite ? removeFavorite(parseInt(id)) : addFavorite(parseInt(id))}
+            style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: 20, padding: '5px 14px', cursor: 'pointer', fontSize: 18 }}
+          >
+            {favorite ? '⭐' : '☆'}
+          </button>
+        </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 72, lineHeight: 1.1, marginBottom: 10 }}>{dish.emoji || '🍽️'}</div>
           <h1 style={{ fontSize: 22, fontWeight: 600, margin: '0 0 6px' }}>{dishName}</h1>

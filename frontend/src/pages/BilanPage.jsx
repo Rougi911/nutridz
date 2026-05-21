@@ -10,6 +10,7 @@ import { useActivityStore, useProfileStore } from '../store';
 import { calcBMR, calcTDEE, calcTarget } from '../utils/api';
 import api from '../utils/api';
 import ActivityForm from '../components/ActivityForm';
+import { SkeletonCard, SkeletonLine } from '../components/Skeleton';
 
 const SPORT_ICONS  = { marche: '🚶', course: '🏃', velo: '🚴', natation: '🏊', muscu: '💪' };
 const DAY_LABELS   = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
@@ -765,8 +766,11 @@ export default function BilanPage() {
       {view === 'evolution' && (
         <div>
           {loadingEvolution ? (
-            <div style={{ textAlign: 'center', padding: '2rem', color: '#aaa' }}>
-              <i className="ti ti-loader-2" style={{ fontSize: 28 }} /> {t('common.loading')}
+            <div style={{ padding: '1rem' }}>
+              <SkeletonCard style={{ marginBottom: '1rem' }}>
+                <SkeletonLine width="50%" height="1.5rem" style={{ marginBottom: '1rem' }} />
+                <SkeletonLine height="200px" />
+              </SkeletonCard>
             </div>
           ) : evolutionData ? (
             <>

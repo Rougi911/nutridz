@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useProfileStore, useAuthStore } from '../store';
 import { calcBMR, calcTDEE, calcTarget, calcIMC, imcStatus } from '../utils/api';
 import { useTranslation } from '../i18n';
+import { useTheme } from '../contexts/ThemeContext';
 import api from '../utils/api';
 
 const GOAL_ICONS = { perte: '📉', maintien: '⚖️', prise: '💪', sante: '🫀' };
@@ -44,6 +45,7 @@ export default function ProfilePage() {
     finally { setDeleting(false); setShowDeleteModal(false); }
   }
   const { t } = useTranslation();
+  const { theme, toggleTheme } = useTheme();
 
   const p = profile;
   const bmr = calcBMR(p.age, p.weight, p.height, p.sexe);
@@ -229,6 +231,32 @@ export default function ProfilePage() {
           style={{ width: '100%', padding: '10px', background: '#FEF2F2', color: '#993C1D', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}>
           🗑️ Supprimer mon compte
         </button>
+      </div>
+
+      {/* Apparence / Dark mode */}
+      <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: 12, boxShadow: '0 1px 3px var(--shadow)' }}>
+        <h3 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 12px' }}>
+          🎨 {t('profile.appearance')}
+        </h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontWeight: 500, marginBottom: 4, color: 'var(--text-primary)', fontSize: 13 }}>
+              {t('profile.darkMode')}
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+              {t('profile.darkModeDesc')}
+            </div>
+          </div>
+          <button onClick={toggleTheme} style={{
+            padding: '0.5rem 1rem', borderRadius: 20, border: 'none',
+            background: theme === 'dark' ? 'var(--accent-purple)' : 'var(--accent-blue)',
+            color: 'white', fontWeight: 600, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+          }}>
+            <span style={{ fontSize: '1.2rem' }}>{theme === 'dark' ? '🌙' : '☀️'}</span>
+            <span>{theme === 'dark' ? t('profile.dark') : t('profile.light')}</span>
+          </button>
+        </div>
       </div>
 
       <div style={{ margin: '0 1.25rem 1rem' }}>
