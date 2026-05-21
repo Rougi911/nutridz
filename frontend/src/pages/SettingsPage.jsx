@@ -9,28 +9,16 @@ import { useProfileStore } from '../store';
 
 function Section({ title, icon, children }) {
   return (
-    <div style={{
-      margin: '0 1.25rem 1rem',
-      background: 'var(--bg-primary)',
-      borderRadius: 16,
-      border: '1px solid var(--border-color)',
-      boxShadow: '0 2px 8px var(--shadow)',
-      overflow: 'hidden',
-    }}>
-      <div style={{
-        padding: '0.7rem 1rem',
-        background: 'var(--bg-tertiary)',
-        borderBottom: '1px solid var(--border-color)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-      }}>
-        <span>{icon}</span>
-        <span style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+    <div style={{ margin: '0 1.25rem 1.25rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem', paddingLeft: 2 }}>
+        <span style={{ fontSize: '0.9rem' }}>{icon}</span>
+        <span style={{ fontWeight: 600, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           {title}
         </span>
       </div>
-      <div>{children}</div>
+      <div style={{ background: 'var(--bg-primary)', borderRadius: 16, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)', overflow: 'hidden' }}>
+        {children}
+      </div>
     </div>
   );
 }
@@ -82,7 +70,7 @@ function UnitToggle({ value, options, onChange }) {
 const GOAL_LABELS = { perte: 'Perte de poids', maintien: 'Maintien', prise: 'Prise de masse', sante: 'Santé' };
 
 export default function SettingsPage() {
-  useTranslation(); // keep language context active
+  const { lang, setLang } = useTranslation();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const { profile } = useProfileStore();
@@ -97,6 +85,8 @@ export default function SettingsPage() {
   const [macros, setMacros] = useState(macroTargets);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const macrosTotal = macros.glucides + macros.proteines + macros.lipides;
 
@@ -115,6 +105,21 @@ export default function SettingsPage() {
     { id: 'glucose', label: 'Effacer les données de glycémie', desc: 'Supprime toutes les lectures de glycémie', icon: '🩸', endpoint: '/glucose/all', color: '#f59e0b' },
     { id: 'all',     label: 'Réinitialiser toutes les données', desc: 'Supprime TOUTES les données (irréversible)', icon: '⚠️', endpoint: '/profile/reset-data', color: '#ef4444' },
   ];
+
+  const handleDeleteAccount = async () => {
+    setDeletingAccount(true);
+    try {
+      await api.delete('/user/account');
+      localStorage.clear();
+      toast.success('Compte supprimé');
+      navigate('/login');
+    } catch {
+      toast.error('Erreur lors de la suppression du compte');
+      setShowDeleteAccount(false);
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
 
   const handleDelete = async (option) => {
     setDeleting(true);
@@ -151,7 +156,7 @@ export default function SettingsPage() {
       {/* Profile card */}
       {profile && (
         <div style={{ margin: '0 1.25rem 1rem' }}>
-          <div className="gradient-hero" style={{ padding: '1.25rem', borderRadius: 20, color: 'white' }}>
+          <div className="gradient-hero" style={{ padding: '1.25rem', borderRadius: 16, color: 'white' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <div style={{ width: 60, height: 60, borderRadius: 9999, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>
@@ -234,8 +239,8 @@ export default function SettingsPage() {
             disabled={macrosTotal !== 100}
             style={{
               width: '100%', padding: '0.75rem', borderRadius: '8px', border: 'none',
-              background: macrosTotal === 100 ? 'var(--accent-blue)' : 'var(--bg-tertiary)',
-              color: macrosTotal === 100 ? 'white' : 'var(--text-secondary)',
+              background: macrosTotal === 100 ? 'rgba(99,102,241,0.1)' : 'var(--bg-tertiary)',
+              color: macrosTotal === 100 ? 'var(--accent-blue)' : 'var(--text-secondary)',
               fontWeight: '600', cursor: macrosTotal === 100 ? 'pointer' : 'not-allowed',
             }}
           >
@@ -246,18 +251,24 @@ export default function SettingsPage() {
 
       {/* Apparence */}
       <Section title="Apparence" icon="🎨">
-        <SettingRow label="Mode sombre" desc="Réduit la fatigue oculaire" last>
-          <button
-            onClick={toggleTheme}
-            style={{
-              padding: '0.4rem 1rem', borderRadius: '20px', border: 'none',
-              background: theme === 'dark' ? 'var(--accent-purple)' : 'var(--accent-blue)',
-              color: 'white', fontWeight: '600', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem',
-            }}
-          >
-            {theme === 'dark' ? '🌙 Sombre' : '☀️ Clair'}
-          </button>
+        <SettingRow label="Thème" desc="Apparence de l'application">
+          <UnitToggle
+            value={theme}
+            options={[{ value: 'light', label: '☀️ Clair' }, { value: 'dark', label: '🌙 Sombre' }]}
+            onChange={(v) => { if (v !== theme) toggleTheme(); }}
+          />
+        </SettingRow>
+        <SettingRow label="Langue" last>
+          <div style={{ display: 'flex', background: 'var(--bg-tertiary)', borderRadius: 9999, padding: 3, gap: 2 }}>
+            {[['fr', 'FR'], ['en', 'EN'], ['ar', 'عربي']].map(([code, label]) => (
+              <button key={code} onClick={() => setLang(code)} style={{
+                padding: '0.3rem 0.6rem', border: 'none', borderRadius: 9999,
+                background: lang === code ? 'var(--accent-blue)' : 'transparent',
+                color: lang === code ? 'white' : 'var(--text-secondary)',
+                fontWeight: lang === code ? 700 : 400, cursor: 'pointer', fontSize: '0.82rem', transition: 'all 0.15s',
+              }}>{label}</button>
+            ))}
+          </div>
         </SettingRow>
       </Section>
 
@@ -302,6 +313,16 @@ export default function SettingsPage() {
         <SettingRow label="Base alimentaire" last><span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>CIQUAL + USDA</span></SettingRow>
       </Section>
 
+      {/* Delete account */}
+      <div style={{ margin: '0.5rem 1.25rem 1.5rem' }}>
+        <button
+          onClick={() => setShowDeleteAccount(true)}
+          style={{ width: '100%', padding: '0.85rem', borderRadius: 12, border: 'none', background: '#ef4444', color: 'white', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+        >
+          🗑️ Supprimer mon compte
+        </button>
+      </div>
+
       {/* Modal confirmation suppression */}
       {confirmDelete && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '1.5rem' }}>
@@ -318,6 +339,26 @@ export default function SettingsPage() {
               </button>
               <button onClick={() => handleDelete(confirmDelete)} disabled={deleting} style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: 'none', background: confirmDelete.color, color: 'white', fontWeight: '700', cursor: deleting ? 'not-allowed' : 'pointer' }}>
                 {deleting ? '...' : 'Confirmer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal confirmation suppression compte */}
+      {showDeleteAccount && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '1.5rem' }}>
+          <div style={{ background: 'var(--bg-primary)', borderRadius: 16, padding: '1.5rem', maxWidth: '360px', width: '100%' }}>
+            <h3 style={{ margin: '0 0 0.75rem', color: '#ef4444' }}>🗑️ Supprimer le compte</h3>
+            <p style={{ margin: '0 0 1.5rem', color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
+              Cette action est <strong>irréversible</strong>. Toutes vos données (journal, poids, glycémie, profil) seront définitivement supprimées.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button onClick={() => setShowDeleteAccount(false)} disabled={deletingAccount} style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontWeight: '600', cursor: 'pointer' }}>
+                Annuler
+              </button>
+              <button onClick={handleDeleteAccount} disabled={deletingAccount} style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: 'none', background: '#ef4444', color: 'white', fontWeight: '700', cursor: deletingAccount ? 'not-allowed' : 'pointer' }}>
+                {deletingAccount ? '...' : 'Supprimer'}
               </button>
             </div>
           </div>
