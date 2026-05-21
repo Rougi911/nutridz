@@ -6,6 +6,7 @@ import { useJournalStore, useProfileStore } from '../store';
 import { useTranslation } from '../i18n';
 import api from '../utils/api';
 import VoiceInput from '../components/VoiceInput';
+import VoiceFoodModal from '../components/VoiceFoodModal';
 import { SkeletonLine, SkeletonCard } from '../components/Skeleton';
 
 const MEAL_ICONS = { pdej: 'ti-coffee', dej: 'ti-soup', coll: 'ti-apple', diner: 'ti-moon' };
@@ -19,6 +20,8 @@ export default function JournalPage() {
 
   const [todayWeight, setTodayWeight] = useState('');
   const [yesterdayWeight, setYesterdayWeight] = useState(null);
+  const [voiceMeal, setVoiceMeal] = useState(null);
+  const [voiceModal, setVoiceModal] = useState({ open: false, mealType: null, items: [] });
   const weightDelta = todayWeight && yesterdayWeight ? parseFloat(todayWeight) - yesterdayWeight : 0;
 
   useEffect(() => { fetchJournal(); }, []);
@@ -82,7 +85,21 @@ export default function JournalPage() {
     try {
       const res = await api.post('/voice/parse', { text: transcript, context: 'food', lang });
       if (res.data.items && res.data.items.length > 0) {
-        toast.success(`${res.data.items.length} aliment(s) : ${res.data.items.map(i => i.name).join(', ')}`);
+        setVoiceModal({ open: true, mealType: 'dej', items: res.data.items });
+      } else {
+        toast.error(t('voice.noItemsDetected'));
+      }
+    } catch {
+      toast.error(t('voice.parseError'));
+    }
+  };
+
+  const handleMealVoice = async (transcript, mealType) => {
+    setVoiceMeal(null);
+    try {
+      const res = await api.post('/voice/parse', { text: transcript, context: 'food', lang });
+      if (res.data.items && res.data.items.length > 0) {
+        setVoiceModal({ open: true, mealType, items: res.data.items });
       } else {
         toast.error(t('voice.noItemsDetected'));
       }
@@ -270,6 +287,9 @@ export default function JournalPage() {
                 <button onClick={() => navigate(`/dishes?meal=${id}`)} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 20, border: '0.5px solid #BA7517', color: '#BA7517', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
                   <i className="ti ti-soup" style={{ fontSize: 12 }} /> {t('dishes.addDish')}
                 </button>
+                <button onClick={() => setVoiceMeal(id)} style={{ fontSize: 11, padding: '4px 8px', borderRadius: 20, border: '0.5px solid #6b7280', color: voiceMeal === id ? '#ef4444' : '#6b7280', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                  🎤
+                </button>
               </div>
             </div>
             {items.length === 0 && <div style={{ padding: 12, fontSize: 12, color: '#bbb', fontStyle: 'italic', paddingLeft: 16 }}>{t('journal.empty')}</div>}
@@ -289,6 +309,42 @@ export default function JournalPage() {
           </div>
         );
       })}
+      {/* Floating voice recorder for specific meal */}
+      {voiceMeal && (
+        <div style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0,
+          background: 'var(--bg-primary)', borderRadius: '16px 16px 0 0',
+          padding: '1.25rem', boxShadow: '0 -2px 16px rgba(0,0,0,0.15)', zIndex: 500,
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+              🎤 {MEALS.find(m => m.id === voiceMeal)?.label}
+            </span>
+            <button onClick={() => setVoiceMeal(null)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: 'var(--text-secondary)' }}>✕</button>
+          </div>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.75rem' }}>
+            {t('voice.foodHelp')}
+          </p>
+          <VoiceInput
+            context="food"
+            onResult={(transcript) => handleMealVoice(transcript, voiceMeal)}
+            showTranscript={true}
+          />
+        </div>
+      )}
+
+      {/* Voice food confirmation modal */}
+      {voiceModal.open && (
+        <VoiceFoodModal
+          mealType={voiceModal.mealType}
+          rawItems={voiceModal.items}
+          onConfirm={() => {
+            setVoiceModal({ open: false, mealType: null, items: [] });
+            fetchJournal();
+          }}
+          onClose={() => setVoiceModal({ open: false, mealType: null, items: [] })}
+        />
+      )}
     </div>
   );
 }

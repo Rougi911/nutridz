@@ -224,6 +224,10 @@ const T = {
       glucoseDetected: 'Glycémie détectée',
       glucoseNotDetected: 'Glycémie non détectée',
       parseError: 'Erreur lors du parsing',
+      confirmItems: 'Confirmer les aliments',
+      addAll: 'Tout ajouter',
+      itemAdded: '{n} aliment(s) ajouté(s)',
+      addError: "Erreur lors de l'ajout",
     },
     auth: {
       login: { title: 'NutriVita', subtitle: 'Nutrition personnalisée pour le marché algérien', email: 'Email', password: 'Mot de passe', submit: 'Se connecter', loading: 'Connexion...', noAccount: 'Pas encore de compte ?', register: "S'inscrire", error: 'Identifiants incorrects' },
@@ -467,6 +471,10 @@ const T = {
       glucoseDetected: 'تم الكشف عن السكر',
       glucoseNotDetected: 'لم يتم الكشف عن السكر',
       parseError: 'خطأ في التحليل',
+      confirmItems: 'تأكيد الأطعمة',
+      addAll: 'إضافة الكل',
+      itemAdded: 'تمت إضافة {n} عنصر',
+      addError: 'خطأ في الإضافة',
     },
     auth: {
       login: { title: 'NutriVita', subtitle: 'تغذية شخصية للسوق الجزائرية', email: 'البريد الإلكتروني', password: 'كلمة المرور', submit: 'تسجيل الدخول', loading: 'جارٍ الدخول...', noAccount: 'ليس لديك حساب؟', register: 'إنشاء حساب', error: 'بيانات الدخول غير صحيحة' },
@@ -710,6 +718,10 @@ const T = {
       glucoseDetected: 'Glucose detected',
       glucoseNotDetected: 'Glucose not detected',
       parseError: 'Parsing error',
+      confirmItems: 'Confirm items',
+      addAll: 'Add all',
+      itemAdded: '{n} item(s) added',
+      addError: 'Error adding items',
     },
     auth: {
       login: { title: 'NutriVita', subtitle: 'Personalized nutrition for the Algerian market', email: 'Email', password: 'Password', submit: 'Log in', loading: 'Logging in...', noAccount: 'No account yet?', register: 'Sign up', error: 'Invalid credentials' },
