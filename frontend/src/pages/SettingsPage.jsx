@@ -5,18 +5,20 @@ import api from '../utils/api';
 import { useTranslation } from '../i18n';
 import { useTheme } from '../contexts/ThemeContext';
 import useSettingsStore from '../store/useSettingsStore';
+import { useProfileStore } from '../store';
 
 function Section({ title, icon, children }) {
   return (
     <div style={{
-      margin: '0 1.25rem 1.25rem',
+      margin: '0 1.25rem 1rem',
       background: 'var(--bg-primary)',
-      borderRadius: '12px',
-      boxShadow: '0 1px 3px var(--shadow)',
+      borderRadius: 16,
+      border: '1px solid var(--border-color)',
+      boxShadow: '0 2px 8px var(--shadow)',
       overflow: 'hidden',
     }}>
       <div style={{
-        padding: '0.75rem 1rem',
+        padding: '0.7rem 1rem',
         background: 'var(--bg-tertiary)',
         borderBottom: '1px solid var(--border-color)',
         display: 'flex',
@@ -24,7 +26,7 @@ function Section({ title, icon, children }) {
         gap: '0.5rem',
       }}>
         <span>{icon}</span>
-        <span style={{ fontWeight: '700', fontSize: '0.9rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <span style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           {title}
         </span>
       </div>
@@ -43,8 +45,8 @@ function SettingRow({ label, desc, children, last }) {
       borderBottom: last ? 'none' : '1px solid var(--border-color)',
     }}>
       <div>
-        <div style={{ fontWeight: '500', color: 'var(--text-primary)', fontSize: '0.95rem' }}>{label}</div>
-        {desc && <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.15rem' }}>{desc}</div>}
+        <div style={{ fontWeight: 500, color: 'var(--text-primary)', fontSize: '0.9rem' }}>{label}</div>
+        {desc && <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '0.15rem' }}>{desc}</div>}
       </div>
       <div style={{ flexShrink: 0, marginLeft: '1rem' }}>{children}</div>
     </div>
@@ -53,19 +55,20 @@ function SettingRow({ label, desc, children, last }) {
 
 function UnitToggle({ value, options, onChange }) {
   return (
-    <div style={{ display: 'flex', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+    <div style={{ display: 'flex', background: 'var(--bg-tertiary)', borderRadius: 9999, padding: 3, gap: 2 }}>
       {options.map(opt => (
         <button
           key={opt.value}
           onClick={() => onChange(opt.value)}
           style={{
-            padding: '0.35rem 0.75rem',
+            padding: '0.3rem 0.7rem',
             border: 'none',
-            background: value === opt.value ? 'var(--accent-blue)' : 'var(--bg-primary)',
+            borderRadius: 9999,
+            background: value === opt.value ? 'var(--accent-blue)' : 'transparent',
             color: value === opt.value ? 'white' : 'var(--text-secondary)',
-            fontWeight: value === opt.value ? '700' : '400',
+            fontWeight: value === opt.value ? 700 : 400,
             cursor: 'pointer',
-            fontSize: '0.85rem',
+            fontSize: '0.82rem',
             transition: 'all 0.15s',
           }}
         >
@@ -76,10 +79,13 @@ function UnitToggle({ value, options, onChange }) {
   );
 }
 
+const GOAL_LABELS = { perte: 'Perte de poids', maintien: 'Maintien', prise: 'Prise de masse', sante: 'Santé' };
+
 export default function SettingsPage() {
   useTranslation(); // keep language context active
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+  const { profile } = useProfileStore();
   const {
     weightUnit,  setWeightUnit,
     heightUnit,  setHeightUnit,
@@ -128,19 +134,43 @@ export default function SettingsPage() {
 
       {/* Header */}
       <div style={{
-        padding: '1rem 1.25rem',
+        padding: '0.85rem 1.25rem',
         background: 'var(--bg-primary)',
         borderBottom: '1px solid var(--border-color)',
         display: 'flex', alignItems: 'center', gap: '0.75rem',
-        marginBottom: '1.25rem',
+        marginBottom: '1rem',
       }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
+        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', fontSize: '1.4rem', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center' }}>
           ←
         </button>
-        <h1 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700', color: 'var(--text-primary)' }}>
-          ⚙️ Paramètres
+        <h1 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+          Paramètres
         </h1>
       </div>
+
+      {/* Profile card */}
+      {profile && (
+        <div style={{ margin: '0 1.25rem 1rem' }}>
+          <div className="gradient-hero" style={{ padding: '1.25rem', borderRadius: 20, color: 'white' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ width: 60, height: 60, borderRadius: 9999, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>
+                  👤
+                </div>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>{profile.prenom || 'Utilisateur'}</h2>
+                  {profile.age && <p style={{ margin: '2px 0 0', fontSize: 13, opacity: 0.8 }}>{profile.age} ans{profile.height ? ` · ${profile.height} cm` : ''}{profile.weight ? ` · ${profile.weight} kg` : ''}</p>}
+                  {profile.goal && <p style={{ margin: '2px 0 0', fontSize: 12, opacity: 0.8 }}>Objectif : {GOAL_LABELS[profile.goal] || profile.goal}</p>}
+                  {profile.target_kcal && <p style={{ margin: '2px 0 0', fontSize: 13, fontWeight: 600, opacity: 0.95 }}>{profile.target_kcal} kcal/jour recommandées</p>}
+                </div>
+              </div>
+              <button onClick={() => navigate('/profile')} style={{ background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.35)', color: 'white', padding: '6px 12px', borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}>
+                Modifier
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Unités de mesure */}
       <Section title="Unités de mesure" icon="📐">
@@ -169,9 +199,9 @@ export default function SettingsPage() {
             Répartition cible en % des calories journalières. Total = 100%.
           </p>
           {[
-            { key: 'glucides',  label: '🍚 Glucides',  color: '#3b82f6' },
-            { key: 'proteines', label: '🥩 Protéines', color: '#10b981' },
-            { key: 'lipides',   label: '🥑 Lipides',   color: '#f59e0b' },
+            { key: 'glucides',  label: '🍚 Glucides',  color: 'var(--accent-blue)' },
+            { key: 'proteines', label: '🥩 Protéines', color: 'var(--accent-green)' },
+            { key: 'lipides',   label: '🥑 Lipides',   color: 'var(--accent-yellow)' },
           ].map(macro => (
             <div key={macro.key} style={{ marginBottom: '1rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>

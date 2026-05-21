@@ -51,16 +51,28 @@ export default function DishesPage() {
   return (
     <div style={{ background: 'var(--bg-secondary)', minHeight: '100vh', paddingBottom: 32 }}>
       {/* Header */}
-      <div style={{ background: '#1A6B3C', color: '#fff', padding: '1rem 1.25rem 1.5rem', borderRadius: '0 0 24px 24px' }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>{t('dishes.title')}</h1>
+      <div className="gradient-hero" style={{ color: '#fff', padding: '1.25rem 1.25rem 1.5rem', borderRadius: '0 0 28px 28px' }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Base de données</h1>
         <p style={{ fontSize: 13, opacity: 0.8, marginTop: 3, marginBottom: 12 }}>{t('dishes.subtitle')}</p>
         <div style={{ position: 'relative' }}>
-          <i className="ti ti-search" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#aaa', fontSize: 16 }} />
+          <i className="ti ti-search" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', fontSize: 16 }} />
           <input
             value={query} onChange={e => setQuery(e.target.value)}
             placeholder={t('dishes.searchPlaceholder')}
-            style={{ width: '100%', padding: '9px 12px 9px 34px', borderRadius: 10, border: 'none', fontSize: 13, boxSizing: 'border-box' }}
+            style={{ width: '100%', padding: '11px 12px 11px 36px', borderRadius: 12, border: 'none', fontSize: 13, boxSizing: 'border-box', background: 'rgba(255,255,255,0.95)', color: '#111' }}
           />
+        </div>
+        {/* Quick actions */}
+        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+          <button onClick={() => navigate('/vision')} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '9px 0', borderRadius: 12, border: '1px solid rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.15)', color: 'white', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>
+            <i className="ti ti-camera" style={{ fontSize: 14 }} /> Photo
+          </button>
+          <button onClick={() => navigate('/scanner')} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '9px 0', borderRadius: 12, border: '1px solid rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.15)', color: 'white', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>
+            <i className="ti ti-barcode" style={{ fontSize: 14 }} /> Scanner CB
+          </button>
+          <button onClick={() => setShowModal(true)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '9px 0', borderRadius: 12, border: '1px solid rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.25)', color: 'white', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+            <i className="ti ti-plus" style={{ fontSize: 14 }} /> Créer plat
+          </button>
         </div>
       </div>
 
@@ -68,7 +80,7 @@ export default function DishesPage() {
       <div style={{ overflowX: 'auto', display: 'flex', gap: 8, padding: '12px 16px', scrollbarWidth: 'none' }}>
         <button onClick={() => setCuisine('')} style={{
           flexShrink: 0, padding: '6px 14px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600,
-          background: !cuisine ? '#1A6B3C' : '#fff', color: !cuisine ? '#fff' : '#555',
+          background: !cuisine ? 'var(--accent-blue)' : 'var(--bg-primary)', color: !cuisine ? '#fff' : 'var(--text-secondary)',
           boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
         }}>
           {t('dishes.allCuisines')}
@@ -76,7 +88,7 @@ export default function DishesPage() {
         {cuisines.map(c => (
           <button key={c.cuisine} onClick={() => setCuisine(c.cuisine === cuisine ? '' : c.cuisine)} style={{
             flexShrink: 0, padding: '6px 14px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600,
-            background: cuisine === c.cuisine ? '#1A6B3C' : '#fff', color: cuisine === c.cuisine ? '#fff' : '#555',
+            background: cuisine === c.cuisine ? 'var(--accent-blue)' : 'var(--bg-primary)', color: cuisine === c.cuisine ? '#fff' : 'var(--text-secondary)',
             boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
           }}>
             {c.flag} {c.cuisine.charAt(0).toUpperCase() + c.cuisine.slice(1)}
@@ -88,8 +100,8 @@ export default function DishesPage() {
       <div style={{ display: 'flex', gap: '0.5rem', padding: '0 16px 8px', justifyContent: 'center' }}>
         <button onClick={() => setFilter('all')} style={{
           padding: '0.4rem 1rem', borderRadius: 20, cursor: 'pointer', fontSize: 12, fontWeight: 600,
-          border: filter === 'all' ? '2px solid #1A6B3C' : '1px solid var(--border-color)',
-          background: filter === 'all' ? '#1A6B3C' : 'var(--bg-primary)',
+          border: filter === 'all' ? 'none' : '1px solid var(--border-color)',
+          background: filter === 'all' ? 'var(--accent-blue)' : 'var(--bg-primary)',
           color: filter === 'all' ? 'white' : 'var(--text-primary)',
         }}>Tous</button>
         <button onClick={() => setFilter('favorites')} style={{
@@ -121,20 +133,23 @@ export default function DishesPage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             {dishes.filter(d => filter === 'favorites' ? favorites.some(f => f.dish_id === d.id) : true).map(dish => (
               <button key={dish.id} onClick={() => navigate(`/dishes/${dish.id}?meal=${presetMeal}`)}
-                style={{ background: 'var(--bg-primary)', borderRadius: 16, padding: '14px 12px', border: 'none', cursor: 'pointer', textAlign: 'left', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
+                style={{ background: 'var(--bg-primary)', borderRadius: 16, padding: '14px 12px', border: '1px solid var(--border-color)', cursor: 'pointer', textAlign: 'left', boxShadow: '0 2px 8px var(--shadow)', position: 'relative' }}>
+                {favorites.some(f => f.dish_id === dish.id) && (
+                  <span style={{ position: 'absolute', top: 8, right: 8, fontSize: 14, lineHeight: 1 }}>⭐</span>
+                )}
                 <div style={{ fontSize: 36, marginBottom: 6 }}>{dish.emoji}</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#1a1a1a', marginBottom: 4, lineHeight: 1.3 }}>{dish.name}</div>
-                <div style={{ fontSize: 11, color: '#888', marginBottom: 6 }}>{dish.flag} {dish.cuisine}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4, lineHeight: 1.3 }}>{dish.name}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6 }}>{dish.flag} {dish.cuisine}</div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 4 }}>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: '#1A6B3C' }}>{dish.kcal_per_portion} kcal</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--accent-blue)' }}>{dish.kcal_per_portion} kcal</span>
                   {dish.difficulty && (
-                    <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 10, background: DIFF_BG[dish.difficulty] || '#f0f0f0', color: DIFF_COLORS[dish.difficulty] || '#555', fontWeight: 600 }}>
+                    <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 10, background: DIFF_BG[dish.difficulty] || 'var(--bg-tertiary)', color: DIFF_COLORS[dish.difficulty] || 'var(--text-secondary)', fontWeight: 600 }}>
                       {dish.difficulty}
                     </span>
                   )}
                 </div>
                 {dish.is_user_created === 1 && (
-                  <div style={{ marginTop: 6, fontSize: 10, color: '#5B6EF5', fontWeight: 700 }}>✦ Custom</div>
+                  <div style={{ marginTop: 6, fontSize: 10, color: 'var(--accent-blue)', fontWeight: 700 }}>✦ Custom</div>
                 )}
               </button>
             ))}
@@ -142,11 +157,11 @@ export default function DishesPage() {
         )}
       </div>
 
-      {/* FAB + create dish */}
+      {/* FAB (fallback) */}
       <button onClick={() => setShowModal(true)} style={{
-        position: 'fixed', bottom: 80, right: 20, width: 52, height: 52, borderRadius: 26,
-        background: '#1A6B3C', color: '#fff', border: 'none', fontSize: 26, cursor: 'pointer',
-        boxShadow: '0 4px 16px rgba(26,107,60,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50,
+        position: 'fixed', bottom: 96, right: 20, width: 52, height: 52, borderRadius: 26,
+        background: 'var(--accent-blue)', color: '#fff', border: 'none', fontSize: 24, cursor: 'pointer',
+        boxShadow: '0 4px 16px rgba(99,102,241,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50,
       }}>
         <i className="ti ti-plus" />
       </button>

@@ -63,27 +63,27 @@ function CalorieRing({ ingested, burned, target }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
       <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>
-        <circle cx={cx} cy={cy} r={R_OUT} fill="none" stroke="#f0f0f0" strokeWidth={13} />
-        <circle cx={cx} cy={cy} r={R_OUT} fill="none" stroke="#FF6B35" strokeWidth={13}
+        <circle cx={cx} cy={cy} r={R_OUT} fill="none" stroke="#ededf7" strokeWidth={13} />
+        <circle cx={cx} cy={cy} r={R_OUT} fill="none" stroke="#f59e0b" strokeWidth={13}
           strokeDasharray={`${burnRatio * C_OUT} ${C_OUT}`} strokeLinecap="round"
           transform={`rotate(-90 ${cx} ${cy})`} style={{ transition: 'stroke-dasharray 0.6s ease' }} />
-        <circle cx={cx} cy={cy} r={R_IN} fill="none" stroke="#f0f0f0" strokeWidth={13} />
-        <circle cx={cx} cy={cy} r={R_IN} fill="none" stroke="#1A6B3C" strokeWidth={13}
+        <circle cx={cx} cy={cy} r={R_IN} fill="none" stroke="#ededf7" strokeWidth={13} />
+        <circle cx={cx} cy={cy} r={R_IN} fill="none" stroke="#6366f1" strokeWidth={13}
           strokeDasharray={`${ingestRatio * C_IN} ${C_IN}`} strokeLinecap="round"
           transform={`rotate(-90 ${cx} ${cy})`} style={{ transition: 'stroke-dasharray 0.6s ease' }} />
         <text x={cx} y={cy - 10} textAnchor="middle" fontSize={24} fontWeight={800}
-          fill={isDeficit ? '#1A6B3C' : '#CC4400'}>
+          fill={isDeficit ? '#6366f1' : '#ef4444'}>
           {isDeficit ? `−${Math.abs(balance)}` : `+${balance}`}
         </text>
         <text x={cx} y={cy + 10} textAnchor="middle" fontSize={11} fill="#888">kcal</text>
         <text x={cx} y={cy + 26} textAnchor="middle" fontSize={10}
-          fill={isDeficit ? '#1A6B3C' : '#CC4400'} fontWeight={700}>
+          fill={isDeficit ? '#6366f1' : '#ef4444'} fontWeight={700}>
           {isDeficit ? 'Déficit' : 'Surplus'}
         </text>
       </svg>
       <div style={{ display: 'flex', gap: 18 }}>
-        {[['#1A6B3C', 'Ingérées'], ['#FF6B35', 'Dépensées']].map(([color, label]) => (
-          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#666' }}>
+        {[['#6366f1', 'Ingérées'], ['#f59e0b', 'Dépensées']].map(([color, label]) => (
+          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--text-secondary)' }}>
             <div style={{ width: 10, height: 10, borderRadius: 3, background: color }} />{label}
           </div>
         ))}
@@ -130,7 +130,7 @@ function EstimationGauge({ avg_balance }) {
   const RANGE = 800;
   const pct = ((Math.max(-RANGE, Math.min(RANGE, avg_balance)) + RANGE) / (2 * RANGE)) * 100;
   return (
-    <div style={{ background: '#fff', borderRadius: 20, padding: '16px', marginBottom: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+    <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
       <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: '#333' }}>Estimation hebdomadaire</h3>
       <div style={{ marginBottom: 10 }}>
         <div style={{ height: 10, background: 'linear-gradient(to right, #E53E3E, #FF6B35, #1A6B3C, #3B82F6)', borderRadius: 5, position: 'relative' }}>
@@ -190,7 +190,7 @@ function Recommendations({ stats, profile }) {
 
   if (recs.length === 0) return null;
   return (
-    <div style={{ background: '#fff', borderRadius: 20, padding: '16px', marginBottom: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+    <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
       <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: '#333' }}>Recommandations personnalisées</h3>
       {recs.map((r, i) => (
         <div key={i} style={{ display: 'flex', gap: 10, padding: '9px 0', borderBottom: i < recs.length - 1 ? '0.5px solid #f5f5f5' : 'none' }}>
@@ -404,34 +404,37 @@ export default function BilanPage() {
   };
 
   return (
-    <div id="bilan-content" style={{ padding: '16px 16px 32px', minHeight: '100vh', background: '#f7f7f5' }}>
+    <div id="bilan-content" style={{ paddingBottom: 32, minHeight: '100vh', background: 'var(--bg-secondary)' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#1a1a1a', margin: 0 }}>{t('bilan.title')}</h1>
-          <p style={{ fontSize: 13, color: '#888', margin: '4px 0 0' }}>
-            {new Date().toLocaleDateString('fr-DZ', { weekday: 'long', day: 'numeric', month: 'long' })}
-          </p>
+      <div className="gradient-health" style={{ padding: '1.25rem 1.25rem 1.5rem', borderRadius: '0 0 28px 28px', color: 'white', marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>{t('bilan.title')}</h1>
+            <p style={{ fontSize: 13, opacity: 0.8, margin: '4px 0 0' }}>
+              {new Date().toLocaleDateString('fr-DZ', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </p>
+          </div>
+          <button onClick={handleExportPDF} style={{
+            padding: '8px 14px', borderRadius: 9999,
+            border: '1px solid rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.15)',
+            color: 'white', fontWeight: 600, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 6, fontSize: 12,
+          }}>
+            📄 {t('bilan.exportPDF')}
+          </button>
         </div>
-        <button onClick={handleExportPDF} style={{
-          padding: '0.4rem 0.9rem', borderRadius: '20px',
-          border: '1px solid var(--border-color)', background: 'var(--bg-primary)',
-          color: 'var(--text-primary)', fontWeight: '600', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: 12,
-        }}>
-          <span>📄</span>
-          <span>{t('bilan.exportPDF')}</span>
-        </button>
       </div>
 
+      <div style={{ padding: '0 16px' }}>
+
       {/* View toggle */}
-      <div style={{ display: 'flex', background: '#efefed', borderRadius: 12, padding: 4, marginBottom: 16, gap: 4 }}>
+      <div style={{ display: 'flex', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 9999, padding: 4, marginBottom: 16, gap: 4 }}>
         {[['jour', 'Jour'], ['semaine', 'Semaine'], ['mois', 'Mois'], ['evolution', t('evolution.title')]].map(([v, label]) => (
           <button key={v} onClick={() => setView(v)} style={{
-            flex: 1, padding: '8px 0', borderRadius: 8, border: 'none',
-            background: view === v ? '#1A6B3C' : 'transparent',
-            color: view === v ? '#fff' : '#888',
+            flex: 1, padding: '8px 0', borderRadius: 9999, border: 'none',
+            background: view === v ? 'var(--accent-blue)' : 'transparent',
+            color: view === v ? '#fff' : 'var(--text-secondary)',
             fontWeight: 600, fontSize: 11, cursor: 'pointer', transition: 'all 0.2s',
           }}>
             {label}
@@ -447,16 +450,16 @@ export default function BilanPage() {
               <i className="ti ti-loader-2" style={{ fontSize: 28 }} /> Chargement...
             </div>
           ) : (
-            <div style={{ background: '#fff', borderRadius: 20, padding: '18px 16px', marginBottom: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', display: 'flex', justifyContent: 'center' }}>
+            <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '18px 16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)', display: 'flex', justifyContent: 'center' }}>
               <CalorieRing ingested={ingested} burned={burned} target={target_kcal} />
             </div>
           )}
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 12 }}>
             {[
-              { label: t('bilan.ingested'), value: ingested,    unit: 'kcal', color: '#1A6B3C', bg: '#EAF3DE', icon: '🍽️' },
-              { label: t('bilan.burned'),   value: burned,      unit: 'kcal', color: '#FF6B35', bg: '#FFF3ED', icon: '🔥' },
-              { label: t('bilan.target'),   value: target_kcal, unit: 'kcal', color: '#5B6EF5', bg: '#EEEFFE', icon: '🎯' },
+              { label: t('bilan.ingested'), value: ingested,    unit: 'kcal', color: 'var(--accent-blue)',   bg: 'rgba(99,102,241,0.08)',  icon: '🍽️' },
+              { label: t('bilan.burned'),   value: burned,      unit: 'kcal', color: 'var(--accent-yellow)', bg: 'rgba(245,158,11,0.08)', icon: '🔥' },
+              { label: t('bilan.target'),   value: target_kcal, unit: 'kcal', color: 'var(--accent-green)',  bg: 'rgba(16,185,129,0.08)', icon: '🎯' },
             ].map(({ label, value, unit, color, bg, icon }) => (
               <div key={label} style={{ background: bg, borderRadius: 16, padding: '12px 8px', textAlign: 'center' }}>
                 <div style={{ fontSize: 20 }}>{icon}</div>
@@ -468,7 +471,7 @@ export default function BilanPage() {
           </div>
 
           {ingested > 0 && (
-            <div style={{ background: '#fff', borderRadius: 20, padding: '16px', marginBottom: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+            <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
               <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: '#333' }}>Macros du jour</h3>
               <MacroBar label="Glucides"  value={bilan?.glucides  || 0} target={glucTarget} color="#F5A623" />
               <MacroBar label="Protéines" value={bilan?.proteines || 0} target={protTarget} color="#3B82F6" />
@@ -477,7 +480,7 @@ export default function BilanPage() {
           )}
 
           {/* Strava card */}
-          <div style={{ background: '#fff', borderRadius: 20, padding: '14px 16px', marginBottom: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '14px 16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
             {stravaConnected ? (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -515,7 +518,7 @@ export default function BilanPage() {
           </div>
 
           {/* Activities list */}
-          <div style={{ background: '#fff', borderRadius: 20, padding: '16px', marginBottom: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#333' }}>{t('bilan.activities')}</h3>
               {burned > 0 && (
@@ -537,7 +540,7 @@ export default function BilanPage() {
           </div>
 
           <button onClick={() => setShowForm(v => !v)}
-            style={{ width: '100%', padding: '13px', borderRadius: 16, border: 'none', background: showForm ? '#f0f0f0' : '#1A6B3C', color: showForm ? '#444' : '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
+            style={{ width: '100%', padding: '13px', borderRadius: 16, border: 'none', background: showForm ? 'var(--bg-tertiary)' : 'var(--accent-blue)', color: showForm ? 'var(--text-primary)' : '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
             <i className={`ti ${showForm ? 'ti-x' : 'ti-plus'}`} style={{ fontSize: 18 }} />
             {showForm ? 'Annuler' : t('bilan.addActivity')}
           </button>
@@ -580,7 +583,7 @@ export default function BilanPage() {
 
           {/* Bar chart 7 jours */}
           {weeklyStats && weeklyStats.active_days > 0 && (
-            <div style={{ background: '#fff', borderRadius: 20, padding: '16px', marginBottom: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+            <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#333' }}>7 derniers jours</h3>
                 <div style={{ display: 'flex', gap: 12, fontSize: 10, color: '#888' }}>
@@ -623,7 +626,7 @@ export default function BilanPage() {
 
           {/* Estimation text */}
           {weeklyStats && weeklyStats.active_days > 0 && (
-            <div style={{ background: '#fff', borderRadius: 20, padding: '16px', marginBottom: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+            <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
               <h3 style={{ margin: '0 0 10px', fontSize: 14, fontWeight: 700, color: '#333' }}>Estimation cette semaine</h3>
               <p style={{ margin: 0, fontSize: 13, color: '#444', lineHeight: 1.6 }}>
                 {weeklyStats.goal === 'perte' && (
@@ -661,7 +664,7 @@ export default function BilanPage() {
       {/* ═══ VUE MENSUELLE ═══ */}
       {view === 'mois' && (
         <>
-          <div style={{ background: '#fff', borderRadius: 20, padding: '16px', marginBottom: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
             {/* Month navigation */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
               <button style={navBtnStyle}
@@ -733,7 +736,7 @@ export default function BilanPage() {
 
           {/* Monthly summary */}
           {monthlyStats && monthlyStats.total_tracked > 0 && (
-            <div style={{ background: '#fff', borderRadius: 20, padding: '16px', marginBottom: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+            <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
               <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: '#333' }}>Résumé du mois</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
                 <div style={{ background: '#EAF3DE', borderRadius: 12, padding: '10px 12px' }}>
@@ -908,6 +911,8 @@ export default function BilanPage() {
           )}
         </div>
       )}
+
+      </div>{/* /padding wrapper */}
     </div>
   );
 }
