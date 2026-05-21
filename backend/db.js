@@ -188,6 +188,13 @@ async function initDB() {
   )`);
   await db.exec(`CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id)`);
 
+  await db.exec(`CREATE TABLE IF NOT EXISTS push_subscriptions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL UNIQUE,
+    subscription_json TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+
   await db.exec(`CREATE TABLE IF NOT EXISTS dish_analyses (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,

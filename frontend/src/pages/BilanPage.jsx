@@ -11,6 +11,7 @@ import { calcBMR, calcTDEE, calcTarget } from '../utils/api';
 import api from '../utils/api';
 import ActivityForm from '../components/ActivityForm';
 import { SkeletonCard, SkeletonLine } from '../components/Skeleton';
+import { exportBilanPDF } from '../utils/exportPDF';
 
 const SPORT_ICONS  = { marche: '🚶', course: '🏃', velo: '🚴', natation: '🏊', muscu: '💪' };
 const DAY_LABELS   = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
@@ -388,15 +389,37 @@ export default function BilanPage() {
     alignItems: 'center', justifyContent: 'center', color: '#444',
   };
 
+  const handleExportPDF = async () => {
+    try {
+      const dateStr = new Date().toISOString().split('T')[0];
+      await exportBilanPDF('bilan-content', `bilan-${view}-${dateStr}.pdf`);
+      toast.success(t('bilan.exported'));
+    } catch (err) {
+      console.error(err);
+      toast.error(t('bilan.exportError'));
+    }
+  };
+
   return (
-    <div style={{ padding: '16px 16px 32px', minHeight: '100vh', background: '#f7f7f5' }}>
+    <div id="bilan-content" style={{ padding: '16px 16px 32px', minHeight: '100vh', background: '#f7f7f5' }}>
 
       {/* Header */}
-      <div style={{ marginBottom: 14 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: '#1a1a1a', margin: 0 }}>{t('bilan.title')}</h1>
-        <p style={{ fontSize: 13, color: '#888', margin: '4px 0 0' }}>
-          {new Date().toLocaleDateString('fr-DZ', { weekday: 'long', day: 'numeric', month: 'long' })}
-        </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#1a1a1a', margin: 0 }}>{t('bilan.title')}</h1>
+          <p style={{ fontSize: 13, color: '#888', margin: '4px 0 0' }}>
+            {new Date().toLocaleDateString('fr-DZ', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </p>
+        </div>
+        <button onClick={handleExportPDF} style={{
+          padding: '0.4rem 0.9rem', borderRadius: '20px',
+          border: '1px solid var(--border-color)', background: 'var(--bg-primary)',
+          color: 'var(--text-primary)', fontWeight: '600', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: 12,
+        }}>
+          <span>📄</span>
+          <span>{t('bilan.exportPDF')}</span>
+        </button>
       </div>
 
       {/* View toggle */}

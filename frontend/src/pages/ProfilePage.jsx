@@ -5,6 +5,7 @@ import { useProfileStore, useAuthStore } from '../store';
 import { calcBMR, calcTDEE, calcTarget, calcIMC, imcStatus } from '../utils/api';
 import { useTranslation } from '../i18n';
 import { useTheme } from '../contexts/ThemeContext';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 import api from '../utils/api';
 
 const GOAL_ICONS = { perte: '📉', maintien: '⚖️', prise: '💪', sante: '🫀' };
@@ -46,6 +47,7 @@ export default function ProfilePage() {
   }
   const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
+  const { permission, subscribe, unsubscribe } = usePushNotifications();
 
   const p = profile;
   const bmr = calcBMR(p.age, p.weight, p.height, p.sexe);
@@ -257,6 +259,34 @@ export default function ProfilePage() {
             <span>{theme === 'dark' ? t('profile.dark') : t('profile.light')}</span>
           </button>
         </div>
+      </div>
+
+      {/* Notifications push */}
+      <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: 12, boxShadow: '0 1px 3px var(--shadow)' }}>
+        <h3 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 12px' }}>
+          🔔 {t('profile.notifications')}
+        </h3>
+        {permission === 'default' && (
+          <button onClick={subscribe} style={{
+            width: '100%', padding: '10px', background: '#EAF3DE', color: '#1A6B3C',
+            border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+          }}>
+            {t('profile.enableNotifications')}
+          </button>
+        )}
+        {permission === 'granted' && (
+          <button onClick={unsubscribe} style={{
+            width: '100%', padding: '10px', background: '#FEF2F2', color: '#993C1D',
+            border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+          }}>
+            {t('profile.disableNotifications')}
+          </button>
+        )}
+        {permission === 'denied' && (
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>
+            {t('profile.notificationsDenied')}
+          </p>
+        )}
       </div>
 
       <div style={{ margin: '0 1.25rem 1rem' }}>

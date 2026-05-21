@@ -63,6 +63,10 @@ const T = {
       darkModeDesc: 'Réduit la fatigue oculaire',
       light: 'Clair',
       dark: 'Sombre',
+      notifications: 'Notifications',
+      enableNotifications: 'Activer les notifications',
+      disableNotifications: 'Désactiver les notifications',
+      notificationsDenied: 'Notifications refusées. Modifiez les permissions du navigateur.',
     },
     history: {
       title: '📈 Historique', subtitle: '7 derniers jours',
@@ -122,6 +126,7 @@ const T = {
       caloriesBurned: 'Calories brûlées',
       saving: 'Enregistrement...', saved: 'Activité enregistrée !',
       errorLoad: 'Erreur lors du chargement', errorSave: "Erreur lors de l'enregistrement",
+      exportPDF: 'Exporter PDF', exported: 'PDF exporté !', exportError: 'Erreur export PDF',
     },
     dishes: {
       title: 'Plats', subtitle: 'Découvrez des recettes du monde entier',
@@ -224,6 +229,22 @@ const T = {
       login: { title: 'NutriVita', subtitle: 'Nutrition personnalisée pour le marché algérien', email: 'Email', password: 'Mot de passe', submit: 'Se connecter', loading: 'Connexion...', noAccount: 'Pas encore de compte ?', register: "S'inscrire", error: 'Identifiants incorrects' },
       register: { title: 'NutriVita', subtitle: 'Créer un compte', name: 'Prénom & Nom', namePlaceholder: 'Ex: Ahmed Benali', email: 'Email', emailPlaceholder: 'exemple@gmail.com', password: 'Mot de passe', passwordPlaceholder: '6 caractères minimum', submit: 'Créer mon compte', loading: 'Création...', hasAccount: 'Déjà un compte ?', login: 'Se connecter', shortPassword: 'Mot de passe trop court (6 caractères min)', success: 'Compte créé ! Bienvenue 🎉', error: "Erreur lors de l'inscription" },
     },
+    onboarding: {
+      complete: 'Profil enregistré !', error: 'Erreur lors de la sauvegarde',
+      age: 'Âge', height: 'Taille (cm)', weight: 'Poids (kg)',
+      male: 'Homme', female: 'Femme',
+      sedentary: 'Sédentaire', light: 'Légèrement actif', moderate: 'Modérément actif', active: 'Très actif',
+      lose: 'Perdre du poids', maintain: 'Maintenir', gain: 'Prendre du poids', health: 'Santé générale',
+      back: 'Retour', next: 'Suivant', finish: 'Commencer',
+    },
+    landing: {
+      tagline: 'Votre compagnon nutrition intelligent',
+      getStarted: 'Commencer gratuitement',
+      login: 'Se connecter',
+      featuresTitle: 'Fonctionnalités',
+      ctaTitle: 'Prêt à commencer ?',
+      ctaDesc: "Rejoignez des milliers d'utilisateurs qui ont transformé leur alimentation",
+    },
   },
 
   ar: {
@@ -285,6 +306,10 @@ const T = {
       darkModeDesc: 'يقلل إجهاد العين',
       light: 'فاتح',
       dark: 'داكن',
+      notifications: 'إشعارات',
+      enableNotifications: 'تفعيل الإشعارات',
+      disableNotifications: 'إيقاف الإشعارات',
+      notificationsDenied: 'تم رفض الإشعارات. عدّل إعدادات المتصفح.',
     },
     history: {
       title: '📈 السجل', subtitle: 'آخر 7 أيام',
@@ -344,6 +369,7 @@ const T = {
       caloriesBurned: 'سعرات محروقة',
       saving: 'جارٍ الحفظ...', saved: 'تم تسجيل النشاط !',
       errorLoad: 'خطأ في التحميل', errorSave: 'خطأ في الحفظ',
+      exportPDF: 'تصدير PDF', exported: 'تم تصدير PDF !', exportError: 'خطأ في التصدير',
     },
     dishes: {
       title: 'أطباق', subtitle: 'اكتشف وصفات من حول العالم',
@@ -446,6 +472,22 @@ const T = {
       login: { title: 'NutriVita', subtitle: 'تغذية شخصية للسوق الجزائرية', email: 'البريد الإلكتروني', password: 'كلمة المرور', submit: 'تسجيل الدخول', loading: 'جارٍ الدخول...', noAccount: 'ليس لديك حساب؟', register: 'إنشاء حساب', error: 'بيانات الدخول غير صحيحة' },
       register: { title: 'NutriVita', subtitle: 'إنشاء حساب', name: 'الاسم الكامل', namePlaceholder: 'مثال: أحمد بن علي', email: 'البريد الإلكتروني', emailPlaceholder: 'example@gmail.com', password: 'كلمة المرور', passwordPlaceholder: '6 أحرف على الأقل', submit: 'إنشاء حسابي', loading: 'جارٍ الإنشاء...', hasAccount: 'لديك حساب بالفعل؟', login: 'تسجيل الدخول', shortPassword: 'كلمة المرور قصيرة جداً (6 أحرف على الأقل)', success: 'تم إنشاء الحساب ! مرحباً 🎉', error: 'خطأ في إنشاء الحساب' },
     },
+    onboarding: {
+      complete: 'تم حفظ الملف الشخصي !', error: 'خطأ في الحفظ',
+      age: 'العمر', height: 'الطول (سم)', weight: 'الوزن (كغ)',
+      male: 'ذكر', female: 'أنثى',
+      sedentary: 'خامل', light: 'خفيف النشاط', moderate: 'متوسط النشاط', active: 'نشيط',
+      lose: 'إنقاص الوزن', maintain: 'المحافظة', gain: 'زيادة الوزن', health: 'صحة عامة',
+      back: 'رجوع', next: 'التالي', finish: 'ابدأ',
+    },
+    landing: {
+      tagline: 'رفيقك الذكي للتغذية',
+      getStarted: 'ابدأ مجاناً',
+      login: 'تسجيل الدخول',
+      featuresTitle: 'المميزات',
+      ctaTitle: 'مستعد للبدء؟',
+      ctaDesc: 'انضم إلى آلاف المستخدمين الذين حولوا نظامهم الغذائي',
+    },
   },
 
   en: {
@@ -507,6 +549,10 @@ const T = {
       darkModeDesc: 'Reduces eye strain',
       light: 'Light',
       dark: 'Dark',
+      notifications: 'Notifications',
+      enableNotifications: 'Enable notifications',
+      disableNotifications: 'Disable notifications',
+      notificationsDenied: 'Notifications denied. Change browser permissions.',
     },
     history: {
       title: '📈 History', subtitle: 'Last 7 days',
@@ -566,6 +612,7 @@ const T = {
       caloriesBurned: 'Calories burned',
       saving: 'Saving...', saved: 'Activity saved!',
       errorLoad: 'Error loading data', errorSave: 'Error saving activity',
+      exportPDF: 'Export PDF', exported: 'PDF exported!', exportError: 'PDF export error',
     },
     dishes: {
       title: 'Dishes', subtitle: 'Explore recipes from around the world',
@@ -667,6 +714,22 @@ const T = {
     auth: {
       login: { title: 'NutriVita', subtitle: 'Personalized nutrition for the Algerian market', email: 'Email', password: 'Password', submit: 'Log in', loading: 'Logging in...', noAccount: 'No account yet?', register: 'Sign up', error: 'Invalid credentials' },
       register: { title: 'NutriVita', subtitle: 'Create account', name: 'Full Name', namePlaceholder: 'Ex: Ahmed Benali', email: 'Email', emailPlaceholder: 'example@gmail.com', password: 'Password', passwordPlaceholder: '6 characters minimum', submit: 'Create my account', loading: 'Creating...', hasAccount: 'Already have an account?', login: 'Log in', shortPassword: 'Password too short (6 chars min)', success: 'Account created! Welcome 🎉', error: 'Error creating account' },
+    },
+    onboarding: {
+      complete: 'Profile saved!', error: 'Error saving profile',
+      age: 'Age', height: 'Height (cm)', weight: 'Weight (kg)',
+      male: 'Male', female: 'Female',
+      sedentary: 'Sedentary', light: 'Lightly active', moderate: 'Moderately active', active: 'Very active',
+      lose: 'Lose weight', maintain: 'Maintain', gain: 'Gain weight', health: 'General health',
+      back: 'Back', next: 'Next', finish: 'Start',
+    },
+    landing: {
+      tagline: 'Your intelligent nutrition companion',
+      getStarted: 'Start for free',
+      login: 'Log in',
+      featuresTitle: 'Features',
+      ctaTitle: 'Ready to start?',
+      ctaDesc: 'Join thousands of users who transformed their diet',
     },
   },
 };

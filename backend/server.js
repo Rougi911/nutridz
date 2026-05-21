@@ -65,6 +65,7 @@ app.use('/api/weight', require('./routes/weight'));
 app.use('/api/glucose', require('./routes/glucose'));
 app.use('/api/voice', require('./routes/voice'));
 app.use('/api/favorites', require('./routes/favorites'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', version: '1.0.0' }));

@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect } from 'react';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store';
@@ -19,6 +19,8 @@ import ScannerPage from './pages/ScannerPage';
 import DishesPage from './pages/DishesPage';
 import PrivacyPage from './pages/PrivacyPage';
 import LegalPage from './pages/LegalPage';
+import LandingPage from './pages/LandingPage';
+import OnboardingModal from './components/OnboardingModal';
 
 const BilanPage          = lazy(() => import('./pages/BilanPage'));
 const GlucoseTrackingPage = lazy(() => import('./pages/GlucoseTrackingPage'));
@@ -41,22 +43,33 @@ function PrivateRoute({ children }) {
 
 export default function App() {
   const initAuth = useAuthStore(s => s.initAuth);
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => { initAuth(); }, [initAuth]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('nutridz-auth')
+      ? JSON.parse(localStorage.getItem('nutridz-auth'))?.state?.token
+      : null;
+    const done = localStorage.getItem('nutridz-onboarding-done');
+    if (token && !done) setShowOnboarding(true);
+  }, [isAuthenticated]);
 
   return (
     <ThemeProvider>
       <LanguageProvider>
         <BrowserRouter>
           <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
+          {showOnboarding && <OnboardingModal onComplete={() => setShowOnboarding(false)} />}
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/confidentialite" element={<PrivacyPage />} />
               <Route path="/mentions-legales" element={<LegalPage />} />
-              <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
-                <Route index element={<Navigate to="/journal" replace />} />
+              <Route path="/" element={isAuthenticated ? <Navigate to="/journal" replace /> : <LandingPage />} />
+              <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
                 <Route path="journal" element={<JournalPage />} />
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="products/:id" element={<ProductDetailPage />} />

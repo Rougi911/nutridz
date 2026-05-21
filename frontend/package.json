@@ -3,16 +3,18 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@ericblade/quagga2": "^1.8.4",
+    "axios": "^1.6.2",
+    "date-fns": "^3.0.6",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.21.0",
-    "axios": "^1.6.2",
-    "zustand": "^4.4.7",
-    "recharts": "^2.10.3",
     "react-hot-toast": "^2.4.1",
-    "date-fns": "^3.0.6",
-    "@ericblade/quagga2": "^1.8.4",
-    "react-scripts": "5.0.1"
+    "react-router-dom": "^6.21.0",
+    "react-scripts": "5.0.1",
+    "recharts": "^2.10.3",
+    "zustand": "^4.4.7"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -21,10 +23,19 @@
   },
   "proxy": "http://localhost:3001",
   "eslintConfig": {
-    "extends": ["react-app"]
+    "extends": [
+      "react-app"
+    ]
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
-    "development": ["last 1 chrome version", "last 1 firefox version"]
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version"
+    ]
   }
 }
