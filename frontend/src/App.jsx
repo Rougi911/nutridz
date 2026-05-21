@@ -25,6 +25,7 @@ import OnboardingModal from './components/OnboardingModal';
 const BilanPage          = lazy(() => import('./pages/BilanPage'));
 const GlucoseTrackingPage = lazy(() => import('./pages/GlucoseTrackingPage'));
 const DishDetailPage     = lazy(() => import('./pages/DishDetailPage'));
+const SettingsPage       = lazy(() => import('./pages/SettingsPage'));
 
 const PageLoader = () => (
   <div style={{ padding: '1rem' }}>
@@ -81,6 +82,7 @@ export default function App() {
                 <Route path="bilan" element={<BilanPage />} />
                 <Route path="glucose" element={<GlucoseTrackingPage />} />
                 <Route path="profile" element={<ProfilePage />} />
+                <Route path="settings" element={<SettingsPage />} />
               </Route>
             </Routes>
           </Suspense>

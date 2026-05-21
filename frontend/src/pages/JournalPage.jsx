@@ -8,6 +8,8 @@ import api from '../utils/api';
 import VoiceInput from '../components/VoiceInput';
 import VoiceFoodModal from '../components/VoiceFoodModal';
 import { SkeletonLine, SkeletonCard } from '../components/Skeleton';
+import useSettingsStore from '../store/useSettingsStore';
+import { weightPlaceholder, inputWeightToKg, kgToLbs } from '../utils/units';
 
 const MEAL_ICONS = { pdej: 'ti-coffee', dej: 'ti-soup', coll: 'ti-apple', diner: 'ti-moon' };
 
@@ -22,7 +24,9 @@ export default function JournalPage() {
   const [yesterdayWeight, setYesterdayWeight] = useState(null);
   const [voiceMeal, setVoiceMeal] = useState(null);
   const [voiceModal, setVoiceModal] = useState({ open: false, mealType: null, items: [] });
-  const weightDelta = todayWeight && yesterdayWeight ? parseFloat(todayWeight) - yesterdayWeight : 0;
+  const { weightUnit } = useSettingsStore();
+  const yesterdayInUnit = yesterdayWeight ? (weightUnit === 'lbs' ? kgToLbs(yesterdayWeight) : yesterdayWeight) : null;
+  const weightDelta = todayWeight && yesterdayInUnit ? parseFloat(todayWeight) - yesterdayInUnit : 0;
 
   useEffect(() => { fetchJournal(); }, []);
 
@@ -45,12 +49,10 @@ export default function JournalPage() {
   useEffect(() => { fetchWeights(); }, [date]);
 
   const handleWeightSubmit = async () => {
-    if (!todayWeight || parseFloat(todayWeight) < 20 || parseFloat(todayWeight) > 300) return;
+    const kg = inputWeightToKg(todayWeight, weightUnit);
+    if (!kg || kg < 20 || kg > 300) return;
     try {
-      await api.post('/weight', {
-        weight_kg: parseFloat(todayWeight),
-        date: format(parseISO(date), 'yyyy-MM-dd'),
-      });
+      await api.post('/weight', { weight_kg: kg, date: format(parseISO(date), 'yyyy-MM-dd') });
       toast.success(t('weight.saved'));
     } catch {
       toast.error(t('weight.error'));
@@ -112,11 +114,9 @@ export default function JournalPage() {
     try {
       const res = await api.post('/voice/parse', { text: transcript, context: 'weight', lang });
       if (res.data.weight_kg) {
-        setTodayWeight(res.data.weight_kg);
-        await api.post('/weight', {
-          weight_kg: res.data.weight_kg,
-          date: format(parseISO(date), 'yyyy-MM-dd'),
-        });
+        const displayVal = weightUnit === 'lbs' ? kgToLbs(res.data.weight_kg) : res.data.weight_kg;
+        setTodayWeight(String(displayVal));
+        await api.post('/weight', { weight_kg: res.data.weight_kg, date: format(parseISO(date), 'yyyy-MM-dd') });
         toast.success(t('weight.saved'));
         fetchWeights();
       } else {
@@ -205,7 +205,7 @@ export default function JournalPage() {
           </span>
           {yesterdayWeight && (
             <span style={{ fontSize: '0.85rem', color: weightDelta >= 0 ? '#ef4444' : '#10b981', fontWeight: '500' }}>
-              {weightDelta > 0 ? '+' : ''}{weightDelta.toFixed(1)} kg
+              {weightDelta > 0 ? '+' : ''}{weightDelta.toFixed(1)} {weightUnit}
             </span>
           )}
         </div>
@@ -213,7 +213,7 @@ export default function JournalPage() {
           <input
             type="number"
             step="0.1"
-            placeholder={t('weight.enterWeight')}
+            placeholder={weightPlaceholder(weightUnit)}
             value={todayWeight}
             onChange={(e) => setTodayWeight(e.target.value)}
             onBlur={handleWeightSubmit}

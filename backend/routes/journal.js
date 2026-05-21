@@ -99,6 +99,17 @@ router.post('/', auth, async (req, res) => {
   res.status(201).json(entry);
 });
 
+// DELETE /api/journal/all — supprimer tout le journal de l'user
+router.delete('/all', auth, async (req, res) => {
+  const db = getDB();
+  try {
+    const result = await db.prepare('DELETE FROM journal_entries WHERE user_id = ?').run(req.userId);
+    res.json({ deleted: result.changes });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // DELETE /api/journal/:id
 router.delete('/:id', auth, async (req, res) => {
   const db = getDB();

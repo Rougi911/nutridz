@@ -7,6 +7,8 @@ import {
 } from 'recharts';
 import { useTranslation } from '../i18n';
 import { useActivityStore, useProfileStore } from '../store';
+import useSettingsStore from '../store/useSettingsStore';
+import { kgToLbs } from '../utils/units';
 import { calcBMR, calcTDEE, calcTarget } from '../utils/api';
 import api from '../utils/api';
 import ActivityForm from '../components/ActivityForm';
@@ -239,6 +241,7 @@ export default function BilanPage() {
     addActivity, fetchStravaToday, getStravaAuthUrl,
   } = useActivityStore();
   const profile = useProfileStore(s => s.profile);
+  const { weightUnit } = useSettingsStore();
 
   const [view, setView] = useState('jour');
   const [monthYear, setMonthYear] = useState({
@@ -827,12 +830,12 @@ export default function BilanPage() {
                 </h3>
                 {evolutionData.weight_entries.length > 0 ? (
                   <ResponsiveContainer width="100%" height={220}>
-                    <LineChart data={evolutionData.weight_entries}>
+                    <LineChart data={evolutionData.weight_entries.map(e => ({ ...e, weight_display: weightUnit === 'lbs' ? kgToLbs(e.weight_kg) : e.weight_kg }))}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
                       <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#aaa' }} tickFormatter={d => d.slice(5)} />
-                      <YAxis domain={['dataMin - 1', 'dataMax + 1']} tick={{ fontSize: 10 }} unit=" kg" width={50} />
-                      <Tooltip formatter={(v) => [`${v} kg`, t('evolution.weightChart')]} labelFormatter={l => l} />
-                      <Line type="monotone" dataKey="weight_kg" stroke="#1A6B3C" strokeWidth={2} dot={{ r: 4, fill: '#1A6B3C' }} activeDot={{ r: 6 }} />
+                      <YAxis domain={['dataMin - 1', 'dataMax + 1']} tick={{ fontSize: 10 }} unit={` ${weightUnit}`} width={55} />
+                      <Tooltip formatter={(v) => [`${v} ${weightUnit}`, t('evolution.weightChart')]} labelFormatter={l => l} />
+                      <Line type="monotone" dataKey="weight_display" stroke="#1A6B3C" strokeWidth={2} dot={{ r: 4, fill: '#1A6B3C' }} activeDot={{ r: 6 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 ) : (

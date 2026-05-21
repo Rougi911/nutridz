@@ -158,4 +158,15 @@ router.delete('/:id', auth, async (req, res) => {
   res.json({ success: true });
 });
 
+// DELETE /api/weight/all
+router.delete('/all', auth, async (req, res) => {
+  const db = getDB();
+  try {
+    const result = await db.prepare('DELETE FROM weight_entries WHERE user_id = ?').run(req.userId);
+    res.json({ deleted: result.changes });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

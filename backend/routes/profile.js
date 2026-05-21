@@ -71,4 +71,18 @@ function computeMetrics(p) {
   return { bmr, tdee, target_kcal: target, imc, imc_status: imcStatus };
 }
 
+// DELETE /api/profile/reset-data — tout supprimer sauf le compte
+router.delete('/reset-data', auth, async (req, res) => {
+  const db = getDB();
+  try {
+    await db.prepare('DELETE FROM journal_entries WHERE user_id = ?').run(req.userId);
+    await db.prepare('DELETE FROM weight_entries WHERE user_id = ?').run(req.userId);
+    await db.prepare('DELETE FROM glucose_readings WHERE user_id = ?').run(req.userId);
+    await db.prepare('DELETE FROM favorites WHERE user_id = ?').run(req.userId);
+    res.json({ success: true, message: 'All user data deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

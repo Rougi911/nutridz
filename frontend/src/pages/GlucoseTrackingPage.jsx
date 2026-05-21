@@ -5,6 +5,8 @@ import api from '../utils/api';
 import { useTranslation } from '../i18n';
 import VoiceInput from '../components/VoiceInput';
 import { SkeletonCard, SkeletonLine } from '../components/Skeleton';
+import useSettingsStore from '../store/useSettingsStore';
+import { displayGlucose, inputGlucoseToMgdl, glucosePlaceholder, glucoseThresholds, mgdlToMmol } from '../utils/units';
 import {
   ScatterChart, Scatter,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -13,6 +15,8 @@ import {
 
 export default function GlucoseTrackingPage() {
   const { t, lang } = useTranslation();
+  const { glucoseUnit } = useSettingsStore();
+  const thresholds = glucoseThresholds(glucoseUnit);
   const [readings, setReadings]   = useState([]);
   const [metrics, setMetrics]     = useState(null);
   const [period, setPeriod]       = useState(14);
@@ -43,13 +47,13 @@ export default function GlucoseTrackingPage() {
 
   const handleManualSubmit = async (e) => {
     e.preventDefault();
-    const value = parseFloat(glucoseValue);
-    if (!value || value < 20 || value > 600) {
+    const mgdl = inputGlucoseToMgdl(glucoseValue, glucoseUnit);
+    if (!mgdl || mgdl < 20 || mgdl > 600) {
       toast.error(t('glucose.invalidValue'));
       return;
     }
     try {
-      await api.post('/glucose', { glucose_mg_dl: value, reading_type: readingType });
+      await api.post('/glucose', { glucose_mg_dl: mgdl, reading_type: readingType });
       toast.success(t('glucose.saved'));
       setGlucoseValue('');
       fetchData();
@@ -62,7 +66,8 @@ export default function GlucoseTrackingPage() {
     try {
       const res = await api.post('/voice/parse', { text: transcript, context: 'glucose', lang });
       if (res.data.glucose_mg_dl) {
-        setGlucoseValue(res.data.glucose_mg_dl);
+        const displayVal = glucoseUnit === 'mmol/L' ? mgdlToMmol(res.data.glucose_mg_dl) : res.data.glucose_mg_dl;
+        setGlucoseValue(String(displayVal));
         setReadingType(res.data.reading_type || 'random');
         toast.success(t('voice.glucoseDetected'));
       } else {
@@ -123,7 +128,7 @@ export default function GlucoseTrackingPage() {
           <input
             type="number"
             step="1"
-            placeholder={t('glucose.valuePlaceholder')}
+            placeholder={glucosePlaceholder(glucoseUnit)}
             value={glucoseValue}
             onChange={(e) => setGlucoseValue(e.target.value)}
             style={{ flex: '1 1 140px', padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: '6px', fontSize: '1rem' }}
@@ -213,8 +218,8 @@ export default function GlucoseTrackingPage() {
               <MetricCard label={t('glucose.cv')} value={`${metrics.cv}%`}
                 color={metrics.cv < 36 ? '#10b981' : '#f59e0b'}
                 subtitle={t('glucose.cvSubtitle')} />
-              <MetricCard label={t('glucose.avg')} value={`${metrics.avg_glucose}`}
-                color="#3b82f6" subtitle="mg/dL" />
+              <MetricCard label={t('glucose.avg')} value={glucoseUnit === 'mmol/L' ? `${mgdlToMmol(metrics.avg_glucose)}` : `${metrics.avg_glucose}`}
+                color="#3b82f6" subtitle={glucoseUnit} />
             </div>
           )}
 
@@ -251,7 +256,7 @@ export default function GlucoseTrackingPage() {
                     tick={{ fontSize: 9, fill: '#aaa' }}
                     tickFormatter={(ms) => format(new Date(ms), 'dd/MM')}
                   />
-                  <YAxis dataKey="y" domain={[40, 320]} tick={{ fontSize: 10 }} unit=" mg/dL" width={65} />
+                  <YAxis dataKey="y" domain={glucoseUnit === 'mmol/L' ? [2, 20] : [40, 320]} tick={{ fontSize: 10 }} unit={glucoseUnit === 'mmol/L' ? ' mmol' : ' mg'} width={65} />
                   <Tooltip
                     cursor={{ strokeDasharray: '3 3' }}
                     content={({ active, payload }) => {
@@ -259,21 +264,21 @@ export default function GlucoseTrackingPage() {
                       const d = payload[0].payload;
                       return (
                         <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', padding: '8px 12px', borderRadius: 8, fontSize: 12 }}>
-                          <div style={{ fontWeight: 700 }}>{d.glucose_mg_dl} mg/dL</div>
+                          <div style={{ fontWeight: 700 }}>{displayGlucose(d.glucose_mg_dl, glucoseUnit)}</div>
                           <div style={{ color: '#888' }}>{format(new Date(d.timestamp), 'dd/MM/yyyy HH:mm')}</div>
                           <div style={{ color: '#666' }}>{d.reading_type}</div>
                         </div>
                       );
                     }}
                   />
-                  <ReferenceLine y={70}  stroke="#f59e0b" strokeDasharray="4 3" strokeWidth={1.5} />
-                  <ReferenceLine y={180} stroke="#f59e0b" strokeDasharray="4 3" strokeWidth={1.5} />
+                  <ReferenceLine y={thresholds.targetLow}  stroke="#f59e0b" strokeDasharray="4 3" strokeWidth={1.5} />
+                  <ReferenceLine y={thresholds.targetHigh} stroke="#f59e0b" strokeDasharray="4 3" strokeWidth={1.5} />
                   <Scatter
-                    data={chartData}
+                    data={chartData.map(r => ({ ...r, y: glucoseUnit === 'mmol/L' ? mgdlToMmol(r.glucose_mg_dl) : r.glucose_mg_dl }))}
                     shape={(props) => {
                       const { cx, cy, payload } = props;
                       const g = payload.glucose_mg_dl;
-                      const color = g < 70 ? '#ef4444' : g > 180 ? '#f59e0b' : '#10b981';
+                      const color = g < thresholds.low ? '#ef4444' : g > thresholds.targetHigh ? '#f59e0b' : '#10b981';
                       return <circle cx={cx} cy={cy} r={5} fill={color} fillOpacity={0.85} />;
                     }}
                   />
@@ -294,12 +299,12 @@ export default function GlucoseTrackingPage() {
               <div style={{ maxHeight: 280, overflowY: 'auto' }}>
                 {readings.slice(0, 20).map((r) => {
                   const g = r.glucose_mg_dl;
-                  const outBg    = g < 70 ? '#fee2e2' : g > 180 ? '#fef3c7' : '#dcfce7';
-                  const outColor = g < 70 ? '#dc2626' : g > 180 ? '#d97706' : '#10b981';
+                  const outBg    = g < thresholds.low ? '#fee2e2' : g > thresholds.targetHigh ? '#fef3c7' : '#dcfce7';
+                  const outColor = g < thresholds.low ? '#dc2626' : g > thresholds.targetHigh ? '#d97706' : '#10b981';
                   return (
                     <div key={r.id} style={{ padding: '0.55rem 0', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
-                        <div style={{ fontWeight: 700, fontSize: '1rem', color: outColor }}>{g} mg/dL</div>
+                        <div style={{ fontWeight: 700, fontSize: '1rem', color: outColor }}>{displayGlucose(g, glucoseUnit)}</div>
                         <div style={{ fontSize: '0.78rem', color: '#9ca3af' }}>
                           {format(new Date(r.timestamp), 'dd/MM/yyyy HH:mm')}
                           {r.source === 'libreview_csv' && <span style={{ marginLeft: 6, fontSize: 10, background: '#ede9fe', color: '#7c3aed', padding: '1px 5px', borderRadius: 4 }}>LibreView</span>}

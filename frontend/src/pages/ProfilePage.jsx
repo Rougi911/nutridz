@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useProfileStore, useAuthStore } from '../store';
 import { calcBMR, calcTDEE, calcTarget, calcIMC, imcStatus } from '../utils/api';
@@ -12,6 +12,7 @@ const GOAL_ICONS = { perte: '📉', maintien: '⚖️', prise: '💪', sante: '�
 const SPORT_EMOJIS = { marche: '🚶', velo: '🚴', course: '🏃', natation: '🏊' };
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
   const { profile, updateProfile, setProfileLocal } = useProfileStore();
   const { user, logout } = useAuthStore();
   const [saving, setSaving] = useState(false);
@@ -46,7 +47,7 @@ export default function ProfilePage() {
     finally { setDeleting(false); setShowDeleteModal(false); }
   }
   const { t } = useTranslation();
-  const { theme, toggleTheme } = useTheme();
+  useTheme(); // ThemeProvider context — keep mounted
   const { permission, subscribe, unsubscribe } = usePushNotifications();
 
   const p = profile;
@@ -235,30 +236,21 @@ export default function ProfilePage() {
         </button>
       </div>
 
-      {/* Apparence / Dark mode */}
-      <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: 12, boxShadow: '0 1px 3px var(--shadow)' }}>
-        <h3 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 12px' }}>
-          🎨 {t('profile.appearance')}
-        </h3>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <div style={{ fontWeight: 500, marginBottom: 4, color: 'var(--text-primary)', fontSize: 13 }}>
-              {t('profile.darkMode')}
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-              {t('profile.darkModeDesc')}
+      {/* Settings link */}
+      <div style={{ margin: '0 1.25rem 1rem', background: 'var(--bg-primary)', borderRadius: 12, boxShadow: '0 1px 3px var(--shadow)', overflow: 'hidden' }}>
+        <button
+          onClick={() => navigate('/settings')}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0.85rem 1rem', background: 'transparent', border: 'none', borderBottom: '1px solid var(--border-color)', cursor: 'pointer', color: 'var(--text-primary)' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span style={{ fontSize: '1.3rem' }}>⚙️</span>
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ fontWeight: '500', fontSize: 14 }}>Paramètres</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Unités, données, apparence</div>
             </div>
           </div>
-          <button onClick={toggleTheme} style={{
-            padding: '0.5rem 1rem', borderRadius: 20, border: 'none',
-            background: theme === 'dark' ? 'var(--accent-purple)' : 'var(--accent-blue)',
-            color: 'white', fontWeight: 600, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: '0.5rem',
-          }}>
-            <span style={{ fontSize: '1.2rem' }}>{theme === 'dark' ? '🌙' : '☀️'}</span>
-            <span>{theme === 'dark' ? t('profile.dark') : t('profile.light')}</span>
-          </button>
-        </div>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '1.2rem' }}>›</span>
+        </button>
       </div>
 
       {/* Notifications push */}
