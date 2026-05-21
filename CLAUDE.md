@@ -54,6 +54,7 @@ STRAVA_REDIRECT_URI=https://nutridz.onrender.com/api/activity/strava/callback
 ```
 REACT_APP_API_URL=https://nutridz.onrender.com/api
 REACT_APP_GA_ID=G-XXXXXXXXXX          # Google Analytics (optionnel)
+REACT_APP_VAPID_PUBLIC_KEY=...        # Push notifications (générer avec web-push generate-vapid-keys)
 ```
 
 ## Structure du projet
@@ -78,7 +79,9 @@ nutridz/
 │   │   ├── nutrition.js              # Recherche cascade NUTRITION_DB → CIQUAL → USDA
 │   │   ├── weight.js                 # CRUD entrées de poids + estimation composition Forbes
 │   │   ├── glucose.js                # CRUD lectures glycémie + import CSV LibreView + métriques GMI/TIR/CV
-│   │   └── voice.js                  # POST /parse — parsing saisie vocale (aliments/poids/glucose)
+│   │   ├── voice.js                  # POST /parse — parsing saisie vocale (aliments/poids/glucose)
+│   │   ├── favorites.js              # CRUD favoris plats (table favorites, INSERT OR IGNORE)
+│   │   └── notifications.js          # POST/DELETE /subscribe — abonnements push (table push_subscriptions)
 │   ├── services/
 │   │   ├── openfoodfacts.js          # Lookup code-barres mondial
 │   │   ├── ocr.js                    # Tesseract.js OCR étiquettes (FR/AR/EN)
@@ -99,30 +102,41 @@ nutridz/
     │   ├── manifest.json             # PWA NutriVita
     │   ├── index.html                # Meta PWA + Apple touch icons
     │   ├── sw.js                     # Service Worker cache offline
+    │   ├── sw-push.js                # Service Worker push events (push + notificationclick)
     │   ├── _redirects                # /* /index.html 200 (SPA fallback Render)
     │   └── icons/                    # icon-72.png à icon-512.png
     ├── src/
-    │   ├── App.jsx                   # Routes : /journal /products /dishes /vision /history /bilan /glucose /profile + RGPD pages
+    │   ├── App.jsx                   # Routes : "/" landing/redirect, + private layout pour toutes les pages + OnboardingModal
     │   ├── index.js                  # Enregistrement Service Worker
     │   ├── i18n.js                   # Traductions FR/AR/EN + support RTL pour arabe
     │   ├── store/index.js            # Zustand : authStore, profileStore, journalStore, productsStore
+    │   ├── store/useFavoritesStore.js # Zustand favoris : fetchFavorites, addFavorite, removeFavorite, isFavorite
     │   ├── utils/api.js              # axios instance + formules calcBMR/calcTDEE/calcTarget/calcWalkTime
+    │   ├── utils/exportPDF.js        # exportBilanPDF(elementId, filename) — jsPDF + html2canvas
+    │   ├── contexts/
+    │   │   └── ThemeContext.jsx       # ThemeProvider + useTheme() — dark/light, persist localStorage
+    │   ├── hooks/
+    │   │   └── usePushNotifications.js # subscribe/unsubscribe Web Push (nécessite REACT_APP_VAPID_PUBLIC_KEY)
     │   ├── components/
     │   │   ├── Layout.jsx            # Bottom nav 9 onglets : Journal/Produits/Plats/Scanner/Vision/Bilan/Historique/Glycémie/Profil + footer RGPD
     │   │   ├── LanguageSelector.jsx  # AR/FR/EN
     │   │   ├── CookieBanner.jsx      # Bannière CNIL conforme
     │   │   ├── ActivityForm.jsx      # Ajout activité manuelle
-    │   │   └── BarcodeScanner.jsx    # Quagga2 scanner (eslint-disable react-hooks/exhaustive-deps en haut)
+    │   │   ├── BarcodeScanner.jsx    # Quagga2 scanner (eslint-disable react-hooks/exhaustive-deps en haut)
+    │   │   ├── Skeleton.jsx          # SkeletonLine, SkeletonCircle, SkeletonCard — animation skeleton-pulse
+    │   │   ├── VoiceInput.jsx        # Web Speech API — start/stop micro, callback onResult(transcript)
+    │   │   └── OnboardingModal.jsx   # Modal 4 étapes (welcome/corps/objectif/features), flag localStorage
     │   └── pages/
-    │       ├── JournalPage.jsx       # Tableau de bord quotidien + saisie poids du jour + bouton "+ Ajouter un plat"
+    │       ├── LandingPage.jsx       # Page publique "/" : hero + 6 features + CTA → /register ou /login
+    │       ├── JournalPage.jsx       # Tableau de bord quotidien + saisie poids + saisie vocale + dupliquer J-1
     │       ├── ProductsPage.jsx      # Catalogue produits
     │       ├── ProductDetailPage.jsx # Fiche produit + add to journal
-    │       ├── DishesPage.jsx        # Base de 60 plats + création custom avec autocomplete CIQUAL/USDA
-    │       ├── DishDetailPage.jsx    # Fiche plat avec slider portion
+    │       ├── DishesPage.jsx        # Base de 60 plats + création custom + favoris (étoile + filtre)
+    │       ├── DishDetailPage.jsx    # Fiche plat avec slider portion + bouton favori ⭐
     │       ├── FoodVisionPage.jsx    # Analyse photo plat (Clarifai) + 6 cuisines reconnues
     │       ├── HistoryPage.jsx       # Graphiques 7 jours
-    │       ├── BilanPage.jsx         # 4 vues : Jour/Semaine/Mois (calendrier billet d'avion) + Évolution poids/composition
-    │       ├── ProfilePage.jsx       # Profil + 4 onglets + section RGPD export/suppression
+    │       ├── BilanPage.jsx         # 4 vues : Jour/Semaine/Mois + Évolution + bouton export PDF 📄
+    │       ├── ProfilePage.jsx       # Profil + 4 onglets + RGPD + dark mode toggle + carte notifications push
     │       ├── GlucoseTrackingPage.jsx # Saisie manuelle + import LibreView CSV + métriques GMI/TIR/CV + ScatterChart
     │       ├── LoginPage.jsx
     │       ├── RegisterPage.jsx      # 2 cases RGPD obligatoires
@@ -165,13 +179,13 @@ Utilise regex `\u0300-\u036f` pour la suppression des accents (pas les caractèr
 |---|---|---|
 | Auth JWT | ✅ | Login/register + Strava OAuth |
 | Profil + BMR/TDEE | ✅ | Calcul automatique objectifs |
-| Journal alimentaire | ✅ | 4 repas par jour + macros + **modifiers personnalisables** + **saisie vocale** |
+| Journal alimentaire | ✅ | 4 repas par jour + macros + modifiers + saisie vocale + dupliquer J-1 |
 | Scanner code-barres | ✅ | Quagga2 + OpenFoodFacts + base locale |
 | OCR étiquettes | ✅ | Tesseract.js FR/AR/EN |
 | Analyse photo plat | ✅ | Clarifai food-item-recognition (1000 appels/mois gratuit) |
 | 6 cuisines reconnues | ✅ | France/Italie/Maghreb/Asie/USA/Moyen-Orient |
-| Base de 60 plats | ✅ | 11 cuisines + création custom |
-| Bilan calories | ✅ | 4 vues : Jour/Semaine/Mois + Évolution poids (Recharts) |
+| Base de 60 plats | ✅ | 11 cuisines + création custom + favoris ⭐ |
+| Bilan calories | ✅ | 4 vues : Jour/Semaine/Mois + Évolution + export PDF 📄 |
 | Intégration Strava | ✅ | OAuth + sync activités |
 | Bases nutritionnelles | ✅ | NUTRITION_DB → CIQUAL (3186 aliments) → USDA (cascade) |
 | Suivi du poids | ✅ | Saisie quotidienne + courbe évolution + estimation composition corporelle (Forbes) |
@@ -180,8 +194,13 @@ Utilise regex `\u0300-\u036f` pour la suppression des accents (pas les caractèr
 | Multilingue | ✅ | FR/AR/EN avec RTL pour arabe |
 | Conformité RGPD | ✅ | Bannière cookies + export/suppression données |
 | PWA installable | ✅ | iOS/Android, icônes, service worker, splash |
+| Dark mode | ✅ | CSS custom properties + ThemeContext + toggle Profil |
+| Skeleton loaders | ✅ | DishesPage, GlucoseTrackingPage, BilanPage, JournalPage |
+| Lazy loading | ✅ | BilanPage, GlucoseTrackingPage, DishDetailPage (-19.5 kB bundle) |
+| Onboarding guidé | ✅ | Modal 4 étapes au premier login (corps/objectif/features) |
+| Landing page publique | ✅ | `/` hero + 6 features + CTA, redirige vers journal si connecté |
+| Notifications push | ⚠️ | Infrastructure prête (table SQLite + route + hook) — VAPID key à configurer sur Render |
 | Google Analytics | ⏳ | Code prêt, attend REACT_APP_GA_ID |
-| Notifications push | ❌ | Pas encore implémenté |
 | Mode hors ligne complet | ❌ | Cache basique uniquement |
 
 ## Workflows fréquents
@@ -212,24 +231,18 @@ Réponse attendue : `{"status":"ok","version":"1.0.0"}`
 ## Idées futures à creuser
 
 **Fonctionnalités** :
-- Notifications push de rappel de repas/mesure glycémie
+- Notifications push de rappel de repas/mesure glycémie *(infra prête, ajouter VAPID key + cron backend)*
 - Mode hors ligne complet avec sync intelligente
-- Favoris dans les plats + duplication repas jour à jour
-- Export PDF des rapports (BilanPage)
 - Recettes communautaires (utilisateurs partagent leurs plats)
 - Intégration Apple Health / Google Fit (en plus de Strava)
 - Corrélation glycémie ↔ repas avec alertes/patterns
 
 **Performance & UX** :
-- Lazy loading des pages lourdes (BilanPage, GlucoseTrackingPage)
 - Optimisation bundle size (tree shaking, code splitting)
 - Service worker plus agressif (cache stratégies)
 - Animations de transition entre pages
-- Skeleton loaders pendant fetch
-- Dark mode
 
 **SEO & Marketing** :
-- Page landing `/` publique avec démo
 - Meta tags OpenGraph pour partage social
 - Blog intégré pour SEO
 - Domaine custom `nutrivita.fr` (~10€/an OVH)
@@ -246,6 +259,9 @@ Réponse attendue : `{"status":"ok","version":"1.0.0"}`
 | #4 | Phase 1 | Suivi glycémique backend (glucose_readings, métriques GMI/TIR/CV, LibreView CSV) | `7dab676` |
 | #4 | Phase 2 | UI glycémie : GlucoseTrackingPage (saisie, import CSV, ScatterChart, métriques) | `da5bef8` |
 | #5 | Phase 1 | Parser vocal backend : voiceParser.js + POST /api/voice/parse (FR/EN/AR) | `02810a6` |
+| #5 | Phase 2 | VoiceInput.jsx frontend : Web Speech API, intégration Journal + Glucose | `40f1ffe` |
+| #6 | — | Polish : dark mode, skeleton loaders, lazy loading, favoris plats, dupliquer J-1 | `e889949` |
+| #7 | — | Features avancées : export PDF, onboarding, push infra, landing page publique | `a149285` |
 
 ## Notes importantes
 
@@ -253,6 +269,9 @@ Réponse attendue : `{"status":"ok","version":"1.0.0"}`
 - **Clarifai** : 1000 analyses/mois gratuit, modèle `food-item-recognition` ou fallback `general-image-recognition`
 - **USDA** : 1000 req/heure avec clé gratuite, sinon DEMO_KEY limité à ~30/jour
 - **Strava** : OAuth2 redirige vers `/api/activity/strava/callback`, le state param contient userId
+- **Push notifications** : infra prête (table + route + hook), mais nécessite `REACT_APP_VAPID_PUBLIC_KEY` (frontend) + `VAPID_PRIVATE_KEY` + `VAPID_EMAIL` (backend) + npm `web-push` + cron d'envoi côté serveur
+- **Onboarding** : flag `nutridz-onboarding-done` dans localStorage. Pour re-tester, supprimer cette clé
+- **Landing page** : route `/` publique — les users connectés sont redirigés automatiquement vers `/journal`
 - **PowerShell Windows** : `Ctrl+V` ne marche pas dans Claude Code, utiliser clic droit pour coller
 - **Limite quota Claude Code** : se réinitialise à 4h du matin Paris pour le plan Pro
 
