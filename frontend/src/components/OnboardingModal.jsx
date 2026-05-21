@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { useTranslation } from '../i18n';
-import { useProfileStore } from '../store';
+import api from '../utils/api';
 
 const STEPS = [
   {
@@ -45,7 +45,6 @@ const inputStyle = {
 
 export default function OnboardingModal({ onComplete }) {
   const { t } = useTranslation();
-  const updateProfile = useProfileStore(s => s.updateProfile);
   const [step, setStep] = useState(0);
   const [data, setData] = useState({
     age: '',
@@ -58,21 +57,36 @@ export default function OnboardingModal({ onComplete }) {
 
   const handleNext = async () => {
     if (step === STEPS.length - 1) {
-      try {
-        const payload = {
-          age: Number(data.age) || 30,
-          sexe: data.sexe,
-          height: Number(data.height) || 170,
-          weight: Number(data.weight) || 70,
-          activity_level: data.activity_level,
-          goal: data.goal,
-        };
-        await updateProfile(payload);
-        localStorage.setItem('nutridz-onboarding-done', 'true');
-        toast.success(t('onboarding.complete'));
-        onComplete();
-      } catch {
-        toast.error(t('onboarding.error'));
+      const payload = {
+        age:            data.age      ? parseInt(data.age)        : undefined,
+        sexe:           data.sexe     || undefined,
+        height:         data.height   ? parseFloat(data.height)   : undefined,
+        weight:         data.weight   ? parseFloat(data.weight)   : undefined,
+        activity_level: data.activity_level || undefined,
+        goal:           data.goal     || undefined,
+      };
+
+      // Retry une fois en cas de 502/503 (cold start Render)
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          await api.put('/profile', payload);
+          localStorage.setItem('nutridz-onboarding-done', 'true');
+          toast.success(t('onboarding.complete'));
+          onComplete();
+          return;
+        } catch (err) {
+          const status = err.response?.status;
+          if (attempt === 1 && (status === 502 || status === 503 || !status)) {
+            await new Promise(r => setTimeout(r, 3000));
+            continue;
+          }
+          // Après 2 tentatives ou autre erreur : ne pas bloquer l'utilisateur
+          console.error('Onboarding save error:', err);
+          toast.error("Profil non enregistré — complétez-le dans Profil");
+          localStorage.setItem('nutridz-onboarding-done', 'true');
+          onComplete();
+          return;
+        }
       }
     } else {
       setStep(step + 1);
