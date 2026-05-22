@@ -6,9 +6,6 @@ import { useTranslation } from '../i18n';
 import useFavoritesStore from '../store/useFavoritesStore';
 import { SkeletonCard, SkeletonCircle, SkeletonLine } from '../components/Skeleton';
 
-const DIFF_COLORS = { facile: '#1A6B3C', moyen: '#BA7517', difficile: '#993C1D' };
-const DIFF_BG     = { facile: '#EAF3DE', moyen: '#FFF3DC', difficile: '#FAECE7' };
-
 export default function DishesPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -52,28 +49,29 @@ export default function DishesPage() {
     <div style={{ background: 'var(--bg-secondary)', minHeight: '100vh', paddingBottom: 32 }}>
       {/* Header */}
       <div className="gradient-hero" style={{ color: '#fff', padding: '1.25rem 1.25rem 1.5rem', borderRadius: '0 0 28px 28px' }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Base de données</h1>
+        <h1 style={{ fontSize: 22, fontWeight: 500, margin: 0 }}>Base de données</h1>
         <p style={{ fontSize: 13, opacity: 0.8, marginTop: 3, marginBottom: 12 }}>{t('dishes.subtitle')}</p>
         <div style={{ position: 'relative' }}>
           <i className="ti ti-search" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', fontSize: 16 }} />
           <input
             value={query} onChange={e => setQuery(e.target.value)}
             placeholder={t('dishes.searchPlaceholder')}
-            style={{ width: '100%', padding: '11px 12px 11px 36px', borderRadius: 12, border: 'none', fontSize: 13, boxSizing: 'border-box', background: 'rgba(255,255,255,0.95)', color: '#111' }}
+            style={{ width: '100%', padding: '11px 12px 11px 40px', borderRadius: 12, border: 'none', fontSize: 13, boxSizing: 'border-box', background: 'rgba(255,255,255,0.95)', color: '#111' }}
           />
         </div>
-        {/* Quick actions */}
-        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-          <button onClick={() => navigate('/vision')} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '9px 0', borderRadius: 12, border: '1px solid rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.15)', color: 'white', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>
-            <i className="ti ti-camera" style={{ fontSize: 14 }} /> Photo
-          </button>
-          <button onClick={() => navigate('/scanner')} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '9px 0', borderRadius: 12, border: '1px solid rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.15)', color: 'white', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>
-            <i className="ti ti-barcode" style={{ fontSize: 14 }} /> Scanner CB
-          </button>
-          <button onClick={() => setShowModal(true)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '9px 0', borderRadius: 12, border: '1px solid rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.25)', color: 'white', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
-            <i className="ti ti-plus" style={{ fontSize: 14 }} /> Créer plat
-          </button>
-        </div>
+      </div>
+
+      {/* Quick actions */}
+      <div style={{ display: 'flex', gap: 8, padding: '12px 16px 0' }}>
+        <button onClick={() => navigate('/vision')} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '9px 0', borderRadius: 12, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>
+          <i className="ti ti-camera" style={{ fontSize: 14 }} /> Photo
+        </button>
+        <button onClick={() => navigate('/scanner')} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '9px 0', borderRadius: 12, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>
+          <i className="ti ti-barcode" style={{ fontSize: 14 }} /> Scanner CB
+        </button>
+        <button onClick={() => setShowModal(true)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '9px 0', borderRadius: 12, border: 'none', background: '#6366F1', color: 'white', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+          <i className="ti ti-plus" style={{ fontSize: 14 }} /> Créer plat
+        </button>
       </div>
 
       {/* Cuisine chips */}
@@ -138,18 +136,16 @@ export default function DishesPage() {
                   <span style={{ position: 'absolute', top: 8, right: 8, fontSize: 14, lineHeight: 1 }}>⭐</span>
                 )}
                 <div style={{ fontSize: 36, marginBottom: 6 }}>{dish.emoji}</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4, lineHeight: 1.3 }}>{dish.name}</div>
+                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 3, lineHeight: 1.3 }}>{dish.name}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6 }}>{dish.flag} {dish.cuisine}</div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 4 }}>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--accent-blue)' }}>{dish.kcal_per_portion} kcal</span>
-                  {dish.difficulty && (
-                    <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 10, background: DIFF_BG[dish.difficulty] || 'var(--bg-tertiary)', color: DIFF_COLORS[dish.difficulty] || 'var(--text-secondary)', fontWeight: 600 }}>
-                      {dish.difficulty}
-                    </span>
-                  )}
-                </div>
+                <div style={{ fontSize: 15, fontWeight: 500, color: '#6366F1', marginBottom: 4 }}>{dish.kcal_per_portion} kcal</div>
+                {(dish.proteines || dish.glucides || dish.lipides) && (
+                  <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>
+                    P {Math.round(dish.proteines || 0)}g · G {Math.round(dish.glucides || 0)}g · L {Math.round(dish.lipides || 0)}g
+                  </div>
+                )}
                 {dish.is_user_created === 1 && (
-                  <div style={{ marginTop: 6, fontSize: 10, color: 'var(--accent-blue)', fontWeight: 700 }}>✦ Custom</div>
+                  <div style={{ marginTop: 4, fontSize: 10, color: 'var(--accent-blue)', fontWeight: 700 }}>✦ Custom</div>
                 )}
               </button>
             ))}

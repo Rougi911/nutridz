@@ -136,14 +136,19 @@ export default function DishDetailPage() {
   return (
     <div style={{ paddingBottom: 100 }}>
       {/* Header */}
-      <div style={{ background: '#1A6B3C', color: 'white', padding: '1rem 1.25rem 2rem', borderRadius: '0 0 24px 24px' }}>
+      <div className="gradient-hero" style={{ color: 'white', padding: '1rem 1.25rem 2rem', borderRadius: '0 0 24px 24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <button onClick={() => navigate(-1)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: 14 }}>
             ‹ Retour
           </button>
           <button
             onClick={() => favorite ? removeFavorite(parseInt(id)) : addFavorite(parseInt(id))}
-            style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: 20, padding: '5px 14px', cursor: 'pointer', fontSize: 18 }}
+            style={{
+              background: favorite ? '#FEF3C7' : 'rgba(255,255,255,0.15)',
+              border: 'none',
+              color: favorite ? '#f59e0b' : 'white',
+              borderRadius: 20, padding: '5px 14px', cursor: 'pointer', fontSize: 18,
+            }}
           >
             {favorite ? '⭐' : '☆'}
           </button>
@@ -186,17 +191,42 @@ export default function DishDetailPage() {
         ) : null}
 
         {/* Portion slider */}
-        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 12, padding: '14px 16px', marginBottom: 10 }}>
+        <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 16, padding: '14px 16px', marginBottom: 10 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#333' }}>{t('dishes.adjustPortion')}</span>
-            <span style={{ fontSize: 20, fontWeight: 700, color: '#1A6B3C' }}>{portion}g</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{t('dishes.adjustPortion')}</span>
+            <span style={{ fontSize: 20, fontWeight: 700, color: '#6366F1' }}>{portion}g</span>
+          </div>
+          {/* Quick-pick portion chips */}
+          <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+            {[50, 100, 150, 200].map(g => (
+              <button key={g} onClick={() => setPortion(g)} style={{
+                padding: '4px 12px', borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                border: portion === g ? 'none' : '1px solid var(--border-color)',
+                background: portion === g ? '#6366F1' : 'var(--bg-secondary)',
+                color: portion === g ? 'white' : 'var(--text-secondary)',
+                transition: 'all 0.15s',
+              }}>{g}g</button>
+            ))}
           </div>
           <input type="range" min={50} max={800} step={10} value={portion}
             onChange={e => setPortion(Number(e.target.value))}
-            style={{ width: '100%', accentColor: '#1A6B3C', cursor: 'pointer' }}
+            style={{ width: '100%', accentColor: '#6366F1', cursor: 'pointer' }}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#bbb', marginTop: 2 }}>
-            <span>50g</span><span style={{ color: '#1A6B3C', fontWeight: 500 }}>{defaultPortion}g défaut</span><span>800g</span>
+          {/* Quick presets */}
+          <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+            {[
+              { label: '½ portion', val: Math.round(defaultPortion / 2) },
+              { label: 'Normal',   val: defaultPortion },
+              { label: 'Double',   val: defaultPortion * 2 },
+            ].map(({ label, val }) => (
+              <button key={label} onClick={() => setPortion(val)} style={{
+                flex: 1, padding: '5px 0', borderRadius: 9999, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                border: portion === val ? 'none' : '1px solid var(--border-color)',
+                background: portion === val ? 'rgba(99,102,241,0.12)' : 'var(--bg-secondary)',
+                color: portion === val ? '#6366F1' : 'var(--text-secondary)',
+                transition: 'all 0.15s',
+              }}>{label}</button>
+            ))}
           </div>
         </div>
 
@@ -206,7 +236,7 @@ export default function DishDetailPage() {
             <button
               type="button"
               onClick={() => setShowPanel(!showPanel)}
-              style={{ width: '100%', padding: '12px 16px', background: '#f5f5f3', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 13, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              style={{ width: '100%', padding: '12px 16px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 13, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--text-primary)' }}
             >
               <span>⚙️ {t('modifiers.title')} {modifiers.length > 0 && <span style={{ color: '#1A6B3C' }}>({modifiers.length})</span>}</span>
               <span style={{ color: '#888' }}>{showPanel ? '▼' : '▶'}</span>
@@ -283,18 +313,18 @@ export default function DishDetailPage() {
         )}
 
         {/* Calories card */}
-        <div style={{ background: '#1A6B3C', color: 'white', borderRadius: 12, padding: '16px 20px', marginBottom: 10, textAlign: 'center' }}>
-          <div style={{ fontSize: 40, fontWeight: 700 }}>{computed.kcal} <span style={{ fontSize: 16, opacity: 0.8 }}>kcal</span></div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', marginTop: 12, borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: 12 }}>
-            {[['Glucides', computed.glucides], ['Protéines', computed.proteines], ['Lipides', computed.lipides]].map(([label, val]) => (
+        <div style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 16, padding: '16px 20px', marginBottom: 10, textAlign: 'center' }}>
+          <div style={{ fontSize: 40, fontWeight: 800, color: '#6366F1' }}>{computed.kcal} <span style={{ fontSize: 16, opacity: 0.7 }}>kcal</span></div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', marginTop: 12, borderTop: '1px solid rgba(99,102,241,0.15)', paddingTop: 12 }}>
+            {[['Glucides', computed.glucides, '#6366F1'], ['Protéines', computed.proteines, '#10b981'], ['Lipides', computed.lipides, '#f59e0b']].map(([label, val, color]) => (
               <div key={label}>
-                <div style={{ fontSize: 16, fontWeight: 600 }}>{val}g</div>
-                <div style={{ fontSize: 10, opacity: 0.7, marginTop: 2 }}>{label}</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color }}>{val}g</div>
+                <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 2 }}>{label}</div>
               </div>
             ))}
           </div>
           {computed.fibres > 0 && (
-            <div style={{ fontSize: 11, opacity: 0.65, marginTop: 8 }}>Fibres : {computed.fibres}g</div>
+            <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 8 }}>Fibres : {computed.fibres}g</div>
           )}
         </div>
 
@@ -317,15 +347,15 @@ export default function DishDetailPage() {
         )}
 
         {/* Meal type selector */}
-        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 12, padding: '14px 16px', marginBottom: 14 }}>
-          <p style={{ fontSize: 13, fontWeight: 600, margin: '0 0 10px', color: '#333' }}>Repas</p>
+        <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 16, padding: '14px 16px', marginBottom: 14 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, margin: '0 0 10px', color: 'var(--text-primary)' }}>Repas</p>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {MEAL_IDS.map(m => (
               <button key={m} onClick={() => setMealType(m)} style={{
                 padding: '6px 14px', borderRadius: 20, fontSize: 12, cursor: 'pointer', fontWeight: 500,
-                border: mealType === m ? 'none' : '0.5px solid #e0e0e0',
-                background: mealType === m ? '#1A6B3C' : '#f5f5f3',
-                color: mealType === m ? '#fff' : '#555',
+                border: mealType === m ? 'none' : '1px solid var(--border-color)',
+                background: mealType === m ? '#6366F1' : 'var(--bg-secondary)',
+                color: mealType === m ? '#fff' : 'var(--text-secondary)',
                 transition: 'all 0.15s',
               }}>
                 {t(`journal.meals.${m}`)}
@@ -336,14 +366,15 @@ export default function DishDetailPage() {
 
         {/* CTA */}
         <button onClick={handleLog} disabled={logging} style={{
-          width: '100%', padding: '15px 24px',
-          background: logging ? '#ccc' : '#1A6B3C',
-          color: 'white', border: 'none', borderRadius: 14,
+          width: '100%', padding: '16px',
+          background: logging ? 'var(--bg-tertiary)' : '#6366F1',
+          color: logging ? 'var(--text-secondary)' : 'white',
+          border: 'none', borderRadius: 16,
           fontSize: 15, fontWeight: 700,
           cursor: logging ? 'not-allowed' : 'pointer',
-          boxShadow: logging ? 'none' : '0 4px 14px rgba(26,107,60,0.3)',
+          boxShadow: logging ? 'none' : '0 4px 14px rgba(99,102,241,0.3)',
         }}>
-          {logging ? 'Ajout en cours...' : `📓 ${t('dishes.addToJournal')} — ${computed.kcal} kcal`}
+          {logging ? 'Ajout en cours...' : `Ajouter au ${t(`journal.meals.${mealType}`)} · ${computed.kcal} kcal`}
         </button>
       </div>
     </div>
