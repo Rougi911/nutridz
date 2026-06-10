@@ -45,8 +45,8 @@
 /* ─── Design tokens — Dark ──────────────────────────────────────── */
 [data-theme="dark"] {
   --bg-primary:    #1c1c2e;
-  --bg-secondary:  #13131f;
-  --bg-tertiary:   #2a2a3d;
+  --bg-secondary:  #1a1b2e;
+  --bg-tertiary:   #252642;
 
   --text-primary:   #f1f1fc;
   --text-secondary: #a0a0bc;
