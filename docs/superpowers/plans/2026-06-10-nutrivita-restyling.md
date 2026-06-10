@@ -39,6 +39,7 @@
 | `src/tests/GradientHeader.test.jsx` | Create | REG-11a |
 | `src/tests/MacroPillCard.test.jsx` | Create | REG-11b |
 | `src/tests/MetricCard.test.jsx` | Create | REG-11c |
+| `src/tests/PreRestructureBaseline.test.jsx` | Create | Baseline before migration (Task 7a) |
 | `src/tests/Navigation.test.jsx` | Create | REG-02 |
 | `src/tests/StatsPage.test.jsx` | Create | REG-06, REG-07 |
 | `src/tests/BaselineReg.test.jsx` | Create | REG-01, REG-09, REG-10 |
@@ -605,60 +606,304 @@ git commit -m "test: add setupTests global mocks and renderWithProviders helper"
 
 ---
 
-## Task 7: DES-04 — Navigation restructuring + StatsPage
+## Task 7a: Pre-restructuring baseline tests (GREEN on current structure)
+
+Write these tests against the **current** route structure. They confirm existing behavior before any routes are touched. After Tasks 7e–7f remove old routes, Task 7g writes the Navigation REG-02 test and verifies the full suite is still green.
+
+**Files:**
+- Create: `src/tests/PreRestructureBaseline.test.jsx`
+
+- [ ] **Step 1: Create `src/tests/PreRestructureBaseline.test.jsx`**
+
+```jsx
+// These tests capture current behavior of pages that will be moved or removed.
+// Run → expect GREEN. After Tasks 7b-7f restructure routes, Task 7g verifies all green again.
+
+import React from 'react';
+import { screen, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { ThemeProvider } from '../contexts/ThemeContext';
+import { LanguageProvider } from '../i18n';
+import BilanPage from '../pages/BilanPage';
+import HistoryPage from '../pages/HistoryPage';
+import ProductsPage from '../pages/ProductsPage';
+import api from '../utils/api';
+
+jest.mock('../components/BarcodeScanner', () => () => (
+  <div data-testid="barcode-scanner">Scanner actif</div>
+));
+
+jest.mock('../utils/api', () => ({
+  __esModule: true,
+  default: {
+    get:    jest.fn().mockResolvedValue({ data: [] }),
+    post:   jest.fn().mockResolvedValue({ data: {} }),
+    delete: jest.fn().mockResolvedValue({ data: {} }),
+    interceptors: { request: { use: jest.fn() }, response: { use: jest.fn() } },
+  },
+}));
+
+jest.mock('../store', () => ({
+  useJournalStore:  () => ({ history: [], fetchHistory: jest.fn(), date: '2026-06-10', meals: {}, totals: {}, loading: false, fetchJournal: jest.fn() }),
+  useProfileStore:  () => ({ profile: { target_kcal: 2000, goal: 'maintien' } }),
+  useActivityStore: () => ({ activities: [], fetchActivities: jest.fn() }),
+  useAuthStore:     () => ({ user: { name: 'Test' }, isAuthenticated: true, initAuth: jest.fn() }),
+}));
+
+jest.mock('../store/useSettingsStore', () => () => ({ weightUnit: 'kg' }));
+
+function renderPage(Component) {
+  return render(
+    <MemoryRouter>
+      <ThemeProvider>
+        <LanguageProvider>
+          <Component />
+        </LanguageProvider>
+      </ThemeProvider>
+    </MemoryRouter>
+  );
+}
+
+describe('Pre-restructure baseline (current structure, GREEN before migration)', () => {
+  // BilanPage — currently standalone at /bilan, will move inside StatsPage
+  test('BilanPage mounts and renders content (current /bilan)', async () => {
+    renderPage(BilanPage);
+    await waitFor(() => {
+      expect(document.body.textContent.length).toBeGreaterThan(10);
+    });
+  });
+
+  // HistoryPage — currently standalone at /history, will move inside StatsPage
+  test('HistoryPage mounts and renders content (current /history)', async () => {
+    renderPage(HistoryPage);
+    await waitFor(() => {
+      expect(document.body.textContent.length).toBeGreaterThan(10);
+    });
+  });
+
+  // ProductsPage — currently at /products, will be absorbed into DishesPage
+  test('ProductsPage mounts and shows product list (current /products)', async () => {
+    api.get.mockResolvedValueOnce({
+      data: [{ id: 1, name: 'Lait entier', calories_per_100g: 61, brand: 'Candia' }],
+    });
+    renderPage(ProductsPage);
+    await waitFor(() => {
+      expect(screen.getByText('Lait entier')).toBeInTheDocument();
+    });
+  });
+});
+```
+
+- [ ] **Step 2: Run — expect GREEN**
+
+```bash
+cd frontend && npm test -- --testPathPattern=PreRestructureBaseline --watchAll=false
+```
+
+Expected: 3 tests PASS
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/tests/PreRestructureBaseline.test.jsx
+git commit -m "test: capture pre-restructuring baseline for Bilan, History, Products"
+```
+
+---
+
+## Task 7b: BilanPage `embedded` + `activeTabOverride` props
+
+**Files:**
+- Modify: `src/pages/BilanPage.jsx`
+
+- [ ] **Step 1: Add `embedded` + `activeTabOverride` props**
+
+In `src/pages/BilanPage.jsx`, make three targeted changes:
+
+**a) Change the function signature:**
+```jsx
+export default function BilanPage({ embedded = false, activeTabOverride }) {
+```
+
+**b) Find the existing view state declaration (likely `const [view, setView] = useState('jour')`) and add a sync effect directly below it:**
+```jsx
+const [view, setView] = useState(activeTabOverride?.toLowerCase() || 'jour');
+useEffect(() => {
+  if (activeTabOverride) setView(activeTabOverride.toLowerCase());
+}, [activeTabOverride]);
+```
+
+**c) Wrap the header div (the first coloured `<div>` in the JSX return) in a condition, and adjust `minHeight`:**
+```jsx
+<div style={{ background: 'var(--bg-secondary)', minHeight: embedded ? 'auto' : '100vh', paddingBottom: 80 }}>
+  {!embedded && (
+    <div style={{ /* existing header styles kept unchanged */ }}>
+      {/* existing header content kept unchanged */}
+    </div>
+  )}
+  {/* rest of existing content unchanged */}
+</div>
+```
+
+- [ ] **Step 2: Run baseline — still GREEN**
+
+```bash
+cd frontend && npm test -- --testPathPattern=PreRestructureBaseline --watchAll=false
+```
+
+Expected: 3 tests PASS (props are additive; BilanPage still mounts standalone)
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/pages/BilanPage.jsx
+git commit -m "feat(bilan): add embedded + activeTabOverride props for StatsPage integration"
+```
+
+---
+
+## Task 7c: HistoryPage `embedded` prop
+
+**Files:**
+- Modify: `src/pages/HistoryPage.jsx`
+
+- [ ] **Step 1: Add `embedded` prop**
+
+In `src/pages/HistoryPage.jsx`:
+
+**a) Change the function signature:**
+```jsx
+export default function HistoryPage({ embedded = false }) {
+```
+
+**b) Wrap the existing header div in a condition:**
+```jsx
+{!embedded && (
+  <div style={{ background: '#1A6B3C', color: 'white', padding: '1rem 1.25rem 1.5rem', borderRadius: '0 0 24px 24px' }}>
+    <h1 style={{ fontSize: 22, fontWeight: 500 }}>{t('history.title')}</h1>
+    <p style={{ fontSize: 13, opacity: 0.75, marginTop: 2 }}>{t('history.subtitle')}</p>
+  </div>
+)}
+```
+
+- [ ] **Step 2: Run baseline — still GREEN**
+
+```bash
+cd frontend && npm test -- --testPathPattern=PreRestructureBaseline --watchAll=false
+```
+
+Expected: 3 tests PASS
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/pages/HistoryPage.jsx
+git commit -m "feat(history): add embedded prop for StatsPage integration"
+```
+
+---
+
+## Task 7d: Create StatsPage + StatsPage tests
 
 **Files:**
 - Create: `src/pages/StatsPage.jsx`
-- Modify: `src/pages/BilanPage.jsx` (add `embedded` prop)
-- Modify: `src/pages/HistoryPage.jsx` (add `embedded` prop)
-- Modify: `src/App.jsx`
-- Modify: `src/components/Layout.jsx`
-- Create: `src/tests/Navigation.test.jsx`
 - Create: `src/tests/StatsPage.test.jsx`
 
-- [ ] **Step 1: Add `embedded` prop to BilanPage**
-
-In `src/pages/BilanPage.jsx`, wrap the existing header section in a condition. The header is the first `<div>` with gradient styling (around lines 1-20 of the JSX return). Add the `embedded` prop to the function signature and skip the header when true:
+- [ ] **Step 1: Write the StatsPage test (REG-06, REG-07) — expect FAIL**
 
 ```jsx
-// src/pages/BilanPage.jsx — change function signature
-export default function BilanPage({ embedded = false }) {
-  // ... existing state and hooks ...
+// src/tests/StatsPage.test.jsx
+import React from 'react';
+import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { renderWithProviders } from './test-utils';
+import StatsPage from '../pages/StatsPage';
+import api from '../utils/api';
+import { exportBilanPDF } from '../utils/exportPDF';
 
-  return (
-    <div style={{ background: 'var(--bg-secondary)', minHeight: embedded ? 'auto' : '100vh', paddingBottom: 80 }}>
-      {/* Skip header when embedded — StatsPage provides it */}
-      {!embedded && (
-        <div style={{ /* existing header styles */ }}>
-          {/* existing header content */}
-        </div>
-      )}
-      {/* rest of existing content unchanged */}
-    </div>
-  );
-}
+jest.mock('../utils/api', () => ({
+  __esModule: true,
+  default: {
+    get:    jest.fn().mockResolvedValue({ data: [] }),
+    post:   jest.fn().mockResolvedValue({ data: {} }),
+    delete: jest.fn().mockResolvedValue({ data: {} }),
+    interceptors: { request: { use: jest.fn() }, response: { use: jest.fn() } },
+  },
+}));
+
+jest.mock('../utils/exportPDF', () => ({
+  exportBilanPDF: jest.fn(),
+}));
+
+jest.mock('../store', () => ({
+  useJournalStore:   () => ({ history: [], fetchHistory: jest.fn(), date: '2026-06-10', meals: {}, totals: {}, loading: false, fetchJournal: jest.fn() }),
+  useProfileStore:   () => ({ profile: { target_kcal: 2000, goal: 'maintien' } }),
+  useActivityStore:  () => ({ activities: [], fetchActivities: jest.fn() }),
+  useAuthStore:      () => ({ user: { name: 'Test' }, isAuthenticated: true }),
+}));
+
+jest.mock('../store/useSettingsStore', () => () => ({ weightUnit: 'kg' }));
+
+describe('StatsPage (REG-06, REG-07)', () => {
+  test('renders Stats screen with 4 tab buttons', async () => {
+    renderWithProviders(<StatsPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Statistiques')).toBeInTheDocument();
+    });
+    expect(screen.getByRole('button', { name: 'Jour' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Semaine' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mois' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Évolution' })).toBeInTheDocument();
+  });
+
+  // REG-06 — BilanPage content loads in default tab
+  test('default Jour tab renders BilanPage content (Recharts container)', async () => {
+    renderWithProviders(<StatsPage />);
+    await waitFor(() => screen.getByRole('button', { name: 'Jour' }));
+    await waitFor(() => {
+      const hasChart = document.querySelector('.recharts-responsive-container');
+      const hasBilanContent = screen.queryByText(/kcal|calories|objectif/i);
+      expect(hasChart || hasBilanContent).toBeTruthy();
+    }, { timeout: 3000 });
+  });
+
+  // REG-06 — HistoryPage renders in Évolution tab
+  test('switching to Évolution tab renders HistoryPage content', async () => {
+    renderWithProviders(<StatsPage />);
+    await waitFor(() => screen.getByRole('button', { name: 'Évolution' }));
+    userEvent.click(screen.getByRole('button', { name: 'Évolution' }));
+    await waitFor(() => {
+      const hasHistory = screen.queryByText(/history\.title|historique|évolution/i);
+      const hasChart = document.querySelector('.recharts-responsive-container');
+      expect(hasHistory || hasChart).toBeTruthy();
+    }, { timeout: 3000 });
+  });
+
+  // REG-07 — PDF export
+  test('PDF export button triggers exportBilanPDF', async () => {
+    renderWithProviders(<StatsPage />);
+    await waitFor(() => screen.getByRole('button', { name: 'Jour' }));
+    await waitFor(() => {
+      const exportBtn = screen.queryByRole('button', { name: /export|pdf|télécharger/i });
+      return exportBtn !== null;
+    }, { timeout: 3000 });
+    const exportBtn = screen.getByRole('button', { name: /export|pdf|télécharger/i });
+    userEvent.click(exportBtn);
+    await waitFor(() => {
+      expect(exportBilanPDF).toHaveBeenCalled();
+    });
+  });
+});
 ```
 
-- [ ] **Step 2: Add `embedded` prop to HistoryPage**
+- [ ] **Step 2: Run test — expect FAIL (module not found)**
 
-Same pattern in `src/pages/HistoryPage.jsx`:
-
-```jsx
-export default function HistoryPage({ embedded = false }) {
-  // ... existing hooks ...
-  return (
-    <div>
-      {!embedded && (
-        <div style={{ background: '#1A6B3C', color: 'white', padding: '1rem 1.25rem 1.5rem', borderRadius: '0 0 24px 24px' }}>
-          <h1 style={{ fontSize: 22, fontWeight: 500 }}>{t('history.title')}</h1>
-          <p style={{ fontSize: 13, opacity: 0.75, marginTop: 2 }}>{t('history.subtitle')}</p>
-        </div>
-      )}
-      {/* rest of existing content unchanged */}
-    </div>
-  );
-}
+```bash
+cd frontend && npm test -- --testPathPattern=StatsPage --watchAll=false
 ```
+
+Expected: `Cannot find module '../pages/StatsPage'`
 
 - [ ] **Step 3: Create `src/pages/StatsPage.jsx`**
 
@@ -667,8 +912,8 @@ import React, { useState, lazy, Suspense } from 'react';
 import GradientHeader from '../components/GradientHeader';
 import { SkeletonCard, SkeletonLine } from '../components/Skeleton';
 
-const BilanPage    = lazy(() => import('./BilanPage'));
-const HistoryPage  = lazy(() => import('./HistoryPage'));
+const BilanPage   = lazy(() => import('./BilanPage'));
+const HistoryPage = lazy(() => import('./HistoryPage'));
 
 const TABS = ['Jour', 'Semaine', 'Mois', 'Évolution'];
 
@@ -709,24 +954,37 @@ export default function StatsPage() {
 }
 ```
 
-Note: `BilanPage` receives `activeTabOverride` so StatsPage can pre-select the Jour/Semaine/Mois sub-tab. Add these two lines to BilanPage alongside the `embedded` prop changes from Step 1:
+- [ ] **Step 4: Run StatsPage test — expect PASS**
 
-```jsx
-// In BilanPage — change function signature
-export default function BilanPage({ embedded = false, activeTabOverride }) {
-  // Find the existing view state declaration (likely: const [view, setView] = useState('jour'))
-  // and add a sync effect below it:
-  const [view, setView] = useState(activeTabOverride?.toLowerCase() || 'jour');
-  useEffect(() => {
-    if (activeTabOverride) setView(activeTabOverride.toLowerCase());
-  }, [activeTabOverride]);
-  // ... rest of BilanPage unchanged
-}
+```bash
+cd frontend && npm test -- --testPathPattern=StatsPage --watchAll=false
 ```
 
-- [ ] **Step 4: Update `src/App.jsx`**
+Expected: 4 tests PASS
 
-Replace the route section with the 5-tab structure. Keep all currently-used imports, just change the routes:
+- [ ] **Step 5: Run baseline — still GREEN**
+
+```bash
+cd frontend && npm test -- --testPathPattern=PreRestructureBaseline --watchAll=false
+```
+
+Expected: 3 tests PASS (StatsPage is a new file; no routes changed yet)
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add src/pages/StatsPage.jsx src/tests/StatsPage.test.jsx
+git commit -m "feat: add StatsPage merging Bilan/History via embedded prop (REG-06, REG-07)"
+```
+
+---
+
+## Task 7e: Update App.jsx routes (restructuring commit)
+
+**Files:**
+- Modify: `src/App.jsx`
+
+- [ ] **Step 1: Replace `src/App.jsx`**
 
 ```jsx
 // src/App.jsx — full file replacement
@@ -739,18 +997,17 @@ import { LanguageProvider } from './i18n';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { SkeletonCard, SkeletonLine } from './components/Skeleton';
 
-import LoginPage      from './pages/LoginPage';
-import RegisterPage   from './pages/RegisterPage';
-import Layout         from './components/Layout';
-import JournalPage    from './pages/JournalPage';
-import DishesPage     from './pages/DishesPage';
-import ProfilePage    from './pages/ProfilePage';
-import PrivacyPage    from './pages/PrivacyPage';
-import LegalPage      from './pages/LegalPage';
-import LandingPage    from './pages/LandingPage';
+import LoginPage       from './pages/LoginPage';
+import RegisterPage    from './pages/RegisterPage';
+import Layout          from './components/Layout';
+import JournalPage     from './pages/JournalPage';
+import DishesPage      from './pages/DishesPage';
+import ProfilePage     from './pages/ProfilePage';
+import PrivacyPage     from './pages/PrivacyPage';
+import LegalPage       from './pages/LegalPage';
+import LandingPage     from './pages/LandingPage';
 import OnboardingModal from './components/OnboardingModal';
 
-// Detail pages and heavy pages stay lazy
 const DishDetailPage      = lazy(() => import('./pages/DishDetailPage'));
 const ProductDetailPage   = lazy(() => import('./pages/ProductDetailPage'));
 const StatsPage           = lazy(() => import('./pages/StatsPage'));
@@ -771,7 +1028,7 @@ function PrivateRoute({ children }) {
 }
 
 export default function App() {
-  const initAuth      = useAuthStore(s => s.initAuth);
+  const initAuth        = useAuthStore(s => s.initAuth);
   const isAuthenticated = useAuthStore(s => s.isAuthenticated);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
@@ -801,13 +1058,13 @@ export default function App() {
                 element={isAuthenticated ? <Navigate to="/journal" replace /> : <LandingPage />}
               />
               <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
-                <Route path="journal"    element={<JournalPage />} />
-                <Route path="dishes"     element={<DishesPage />} />
-                <Route path="dishes/:id" element={<DishDetailPage />} />
+                <Route path="journal"      element={<JournalPage />} />
+                <Route path="dishes"       element={<DishesPage />} />
+                <Route path="dishes/:id"   element={<DishDetailPage />} />
                 <Route path="products/:id" element={<ProductDetailPage />} />
-                <Route path="stats"      element={<StatsPage />} />
-                <Route path="glucose"    element={<GlucoseTrackingPage />} />
-                <Route path="profile"    element={<ProfilePage />} />
+                <Route path="stats"        element={<StatsPage />} />
+                <Route path="glucose"      element={<GlucoseTrackingPage />} />
+                <Route path="profile"      element={<ProfilePage />} />
               </Route>
             </Routes>
           </Suspense>
@@ -818,9 +1075,29 @@ export default function App() {
 }
 ```
 
-- [ ] **Step 5: Update `src/components/Layout.jsx`**
+- [ ] **Step 2: Run baseline — verify no regression**
 
-Replace the `NAV` array and remove the language bar. Keep everything else (glass nav styling, CookieBanner, footer):
+```bash
+cd frontend && npm test -- --testPathPattern="PreRestructureBaseline|StatsPage" --watchAll=false
+```
+
+Expected: All PASS. `PreRestructureBaseline` renders components directly (not via routes), so removing routes does not affect it.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/App.jsx
+git commit -m "feat(routes): consolidate 9→5 routes — add /stats, remove /bilan /history /products /scanner /vision"
+```
+
+---
+
+## Task 7f: Update Layout.jsx to 5-tab nav
+
+**Files:**
+- Modify: `src/components/Layout.jsx`
+
+- [ ] **Step 1: Replace `src/components/Layout.jsx`**
 
 ```jsx
 // src/components/Layout.jsx — full file replacement
@@ -831,11 +1108,11 @@ import { useTranslation } from '../i18n';
 import CookieBanner from './CookieBanner';
 
 const NAV = [
-  { to: '/journal', icon: 'ti-notebook',   key: 'journal' },
-  { to: '/dishes',  icon: 'ti-soup',       key: 'dishes' },
-  { to: '/stats',   icon: 'ti-chart-bar',  key: 'stats' },
-  { to: '/glucose', icon: 'ti-droplet',    key: 'glucose' },
-  { to: '/profile', icon: 'ti-user',       key: 'profile' },
+  { to: '/journal', icon: 'ti-notebook',  key: 'journal' },
+  { to: '/dishes',  icon: 'ti-soup',      key: 'dishes'  },
+  { to: '/stats',   icon: 'ti-chart-bar', key: 'stats'   },
+  { to: '/glucose', icon: 'ti-droplet',   key: 'glucose' },
+  { to: '/profile', icon: 'ti-user',      key: 'profile' },
 ];
 
 export default function Layout() {
@@ -851,7 +1128,6 @@ export default function Layout() {
         </footer>
       </div>
 
-      {/* Floating pill navigation */}
       <div style={{
         position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
         width: '100%', maxWidth: 480, padding: '0 12px',
@@ -903,7 +1179,31 @@ export default function Layout() {
 }
 ```
 
-- [ ] **Step 6: Write Navigation test (REG-02)**
+- [ ] **Step 2: Run ALL tests to check regressions**
+
+```bash
+cd frontend && npm test -- --watchAll=false 2>&1 | tail -30
+```
+
+Expected: PreRestructureBaseline PASS; StatsPage PASS; no new failures from nav change.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/components/Layout.jsx
+git commit -m "feat(nav): consolidate to 5-tab nav, remove language bar from Layout (DES-04)"
+```
+
+---
+
+## Task 7g: Navigation REG-02 test + full suite green gate
+
+Write the Navigation test (REG-02) and verify every test written so far is green.
+
+**Files:**
+- Create: `src/tests/Navigation.test.jsx`
+
+- [ ] **Step 1: Write `src/tests/Navigation.test.jsx` (REG-02)**
 
 ```jsx
 // src/tests/Navigation.test.jsx
@@ -914,13 +1214,12 @@ import { ThemeProvider } from '../contexts/ThemeContext';
 import { LanguageProvider } from '../i18n';
 import Layout from '../components/Layout';
 
-// Stub page components
-jest.mock('../pages/JournalPage',          () => () => <div>Journal content</div>);
-jest.mock('../pages/DishesPage',           () => () => <div>Base de données</div>);
-jest.mock('../pages/StatsPage',            () => () => <div>Stats content</div>);
-jest.mock('../pages/GlucoseTrackingPage',  () => () => <div>Glucose content</div>);
-jest.mock('../pages/ProfilePage',          () => () => <div>Profile content</div>);
-jest.mock('../components/CookieBanner',    () => () => null);
+jest.mock('../pages/JournalPage',         () => () => <div>Journal content</div>);
+jest.mock('../pages/DishesPage',          () => () => <div>Base de données</div>);
+jest.mock('../pages/StatsPage',           () => () => <div>Stats content</div>);
+jest.mock('../pages/GlucoseTrackingPage', () => () => <div>Glucose content</div>);
+jest.mock('../pages/ProfilePage',         () => () => <div>Profile content</div>);
+jest.mock('../components/CookieBanner',   () => () => null);
 
 function renderNav(initialRoute = '/journal') {
   return render(
@@ -946,129 +1245,49 @@ describe('Navigation (REG-02)', () => {
   test('renders exactly 5 nav links', () => {
     renderNav();
     const links = screen.getAllByRole('link');
-    // 5 nav links + footer links
     const navLinks = links.filter(l =>
       ['/journal', '/dishes', '/stats', '/glucose', '/profile'].includes(l.getAttribute('href'))
     );
     expect(navLinks).toHaveLength(5);
   });
 
-  test('/dishes nav link exists and points to dishes route', () => {
-    renderNav();
-    expect(screen.getByRole('link', { name: /dishes/i })).toHaveAttribute('href', '/dishes');
-  });
-
-  test('/stats nav link exists', () => {
+  test('/stats nav link exists and points to stats route', () => {
     renderNav();
     expect(screen.getByRole('link', { name: /stats/i })).toHaveAttribute('href', '/stats');
   });
-});
-```
 
-- [ ] **Step 7: Write StatsPage test (REG-06 + REG-07)**
-
-```jsx
-// src/tests/StatsPage.test.jsx
-import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { renderWithProviders } from './test-utils';
-import StatsPage from '../pages/StatsPage';
-import api from '../utils/api';
-import { exportBilanPDF } from '../utils/exportPDF';
-
-jest.mock('../utils/api', () => ({
-  __esModule: true,
-  default: {
-    get:    jest.fn().mockResolvedValue({ data: [] }),
-    post:   jest.fn().mockResolvedValue({ data: {} }),
-    delete: jest.fn().mockResolvedValue({ data: {} }),
-    interceptors: { request: { use: jest.fn() }, response: { use: jest.fn() } },
-  },
-}));
-
-jest.mock('../utils/exportPDF', () => ({
-  exportBilanPDF: jest.fn(),
-}));
-
-jest.mock('../store', () => ({
-  useJournalStore:   () => ({ history: [], fetchHistory: jest.fn(), date: '2026-06-10', meals: {}, totals: {}, loading: false, fetchJournal: jest.fn() }),
-  useProfileStore:   () => ({ profile: { target_kcal: 2000, goal: 'maintien' } }),
-  useActivityStore:  () => ({ activities: [], fetchActivities: jest.fn() }),
-  useAuthStore:      () => ({ user: { name: 'Test' }, isAuthenticated: true }),
-}));
-
-jest.mock('../store/useSettingsStore', () => () => ({ weightUnit: 'kg' }));
-
-describe('StatsPage (REG-06, REG-07)', () => {
-  test('renders Stats screen with 4 tab buttons', async () => {
-    renderWithProviders(<StatsPage />);
-    await waitFor(() => {
-      expect(screen.getByText('Statistiques')).toBeInTheDocument();
-    });
-    expect(screen.getByRole('button', { name: 'Jour' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Semaine' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Mois' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Évolution' })).toBeInTheDocument();
-  });
-
-  // REG-06 — BilanPage content loads in default tab
-  test('default Jour tab renders BilanPage content (Recharts container)', async () => {
-    renderWithProviders(<StatsPage />);
-    await waitFor(() => screen.getByRole('button', { name: 'Jour' }));
-    // BilanPage renders within Suspense — wait for lazy load
-    await waitFor(() => {
-      // BilanPage shows a calorie target or chart container
-      const hasChart = document.querySelector('.recharts-responsive-container');
-      const hasBilanContent = screen.queryByText(/kcal|calories|objectif/i);
-      expect(hasChart || hasBilanContent).toBeTruthy();
-    }, { timeout: 3000 });
-  });
-
-  // REG-06 — HistoryPage renders in Évolution tab
-  test('switching to Évolution tab renders HistoryPage content', async () => {
-    renderWithProviders(<StatsPage />);
-    await waitFor(() => screen.getByRole('button', { name: 'Évolution' }));
-    userEvent.click(screen.getByRole('button', { name: 'Évolution' }));
-    await waitFor(() => {
-      // HistoryPage renders history.title key or a chart
-      const hasHistory = screen.queryByText(/history\.title|historique|évolution/i);
-      const hasChart = document.querySelector('.recharts-responsive-container');
-      expect(hasHistory || hasChart).toBeTruthy();
-    }, { timeout: 3000 });
-  });
-
-  // REG-07 — PDF export
-  test('PDF export button triggers exportBilanPDF', async () => {
-    renderWithProviders(<StatsPage />);
-    await waitFor(() => screen.getByRole('button', { name: 'Jour' }));
-    // Wait for BilanPage to load
-    await waitFor(() => {
-      const exportBtn = screen.queryByRole('button', { name: /export|pdf|télécharger/i });
-      return exportBtn !== null;
-    }, { timeout: 3000 });
-    const exportBtn = screen.getByRole('button', { name: /export|pdf|télécharger/i });
-    userEvent.click(exportBtn);
-    await waitFor(() => {
-      expect(exportBilanPDF).toHaveBeenCalled();
-    });
+  test('no link points to removed routes', () => {
+    renderNav();
+    const hrefs = screen.getAllByRole('link').map(l => l.getAttribute('href'));
+    expect(hrefs).not.toContain('/bilan');
+    expect(hrefs).not.toContain('/history');
+    expect(hrefs).not.toContain('/scanner');
+    expect(hrefs).not.toContain('/products');
   });
 });
 ```
 
-- [ ] **Step 8: Run tests — expect PASS**
+- [ ] **Step 2: Run Navigation test — expect PASS**
 
 ```bash
-cd frontend && npm test -- --testPathPattern="Navigation|StatsPage" --watchAll=false
+cd frontend && npm test -- --testPathPattern=Navigation --watchAll=false
 ```
 
-- [ ] **Step 9: Commit**
+Expected: 3 tests PASS
+
+- [ ] **Step 3: Run full test suite — green gate**
 
 ```bash
-git add src/pages/StatsPage.jsx src/pages/BilanPage.jsx src/pages/HistoryPage.jsx \
-        src/App.jsx src/components/Layout.jsx \
-        src/tests/Navigation.test.jsx src/tests/StatsPage.test.jsx
-git commit -m "feat: navigation 9→5 tabs + StatsPage merging Bilan/History (DES-04, REG-02, REG-06, REG-07)"
+cd frontend && npm test -- --watchAll=false 2>&1 | tail -30
+```
+
+Expected: All PASS — PreRestructureBaseline (3), GradientHeader (6), MacroPillCard (4), MetricCard (5), StatsPage (4), Navigation (3). Total ≥ 25 tests green.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add src/tests/Navigation.test.jsx
+git commit -m "test: add REG-02 Navigation 5-tab test + full suite green gate (DES-04 complete)"
 ```
 
 ---
