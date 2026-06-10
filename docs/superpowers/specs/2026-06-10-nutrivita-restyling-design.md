@@ -248,16 +248,22 @@ Le flux login → token JWT → accès aux routes protégées fonctionne. Test :
 Clic sur chaque onglet nav affiche le bon écran. Test : render `App`, cliquer `Plats` → texte "Base de données" visible ; cliquer `Stats` → graphiques/onglets visibles.
 
 ### REG-03 — Scanner code-barres
-`BarcodeScanner` se monte sans erreur depuis son nouveau point d'entrée (bouton header JournalPage). Test : render `JournalPage`, cliquer bouton scanner, vérifier montage du composant.
+Le callback de résultat du scanner est branché et alimente l'ajout au journal depuis le nouveau point d'entrée (bouton header JournalPage). Test : render `JournalPage`, cliquer bouton scanner, simuler un résultat de scan (appel du callback `onDetected` avec un code-barres), vérifier que `api.post('/journal', ...)` est appelé avec les données du produit correspondant.
 
 ### REG-04 — Vision alimentaire
-`FoodVisionPage` se monte sans erreur depuis son nouveau point d'entrée (bouton header JournalPage). Test : render `JournalPage`, cliquer bouton photo, vérifier montage du composant.
+Le callback de résultat de la vision est branché et alimente l'ajout au journal depuis le nouveau point d'entrée (bouton header JournalPage). Test : render `JournalPage`, cliquer bouton photo, simuler un résultat de reconnaissance (appel du callback `onResult` avec un aliment), vérifier que `api.post('/journal', ...)` est appelé avec les données de l'aliment reconnu.
 
 ### REG-05 — Saisie vocale (quick-add depuis JournalPage header)
 `VoiceInput` se monte et le callback `onResult` est branché depuis le nouveau point d'entrée header. Test : render `JournalPage`, cliquer bouton micro dans le header, vérifier que le composant `VoiceInput` est monté et que l'élément déclencheur est accessible.
 
-### REG-06 — Graphiques Recharts
-`BilanPage` (dans StatsPage) et `GlucoseTrackingPage` rendent leurs graphiques Recharts sans crash. Test : render de chaque composant avec données mockées, vérifier présence du conteneur graphique.
+### REG-06 — Graphiques Recharts + HistoryPage dans StatsPage
+- `GlucoseTrackingPage` rend son ScatterChart sans crash avec données mockées.
+- Dans `StatsPage`, l'onglet actif par défaut (ex. "Jour") rend le contenu de `BilanPage` avec ses graphiques Recharts.
+- Dans `StatsPage`, cliquer l'onglet "Évolution" rend le contenu de `HistoryPage` avec ses graphiques Recharts (données 7 jours mockées).
+Test : render `StatsPage` avec données mockées ; vérifier présence des conteneurs graphiques Bilan ; cliquer onglet "Évolution", vérifier présence des conteneurs graphiques History.
+
+### REG-06b — Onglet Produits dans DishesPage
+L'onglet "Produits" dans DishesPage liste les produits via `axios` et permet la recherche. Test : render `DishesPage` avec `api.get('/products')` mocké retournant une liste de 3 produits ; cliquer filtre "Produits" ; vérifier que les 3 produits sont affichés ; saisir un terme de recherche, vérifier que seuls les produits correspondants sont visibles.
 
 ### REG-07 — Export PDF
 Bouton export PDF dans StatsPage appelle `exportBilanPDF`. Test : render `StatsPage`, cliquer bouton export, vérifier appel du mock.
@@ -270,6 +276,13 @@ Toggle dark mode dans ProfilePage ajoute `data-theme="dark"` sur le `<html>`. Te
 
 ### REG-10 — PWA / Service Worker
 `src/index.js` enregistre le Service Worker. Test : vérifier que `navigator.serviceWorker.register` est appelé au montage (mock `navigator.serviceWorker`).
+
+### REG-11 — Composants design system (DES-03)
+Tests de rendu unitaires pour les trois nouveaux composants :
+
+- **`GradientHeader`** : render avec `variant="indigo"` → le div racine a la classe `gradient-hero` ; avec `variant="glucose"` → classe `gradient-glucose` ; `subtitle` rendu dans `<p>` ; `children` rendu dans le slot droite.
+- **`MacroPillCard`** : render avec `value=60, target=100` → barre à 60% de largeur (style inline) ; avec `value=100, target=100` → barre a la classe `macro-pill__fill--complete`.
+- **`MetricCard`** : render avec `status="good"` → div a la classe `metric-card--good` ; avec `statusText="Objectif atteint"` → texte présent dans le DOM.
 
 ---
 
