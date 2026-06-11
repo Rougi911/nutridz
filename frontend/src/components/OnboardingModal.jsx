@@ -92,15 +92,12 @@ export default function OnboardingModal({ onComplete }) {
   return (
     <div style={{
       position: 'fixed', inset: 0,
-      background: 'rgba(0,0,0,0.6)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 9999, padding: '1rem',
+      background: 'rgba(0,0,0,0.5)',
+      backdropFilter: 'blur(4px)',
+      display: 'flex', alignItems: 'flex-end',
+      zIndex: 300,
     }}>
-      <div style={{
-        background: 'var(--bg-primary)', borderRadius: 24, padding: '2rem 1.5rem',
-        maxWidth: '480px', width: '100%', maxHeight: '90vh', overflowY: 'auto',
-        position: 'relative',
-      }}>
+      <div className="modal-content" style={{ borderRadius: '24px 24px 0 0', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
         {/* Progress bar — 4 segments, current gets flex:2 */}
         <div style={{ display: 'flex', gap: 4, marginBottom: isWelcome ? '2rem' : '1.5rem' }}>
           {STEPS.map((_, i) => (
@@ -126,13 +123,15 @@ export default function OnboardingModal({ onComplete }) {
         {/* ── Step 0: Welcome ── */}
         {isWelcome && (
           <div style={{ textAlign: 'center' }}>
-            <div className="animate-float" style={{ fontSize: 64, marginBottom: '1rem', display: 'block' }}>🥗</div>
-            <h2 style={{ fontSize: '1.6rem', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>
-              {STEPS[0].title}
-            </h2>
-            <p style={{ fontSize: '0.95rem', color: '#6366F1', fontWeight: 600, marginBottom: '0.6rem' }}>
-              Your Daily Wellness Companion
-            </p>
+            <div className="gradient-header gradient-hero" style={{ padding: '24px 20px', borderRadius: '24px 24px 0 0', color: '#fff', textAlign: 'center', margin: '-20px -20px 1.5rem' }}>
+              <div className="animate-float" style={{ fontSize: 64, marginBottom: '0.5rem', display: 'block' }}>🥗</div>
+              <h2 style={{ fontSize: '1.6rem', fontWeight: 500, marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>
+                {STEPS[0].title}
+              </h2>
+              <p style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0, opacity: 0.9 }}>
+                Your Daily Wellness Companion
+              </p>
+            </div>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: 1.6 }}>
               {STEPS[0].description}
             </p>

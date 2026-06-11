@@ -18,32 +18,21 @@ export default function LandingPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-secondary)', overflowX: 'hidden' }}>
       {/* Hero */}
-      <section style={{
-        background: 'linear-gradient(135deg, #1A6B3C 0%, #2d8f5a 100%)',
-        color: 'white', padding: '4rem 2rem', textAlign: 'center',
-      }}>
+      <div className="gradient-header gradient-hero" style={{ padding: '48px 24px 56px', textAlign: 'center', color: '#fff', borderRadius: '0 0 32px 32px' }}>
         <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>🥗</div>
         <h1 style={{ fontSize: '2.5rem', margin: '0 0 1rem', fontWeight: '800' }}>NutriVita</h1>
         <p style={{ fontSize: '1.2rem', margin: '0 0 2rem', opacity: 0.9 }}>
           {t('landing.tagline')}
         </p>
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button onClick={() => navigate('/register')} style={{
-            padding: '0.9rem 2rem', fontSize: '1rem', borderRadius: '30px',
-            border: 'none', background: 'white', color: '#1A6B3C',
-            fontWeight: '700', cursor: 'pointer',
-          }}>
+          <button onClick={() => navigate('/register')} className="pill active">
             {t('landing.getStarted')}
           </button>
-          <button onClick={() => navigate('/login')} style={{
-            padding: '0.9rem 2rem', fontSize: '1rem', borderRadius: '30px',
-            border: '2px solid white', background: 'transparent',
-            color: 'white', fontWeight: '700', cursor: 'pointer',
-          }}>
+          <button onClick={() => navigate('/login')} className="pill" style={{ border: '2px solid white', color: 'white', background: 'transparent' }}>
             {t('landing.login')}
           </button>
         </div>
-      </section>
+      </div>
 
       {/* Features */}
       <section style={{ padding: '3rem 1.5rem', maxWidth: '960px', margin: '0 auto' }}>
@@ -56,10 +45,7 @@ export default function LandingPage() {
           gap: '1.5rem',
         }}>
           {FEATURES.map((feature, i) => (
-            <div key={i} style={{
-              padding: '1.5rem', background: 'var(--bg-primary)', borderRadius: '12px',
-              boxShadow: '0 2px 8px var(--shadow)', textAlign: 'center',
-            }}>
+            <div key={i} className="card" style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>{feature.icon}</div>
               <h3 style={{ marginBottom: '0.5rem', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
                 {feature.title}
@@ -83,11 +69,7 @@ export default function LandingPage() {
         <p style={{ fontSize: '1.1rem', margin: '0 0 2rem', opacity: 0.9 }}>
           {t('landing.ctaDesc')}
         </p>
-        <button onClick={() => navigate('/register')} style={{
-          padding: '0.9rem 2rem', fontSize: '1rem', borderRadius: '30px',
-          border: 'none', background: 'white', color: '#1A6B3C',
-          fontWeight: '700', cursor: 'pointer',
-        }}>
+        <button onClick={() => navigate('/register')} className="pill active">
           {t('landing.getStarted')}
         </button>
       </section>
