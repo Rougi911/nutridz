@@ -5,8 +5,8 @@
 :root {
   /* Surfaces */
   --bg-primary:    #ffffff;
-  --bg-secondary:  #f5f5fb;
-  --bg-tertiary:   #ededf7;
+  --bg-secondary:  #f8f7f9;
+  --bg-tertiary:   #f5f5fb;
 
   /* Text */
   --text-primary:   #0f0f1a;
@@ -41,6 +41,21 @@
   --radius-xl: 24px;
   --radius-2xl: 32px;
   --radius-full: 9999px;
+
+  /* Typography scale — matches v0 Tailwind text-* */
+  --font-size-xs:   0.625rem;   /* text-[10px] */
+  --font-size-sm:   0.875rem;   /* text-sm     = 14px */
+  --font-size-base: 1rem;       /* text-base   = 16px */
+  --font-size-lg:   1.125rem;   /* text-lg     = 18px */
+  --font-size-xl:   1.25rem;    /* text-xl     = 20px */
+  --font-size-2xl:  1.5rem;     /* text-2xl    = 24px */
+  --font-size-3xl:  1.875rem;   /* text-3xl    = 30px */
+
+  /* Spacing scale — matches v0 Tailwind space-y-* / p-* */
+  --space-tight:   12px;  /* p-3 — small stat boxes    */
+  --space-card:    16px;  /* p-4 — card internal        */
+  --space-section: 24px;  /* space-y-6 — between sections */
+  --page-padding:  16px;  /* px-4 — page side margins  */
 }
 
 /* ─── Design tokens — Dark ──────────────────────────────────────── */
@@ -238,8 +253,8 @@ input[type="range"] {
 .card {
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  padding: 24px;
+  border-radius: var(--radius-2xl);
+  padding: var(--space-card);
   box-shadow: 0 2px 8px var(--shadow);
 }
 
@@ -283,7 +298,7 @@ input[type="range"] {
   gap: 4px;
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-2xl);
   padding: 12px;
 }
 .macro-pill__bar {
@@ -303,7 +318,7 @@ input[type="range"] {
 
 /* ─── Metric card ───────────────────────────────────────────────── */
 .metric-card {
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
   border: 1px solid var(--border-color);
   padding: 16px;
   display: flex;
