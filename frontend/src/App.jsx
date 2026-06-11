@@ -10,19 +10,15 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Layout from './components/Layout';
 import JournalPage from './pages/JournalPage';
-import ProductsPage from './pages/ProductsPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import ProfilePage from './pages/ProfilePage';
-import HistoryPage from './pages/HistoryPage';
-import FoodVisionPage from './pages/FoodVisionPage';
-import ScannerPage from './pages/ScannerPage';
 import DishesPage from './pages/DishesPage';
 import PrivacyPage from './pages/PrivacyPage';
 import LegalPage from './pages/LegalPage';
 import LandingPage from './pages/LandingPage';
 import OnboardingModal from './components/OnboardingModal';
 
-const BilanPage          = lazy(() => import('./pages/BilanPage'));
+const StatsPage          = lazy(() => import('./pages/StatsPage'));
 const GlucoseTrackingPage = lazy(() => import('./pages/GlucoseTrackingPage'));
 const DishDetailPage     = lazy(() => import('./pages/DishDetailPage'));
 const SettingsPage       = lazy(() => import('./pages/SettingsPage'));
@@ -72,14 +68,10 @@ export default function App() {
               <Route path="/" element={isAuthenticated ? <Navigate to="/journal" replace /> : <LandingPage />} />
               <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
                 <Route path="journal" element={<JournalPage />} />
-                <Route path="products" element={<ProductsPage />} />
                 <Route path="products/:id" element={<ProductDetailPage />} />
-                <Route path="history" element={<HistoryPage />} />
-                <Route path="scanner" element={<ScannerPage />} />
-                <Route path="vision" element={<FoodVisionPage />} />
                 <Route path="dishes" element={<DishesPage />} />
                 <Route path="dishes/:id" element={<DishDetailPage />} />
-                <Route path="bilan" element={<BilanPage />} />
+                <Route path="stats" element={<StatsPage />} />
                 <Route path="glucose" element={<GlucoseTrackingPage />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="settings" element={<SettingsPage />} />
