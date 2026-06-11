@@ -4,6 +4,9 @@ import toast from 'react-hot-toast';
 import api from '../utils/api';
 import { useTranslation } from '../i18n';
 import useFavoritesStore from '../store/useFavoritesStore';
+import { useProfileStore } from '../store';
+import GradientHeader from '../components/GradientHeader';
+import MacroPillCard from '../components/MacroPillCard';
 
 const MEAL_IDS = ['pdej', 'dej', 'coll', 'diner'];
 
@@ -24,6 +27,9 @@ export default function DishDetailPage() {
   const [portion, setPortion] = useState(300);
   const [mealType, setMealType] = useState(searchParams.get('meal') || 'dej');
   const [logging, setLogging] = useState(false);
+
+  const { profile } = useProfileStore();
+  const targetKcal = profile.target_kcal || 2000;
 
   const { isFavorite, addFavorite, removeFavorite, fetchFavorites } = useFavoritesStore();
   const favorite = isFavorite(parseInt(id));
@@ -136,29 +142,27 @@ export default function DishDetailPage() {
   return (
     <div style={{ paddingBottom: 100 }}>
       {/* Header */}
-      <div className="gradient-hero" style={{ color: 'white', padding: '1rem 1.25rem 2rem', borderRadius: '0 0 24px 24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <button onClick={() => navigate(-1)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: 14 }}>
-            ‹ Retour
-          </button>
-          <button
-            onClick={() => favorite ? removeFavorite(parseInt(id)) : addFavorite(parseInt(id))}
-            style={{
-              background: favorite ? '#FEF3C7' : 'rgba(255,255,255,0.15)',
-              border: 'none',
-              color: favorite ? '#f59e0b' : 'white',
-              borderRadius: 20, padding: '5px 14px', cursor: 'pointer', fontSize: 18,
-            }}
-          >
-            {favorite ? '⭐' : '☆'}
-          </button>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 72, lineHeight: 1.1, marginBottom: 10 }}>{dish.emoji || '🍽️'}</div>
-          <h1 style={{ fontSize: 22, fontWeight: 600, margin: '0 0 6px' }}>{dishName}</h1>
-          <div style={{ fontSize: 13, opacity: 0.85 }}>{dish.flag} {dish.cuisine} · {t(`dishes.categories.${dish.category}`) || dish.category}</div>
-        </div>
-      </div>
+      <GradientHeader
+        title={dishName || ''}
+        subtitle={dish.cuisine || ''}
+        icon={dish.emoji || '🍽️'}
+        variant="emerald"
+      >
+        <button onClick={() => navigate(-1)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: 14 }}>
+          ‹ Retour
+        </button>
+        <button
+          onClick={() => favorite ? removeFavorite(parseInt(id)) : addFavorite(parseInt(id))}
+          style={{
+            background: favorite ? '#FEF3C7' : 'rgba(255,255,255,0.15)',
+            border: 'none',
+            color: favorite ? '#f59e0b' : 'white',
+            borderRadius: 20, padding: '5px 14px', cursor: 'pointer', fontSize: 18,
+          }}
+        >
+          {favorite ? '⭐' : '☆'}
+        </button>
+      </GradientHeader>
 
       <div style={{ padding: '1rem 1.25rem' }}>
         {/* Badges */}
@@ -312,70 +316,89 @@ export default function DishDetailPage() {
           </div>
         )}
 
-        {/* Calories card */}
-        <div style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 16, padding: '16px 20px', marginBottom: 10, textAlign: 'center' }}>
-          <div style={{ fontSize: 40, fontWeight: 800, color: '#6366F1' }}>{computed.kcal} <span style={{ fontSize: 16, opacity: 0.7 }}>kcal</span></div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', marginTop: 12, borderTop: '1px solid rgba(99,102,241,0.15)', paddingTop: 12 }}>
-            {[['Glucides', computed.glucides, '#6366F1'], ['Protéines', computed.proteines, '#10b981'], ['Lipides', computed.lipides, '#f59e0b']].map(([label, val, color]) => (
-              <div key={label}>
-                <div style={{ fontSize: 16, fontWeight: 700, color }}>{val}g</div>
-                <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 2 }}>{label}</div>
-              </div>
-            ))}
-          </div>
-          {computed.fibres > 0 && (
-            <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 8 }}>Fibres : {computed.fibres}g</div>
-          )}
+        {/* Macros grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: '0 0', marginTop: 12, marginBottom: 10 }}>
+          <MacroPillCard
+            icon="🥩"
+            value={computed.proteines}
+            target={Math.round(targetKcal * 0.25 / 4)}
+            label="Protéines"
+            unit="g"
+          />
+          <MacroPillCard
+            icon="🍞"
+            value={computed.glucides}
+            target={Math.round(targetKcal * 0.5 / 4)}
+            label="Glucides"
+            unit="g"
+          />
+          <MacroPillCard
+            icon="🫒"
+            value={computed.lipides}
+            target={Math.round(targetKcal * 0.3 / 9)}
+            label="Lipides"
+            unit="g"
+          />
+          <MacroPillCard
+            icon="🔥"
+            value={computed.kcal}
+            target={targetKcal}
+            label="Calories"
+            unit="kcal"
+          />
         </div>
 
-        {/* Ingredients */}
-        {dish.ingredients?.length > 0 && (
-          <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 12, padding: '14px 16px', marginBottom: 10 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 10px', color: '#333' }}>{t('dishes.ingredients')}</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-              {dish.ingredients.map((ing, i) => {
-                const ratio = portion / defaultPortion;
-                return (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
-                    <span style={{ color: '#444' }}>{ing.name || `Ingrédient ${i + 1}`}</span>
-                    <span style={{ color: '#888', fontWeight: 500 }}>{Math.round(ing.grams * ratio)}g</span>
-                  </div>
-                );
-              })}
+        {/* Ingredients + actions */}
+        <div className="card" style={{ margin: '12px 0' }}>
+          {/* Ingredients */}
+          {dish.ingredients?.length > 0 && (
+            <div style={{ marginBottom: 14 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 10px', color: '#333' }}>{t('dishes.ingredients')}</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                {dish.ingredients.map((ing, i) => {
+                  const ratio = portion / defaultPortion;
+                  return (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
+                      <span style={{ color: '#444' }}>{ing.name || `Ingrédient ${i + 1}`}</span>
+                      <span style={{ color: '#888', fontWeight: 500 }}>{Math.round(ing.grams * ratio)}g</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Meal type selector */}
+          <div style={{ marginBottom: 14 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, margin: '0 0 10px', color: 'var(--text-primary)' }}>Repas</p>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {MEAL_IDS.map(m => (
+                <button key={m} onClick={() => setMealType(m)} style={{
+                  padding: '6px 14px', borderRadius: 20, fontSize: 12, cursor: 'pointer', fontWeight: 500,
+                  border: mealType === m ? 'none' : '1px solid var(--border-color)',
+                  background: mealType === m ? '#6366F1' : 'var(--bg-secondary)',
+                  color: mealType === m ? '#fff' : 'var(--text-secondary)',
+                  transition: 'all 0.15s',
+                }}>
+                  {t(`journal.meals.${m}`)}
+                </button>
+              ))}
             </div>
           </div>
-        )}
 
-        {/* Meal type selector */}
-        <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 16, padding: '14px 16px', marginBottom: 14 }}>
-          <p style={{ fontSize: 13, fontWeight: 600, margin: '0 0 10px', color: 'var(--text-primary)' }}>Repas</p>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {MEAL_IDS.map(m => (
-              <button key={m} onClick={() => setMealType(m)} style={{
-                padding: '6px 14px', borderRadius: 20, fontSize: 12, cursor: 'pointer', fontWeight: 500,
-                border: mealType === m ? 'none' : '1px solid var(--border-color)',
-                background: mealType === m ? '#6366F1' : 'var(--bg-secondary)',
-                color: mealType === m ? '#fff' : 'var(--text-secondary)',
-                transition: 'all 0.15s',
-              }}>
-                {t(`journal.meals.${m}`)}
-              </button>
-            ))}
-          </div>
+          {/* CTA */}
+          <button onClick={handleLog} disabled={logging} style={{
+            width: '100%', padding: '16px',
+            background: logging ? 'var(--bg-tertiary)' : '#6366F1',
+            color: logging ? 'var(--text-secondary)' : 'white',
+            border: 'none', borderRadius: 16,
+            fontSize: 15, fontWeight: 700,
+            cursor: logging ? 'not-allowed' : 'pointer',
+            boxShadow: logging ? 'none' : '0 4px 14px rgba(99,102,241,0.3)',
+          }}>
+            {logging ? 'Ajout en cours...' : `Ajouter au ${t(`journal.meals.${mealType}`)} · ${computed.kcal} kcal`}
+          </button>
         </div>
-
-        {/* CTA */}
-        <button onClick={handleLog} disabled={logging} style={{
-          width: '100%', padding: '16px',
-          background: logging ? 'var(--bg-tertiary)' : '#6366F1',
-          color: logging ? 'var(--text-secondary)' : 'white',
-          border: 'none', borderRadius: 16,
-          fontSize: 15, fontWeight: 700,
-          cursor: logging ? 'not-allowed' : 'pointer',
-          boxShadow: logging ? 'none' : '0 4px 14px rgba(99,102,241,0.3)',
-        }}>
-          {logging ? 'Ajout en cours...' : `Ajouter au ${t(`journal.meals.${mealType}`)} · ${computed.kcal} kcal`}
-        </button>
       </div>
     </div>
   );
