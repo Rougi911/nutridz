@@ -20,6 +20,11 @@ export default function DishesPage() {
   const [filter, setFilter]       = useState('all');
   const [showModal, setShowModal] = useState(false);
 
+  // Products mode
+  const [mode, setMode]           = useState('dishes'); // 'dishes' | 'products'
+  const [products, setProducts]   = useState([]);
+  const [prodLoading, setProdLoading] = useState(false);
+
   // meal pre-selected via ?meal=dej
   const presetMeal = new URLSearchParams(location.search).get('meal') || 'dej';
 
@@ -35,6 +40,16 @@ export default function DishesPage() {
     finally { setLoading(false); }
   }, [query, cuisine]);
 
+  const fetchProducts = useCallback(async () => {
+    setProdLoading(true);
+    try {
+      const params = query ? `?q=${encodeURIComponent(query)}` : '';
+      const { data } = await api.get(`/products${params}`);
+      setProducts(data);
+    } catch { /* silent */ }
+    finally { setProdLoading(false); }
+  }, [query]);
+
   useEffect(() => {
     api.get('/dishes/cuisines').then(({ data }) => setCuisines(data)).catch(() => {});
     fetchFavorites();
@@ -44,6 +59,13 @@ export default function DishesPage() {
     const t = setTimeout(fetchDishes, 250);
     return () => clearTimeout(t);
   }, [fetchDishes]);
+
+  useEffect(() => {
+    if (mode === 'products') {
+      const timer = setTimeout(fetchProducts, 250);
+      return () => clearTimeout(timer);
+    }
+  }, [mode, fetchProducts]);
 
   return (
     <div style={{ background: 'var(--bg-secondary)', minHeight: '100vh', paddingBottom: 32 }}>
@@ -74,24 +96,35 @@ export default function DishesPage() {
         </button>
       </div>
 
-      {/* Cuisine chips */}
+      {/* Cuisine chips + Produits pill */}
       <div style={{ overflowX: 'auto', display: 'flex', gap: 8, padding: '12px 16px', scrollbarWidth: 'none' }}>
         <button onClick={() => setCuisine('')} style={{
           flexShrink: 0, padding: '6px 14px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600,
-          background: !cuisine ? 'var(--accent-blue)' : 'var(--bg-primary)', color: !cuisine ? '#fff' : 'var(--text-secondary)',
+          background: !cuisine && mode === 'dishes' ? 'var(--accent-blue)' : 'var(--bg-primary)', color: !cuisine && mode === 'dishes' ? '#fff' : 'var(--text-secondary)',
           boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
         }}>
           {t('dishes.allCuisines')}
         </button>
         {cuisines.map(c => (
-          <button key={c.cuisine} onClick={() => setCuisine(c.cuisine === cuisine ? '' : c.cuisine)} style={{
+          <button key={c.cuisine} onClick={() => { setMode('dishes'); setCuisine(c.cuisine === cuisine ? '' : c.cuisine); }} style={{
             flexShrink: 0, padding: '6px 14px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600,
-            background: cuisine === c.cuisine ? 'var(--accent-blue)' : 'var(--bg-primary)', color: cuisine === c.cuisine ? '#fff' : 'var(--text-secondary)',
+            background: cuisine === c.cuisine && mode === 'dishes' ? 'var(--accent-blue)' : 'var(--bg-primary)', color: cuisine === c.cuisine && mode === 'dishes' ? '#fff' : 'var(--text-secondary)',
             boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
           }}>
             {c.flag} {c.cuisine.charAt(0).toUpperCase() + c.cuisine.slice(1)}
           </button>
         ))}
+        <button
+          className={`pill${mode === 'products' ? ' active' : ''}`}
+          onClick={() => setMode(mode === 'products' ? 'dishes' : 'products')}
+          style={{
+            flexShrink: 0, padding: '6px 14px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600,
+            background: mode === 'products' ? 'var(--accent-blue)' : 'var(--bg-primary)', color: mode === 'products' ? '#fff' : 'var(--text-secondary)',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
+          }}
+        >
+          Produits
+        </button>
       </div>
 
       {/* Filtre Favoris */}
@@ -110,48 +143,74 @@ export default function DishesPage() {
         }}>⭐ Favoris ({favorites.length})</button>
       </div>
 
+      {/* Products grid */}
+      {mode === 'products' && (
+        <div style={{ padding: '0 16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          {prodLoading
+            ? <div>Chargement…</div>
+            : products.map(p => (
+                <div key={p.id} className="card" style={{ cursor: 'pointer' }}>
+                  <p style={{ fontWeight: 600, fontSize: '0.9rem', margin: '0 0 4px' }}>{p.name}</p>
+                  {p.brand && <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>{p.brand}</p>}
+                  {p.calories_per_100g != null && (
+                    <p style={{ fontSize: '0.75rem', color: '#6366F1', margin: '4px 0 0', fontWeight: 600 }}>{p.calories_per_100g} kcal/100g</p>
+                  )}
+                </div>
+              ))
+          }
+        </div>
+      )}
+
       {/* Dish list */}
-      <div style={{ padding: '0 16px' }}>
-        {loading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            {[...Array(6)].map((_, i) => (
-              <SkeletonCard key={i}>
-                <SkeletonCircle size="56px" style={{ margin: '0 auto 0.5rem' }} />
-                <SkeletonLine width="80%" style={{ margin: '0 auto' }} />
-                <SkeletonLine width="50%" style={{ margin: '0.5rem auto 0' }} />
-              </SkeletonCard>
-            ))}
-          </div>
-        ) : dishes.filter(d => filter === 'favorites' ? favorites.some(f => f.dish_id === d.id) : true).length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px 0', color: '#bbb' }}>
-            <div style={{ fontSize: 40, marginBottom: 8 }}>🍽️</div>
-            <p style={{ fontSize: 13, margin: 0 }}>{t('dishes.notFound')}</p>
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            {dishes.filter(d => filter === 'favorites' ? favorites.some(f => f.dish_id === d.id) : true).map(dish => (
-              <button key={dish.id} onClick={() => navigate(`/dishes/${dish.id}?meal=${presetMeal}`)}
-                style={{ background: 'var(--bg-primary)', borderRadius: 16, padding: '14px 12px', border: '1px solid var(--border-color)', cursor: 'pointer', textAlign: 'left', boxShadow: '0 2px 8px var(--shadow)', position: 'relative' }}>
-                {favorites.some(f => f.dish_id === dish.id) && (
-                  <span style={{ position: 'absolute', top: 8, right: 8, fontSize: 14, lineHeight: 1 }}>⭐</span>
-                )}
-                <div style={{ fontSize: 36, marginBottom: 6 }}>{dish.emoji}</div>
-                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 3, lineHeight: 1.3 }}>{dish.name}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6 }}>{dish.flag} {dish.cuisine}</div>
-                <div style={{ fontSize: 15, fontWeight: 500, color: '#6366F1', marginBottom: 4 }}>{dish.kcal_per_portion} kcal</div>
-                {(dish.proteines || dish.glucides || dish.lipides) && (
-                  <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>
-                    P {Math.round(dish.proteines || 0)}g · G {Math.round(dish.glucides || 0)}g · L {Math.round(dish.lipides || 0)}g
-                  </div>
-                )}
-                {dish.is_user_created === 1 && (
-                  <div style={{ marginTop: 4, fontSize: 10, color: 'var(--accent-blue)', fontWeight: 700 }}>✦ Custom</div>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      {mode === 'dishes' && (
+        <div style={{ padding: '0 16px' }}>
+          {loading ? (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {[...Array(6)].map((_, i) => (
+                <SkeletonCard key={i}>
+                  <SkeletonCircle size="56px" style={{ margin: '0 auto 0.5rem' }} />
+                  <SkeletonLine width="80%" style={{ margin: '0 auto' }} />
+                  <SkeletonLine width="50%" style={{ margin: '0.5rem auto 0' }} />
+                </SkeletonCard>
+              ))}
+            </div>
+          ) : (() => {
+            const filtered = dishes
+              .filter(d => filter === 'favorites' ? favorites.some(f => f.dish_id === d.id) : true)
+              .filter(d => !query || d.name.toLowerCase().includes(query.toLowerCase()));
+            return filtered.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#bbb' }}>
+                <div style={{ fontSize: 40, marginBottom: 8 }}>🍽️</div>
+                <p style={{ fontSize: 13, margin: 0 }}>{t('dishes.notFound')}</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                {filtered.map(dish => (
+                  <button key={dish.id} onClick={() => navigate(`/dishes/${dish.id}?meal=${presetMeal}`)}
+                    className="card"
+                    style={{ cursor: 'pointer', textAlign: 'left', position: 'relative' }}>
+                    {favorites.some(f => f.dish_id === dish.id) && (
+                      <span style={{ position: 'absolute', top: 8, right: 8, fontSize: 14, lineHeight: 1 }}>⭐</span>
+                    )}
+                    <div style={{ fontSize: 36, marginBottom: 6 }}>{dish.emoji}</div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 3, lineHeight: 1.3 }}>{dish.name}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6 }}>{dish.flag} {dish.cuisine}</div>
+                    <div style={{ fontSize: 15, fontWeight: 500, color: '#6366F1', marginBottom: 4 }}>{dish.kcal_per_portion} kcal</div>
+                    {(dish.proteines || dish.glucides || dish.lipides) && (
+                      <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>
+                        P {Math.round(dish.proteines || 0)}g · G {Math.round(dish.glucides || 0)}g · L {Math.round(dish.lipides || 0)}g
+                      </div>
+                    )}
+                    {dish.is_user_created === 1 && (
+                      <div style={{ marginTop: 4, fontSize: 10, color: 'var(--accent-blue)', fontWeight: 700 }}>✦ Custom</div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
+      )}
 
       {/* FAB (fallback) */}
       <button onClick={() => setShowModal(true)} style={{
