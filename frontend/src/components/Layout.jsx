@@ -1,30 +1,20 @@
 import React from 'react';
 import { Outlet, NavLink, Link } from 'react-router-dom';
 import { useTranslation } from '../i18n';
-import LanguageSelector from './LanguageSelector';
 import CookieBanner from './CookieBanner';
 
 const NAV = [
-  { to: '/journal',  icon: 'ti-notebook',   key: 'journal' },
-  { to: '/products', icon: 'ti-search',      key: 'products' },
-  { to: '/dishes',   icon: 'ti-soup',        key: 'dishes' },
-  { to: '/scanner',  icon: 'ti-barcode',     key: 'scanner' },
-  { to: '/vision',   icon: 'ti-camera',      key: 'vision' },
-  { to: '/bilan',    icon: 'ti-heartbeat',   key: 'bilan' },
-  { to: '/history',  icon: 'ti-chart-bar',   key: 'history' },
-  { to: '/glucose',  icon: 'ti-droplet',     key: 'glucose' },
-  { to: '/profile',  icon: 'ti-user',        key: 'profile' },
+  { to: '/journal', icon: 'ti-notebook',  key: 'journal'  },
+  { to: '/dishes',  icon: 'ti-soup',      key: 'dishes'   },
+  { to: '/stats',   icon: 'ti-chart-bar', key: 'stats'    },
+  { to: '/glucose', icon: 'ti-droplet',   key: 'glucose'  },
+  { to: '/profile', icon: 'ti-user',      key: 'profile'  },
 ];
 
 export default function Layout() {
   const { t } = useTranslation();
   return (
     <div style={{ maxWidth: 480, margin: '0 auto', minHeight: '100dvh', display: 'flex', flexDirection: 'column', background: 'var(--bg-secondary)' }}>
-      {/* Language bar */}
-      <div style={{ background: 'var(--bg-secondary)', borderBottom: '0.5px solid rgba(0,0,0,0.07)', padding: '5px 14px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-        <LanguageSelector />
-      </div>
-
       <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 88 }}>
         <Outlet />
         <footer style={{ padding: '16px 20px 8px', borderTop: '0.5px solid rgba(0,0,0,0.07)', display: 'flex', justifyContent: 'center', gap: 20, flexWrap: 'wrap' }}>
