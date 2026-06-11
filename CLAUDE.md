@@ -332,3 +332,8 @@ origin/main contient du travail de restyling antérieur (0e1f544, 8919112, bfd07
 Avant chaque tâche de restyling d'écran (Tasks 9-15), vérifier si l'écran est déjà
 partiellement restylé — ne pas écraser, merger intelligemment.
 
+## Dépendances de test — règle absolue
+@testing-library/jest-dom, @testing-library/react et @testing-library/user-event (v13)
+sont déjà embarqués par react-scripts 5.0.1. Ne jamais les ajouter en devDependencies.
+Ne jamais créer ni modifier package.json ou package-lock.json dans ce projet.
+user-event utilisé dans ce projet = v13 (API synchrone, userEvent.click() sans await).

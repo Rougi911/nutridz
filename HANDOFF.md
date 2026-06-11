@@ -53,8 +53,15 @@ locaux par les partagés) plutôt que de réécrire à l'aveugle.
 
 Couverture globale : 2/18 exigences ✅ (11 %)
 
+## Règle absolue — dépendances de test
+@testing-library/jest-dom, @testing-library/react et @testing-library/user-event (v13)
+sont embarqués par react-scripts 5.0.1. **Ne jamais les ajouter en devDependencies.
+Ne jamais créer ni modifier package.json ou package-lock.json.**
+user-event = v13 (API synchrone, pas d'await sur userEvent.click()).
+
 ## Problèmes ouverts
-- Session limit atteinte pendant la code review de Task 2 (reviewer) — review manquante pour Task 2, à faire en début de prochaine session si bloquant.
+- Code quality review de Task 2 manquante (session limit) — non bloquant.
+- Task 3 : subagent avait pollué package.json + package-lock.json → revert partiel appliqué (d8dddd2).
 
 ## Dernier commit
 - `93d4a9f` feat(css): add card, pill, macro-pill, metric-card, modal-overlay utility classes
