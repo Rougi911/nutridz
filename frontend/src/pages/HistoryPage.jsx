@@ -4,7 +4,7 @@ import { format, parseISO } from 'date-fns';
 import { useJournalStore, useProfileStore } from '../store';
 import { useTranslation } from '../i18n';
 
-export default function HistoryPage() {
+export default function HistoryPage({ embedded = false }) {
   const { history, fetchHistory } = useJournalStore();
   const { profile } = useProfileStore();
   const { t, dateFnsLocale } = useTranslation();
@@ -25,10 +25,12 @@ export default function HistoryPage() {
 
   return (
     <div>
-      <div style={{ background: '#1A6B3C', color: 'white', padding: '1rem 1.25rem 1.5rem', borderRadius: '0 0 24px 24px' }}>
-        <h1 style={{ fontSize: 22, fontWeight: 500 }}>{t('history.title')}</h1>
-        <p style={{ fontSize: 13, opacity: 0.75, marginTop: 2 }}>{t('history.subtitle')}</p>
-      </div>
+      {!embedded && (
+        <div style={{ background: '#1A6B3C', color: 'white', padding: '1rem 1.25rem 1.5rem', borderRadius: '0 0 24px 24px' }}>
+          <h1 style={{ fontSize: 22, fontWeight: 500 }}>{t('history.title')}</h1>
+          <p style={{ fontSize: 13, opacity: 0.75, marginTop: 2 }}>{t('history.subtitle')}</p>
+        </div>
+      )}
 
       {/* Stats résumé */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, padding: '1rem 1.25rem 0' }}>
