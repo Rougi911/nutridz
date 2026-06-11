@@ -2,12 +2,15 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from '../contexts/ThemeContext';
+import { LanguageProvider } from '../i18n';
 
 function AllProviders({ children }) {
   return (
     <ThemeProvider>
       <MemoryRouter>
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
       </MemoryRouter>
     </ThemeProvider>
   );
