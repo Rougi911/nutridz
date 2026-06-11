@@ -283,3 +283,52 @@ Réponse attendue : `{"status":"ok","version":"1.0.0"}`
 4. **Une tâche à la fois** plutôt que des listes longues
 5. **Utiliser des fichiers .txt** sur le Bureau pour les longs prompts au lieu de coller dans le terminal
 6. **Demander à Claude Code de NE PAS relire les fichiers** s'il les a déjà vus dans la session
+
+## Workflow superpowers — restylage frontend (NutriVita)
+
+### Objectif courant
+Appliquer le design de nutrivita-v0 au frontend React (frontend/) SANS régression.
+Design reproduit dans le stack actuel (CRA + CSS custom properties + ThemeContext).
+PAS de migration Tailwind. On ne touche qu'à frontend/ ; backend/ et mobile/ ne changent pas.
+
+### Source du design (référence visuelle seulement)
+Repo : https://github.com/Rougi911/nutrivita-v0 (Next.js + Tailwind + shadcn/ui).
+À cloner en lecture seule pour extraire palette, typo, rayons, ombres, espacements,
+structure des écrans. NE PAS copier le code Next/Tailwind : réimplémenter en CSS.
+
+### Règles non négociables
+- Aucune régression des fonctionnalités (auth JWT, scanner, OCR, vision, Recharts,
+  export PDF, i18n FR/AR/EN + RTL, dark mode, PWA).
+- TDD adapté : pour chaque écran, d'abord un test de non-régression, puis on style,
+  puis on vérifie que le test passe toujours. Tests en Jest + React Testing Library.
+- Préserver RTL (arabe) et dark mode sur chaque écran restylé.
+- Un commit par écran/composant ; push immédiat.
+
+### Déploiement
+- Service Render surveillé : nutridz-web (Static Site) — ID : srv-d82aqjm7r5hc73ebc1t0
+- Workspace : My Workspace (tea-d8274k0g4nts73fit3jg). Auto-deploy sur push.
+- Statut lu via le MCP Render. Si build échoué : lire les logs, corriger, re-push, sans interrompre.
+
+### Fichiers d'état
+SPEC.md (exigences DES-xx / REG-xx), PLAN.md (généré), HANDOFF.md (avancement), REPORT.md (RTM).
+
+### Contexte
+Réécrire HANDOFF.md après chaque écran et avant saturation. À la reprise après /clear :
+ne lire que CLAUDE.md, SPEC.md, PLAN.md, HANDOFF.md, REPORT.md.
+
+## Checkpoint obligatoire (subagent-driven)
+Avant toute code quality review, le sous-agent doit :
+1. Committer le code de la tâche.
+2. Réécrire HANDOFF.md (tâche faite, prochaine, RTM, dernier hash).
+La review tourne APRÈS — jamais avant.
+
+## Calibrage des reviews
+- Tâches CSS/tokens : review légère (conformité spec + RTL + pas de style inline). Max 5 min.
+- Tâches composants : review standard.
+- Tâches navigation/écrans : review complète avec tests.
+
+## Commits antérieurs à vérifier
+origin/main contient du travail de restyling antérieur (0e1f544, 8919112, bfd0772, fea6937).
+Avant chaque tâche de restyling d'écran (Tasks 9-15), vérifier si l'écran est déjà
+partiellement restylé — ne pas écraser, merger intelligemment.
+
