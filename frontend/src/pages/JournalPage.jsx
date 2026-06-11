@@ -5,8 +5,11 @@ import toast from 'react-hot-toast';
 import { useJournalStore, useProfileStore } from '../store';
 import { useTranslation } from '../i18n';
 import api from '../utils/api';
+import GradientHeader from '../components/GradientHeader';
+import BarcodeScanner from '../components/BarcodeScanner';
 import VoiceInput from '../components/VoiceInput';
 import VoiceFoodModal from '../components/VoiceFoodModal';
+import FoodVisionPage from './FoodVisionPage';
 import { SkeletonLine, SkeletonCard } from '../components/Skeleton';
 import useSettingsStore from '../store/useSettingsStore';
 import { weightPlaceholder, inputWeightToKg, kgToLbs } from '../utils/units';
@@ -24,6 +27,9 @@ export default function JournalPage() {
   const [yesterdayWeight, setYesterdayWeight] = useState(null);
   const [voiceMeal, setVoiceMeal] = useState(null);
   const [voiceModal, setVoiceModal] = useState({ open: false, mealType: null, items: [] });
+  const [showScanner, setShowScanner] = useState(false);
+  const [showVision,  setShowVision]  = useState(false);
+  const [showVoice,   setShowVoice]   = useState(false);
   const { weightUnit } = useSettingsStore();
   const yesterdayInUnit = yesterdayWeight ? (weightUnit === 'lbs' ? kgToLbs(yesterdayWeight) : yesterdayWeight) : null;
   const weightDelta = todayWeight && yesterdayInUnit ? parseFloat(todayWeight) - yesterdayInUnit : 0;
@@ -127,6 +133,25 @@ export default function JournalPage() {
     }
   };
 
+  const handleScanResult = async (code) => {
+    if (!code) return;
+    try {
+      const { data: product } = await api.get(`/scanner/barcode/${code}`);
+      if (product?.id) {
+        await api.post('/journal', { product_id: product.id, meal_type: 'dej', grams: 100, date });
+        fetchJournal?.();
+      }
+    } catch { /* silent fail */ }
+    setShowScanner(false);
+  };
+
+  const handleVisionResult = async (food) => {
+    if (!food?.product_id) return;
+    await api.post('/journal', { product_id: food.product_id, meal_type: 'dej', grams: 100, date });
+    fetchJournal?.();
+    setShowVision(false);
+  };
+
   const MEALS = ['pdej', 'dej', 'coll', 'diner'].map(id => ({ id, label: t(`journal.meals.${id}`), icon: MEAL_ICONS[id] }));
 
   const pct = Math.min(100, Math.round(totals.kcal / target * 100));
@@ -152,16 +177,28 @@ export default function JournalPage() {
   return (
     <div style={{ paddingBottom: 16 }}>
       {/* Gradient header */}
-      <div className="gradient-hero" style={{ color: 'white', padding: '1.25rem 1.25rem 1.5rem', borderRadius: '0 0 28px 28px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 12 }}>
-          <button onClick={() => changeDate(-1)} style={{ background: 'rgba(255,255,255,0.18)', border: 'none', color: 'white', borderRadius: 9999, width: 36, height: 36, cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
-          <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: '-0.01em' }}>
-            {format(parseISO(date), 'EEEE d MMMM', { locale: dateFnsLocale })}
-          </span>
-          <button onClick={() => changeDate(1)} style={{ background: 'rgba(255,255,255,0.18)', border: 'none', color: 'white', borderRadius: 9999, width: 36, height: 36, cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
-        </div>
-        <h1 style={{ fontSize: 20, fontWeight: 600, textAlign: 'center', opacity: 0.95 }}>{t('journal.title')}</h1>
-      </div>
+      <GradientHeader
+        title={t('journal.title')}
+        subtitle={format(parseISO(date), 'EEEE d MMMM', { locale: dateFnsLocale })}
+        variant="indigo"
+      >
+        <button onClick={() => changeDate(-1)} aria-label="Jour précédent"
+          style={{ background: 'rgba(255,255,255,0.18)', border: 'none', color: 'white', borderRadius: 9999, width: 36, height: 36, cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
+        <button onClick={() => changeDate(1)} aria-label="Jour suivant"
+          style={{ background: 'rgba(255,255,255,0.18)', border: 'none', color: 'white', borderRadius: 9999, width: 36, height: 36, cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
+        <button onClick={() => setShowScanner(true)} aria-label="Scanner"
+          style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 9999, width: 36, height: 36, cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <i className="ti ti-barcode" style={{ fontSize: 18 }} />
+        </button>
+        <button onClick={() => setShowVision(true)} aria-label="Photo"
+          style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 9999, width: 36, height: 36, cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <i className="ti ti-camera" style={{ fontSize: 18 }} />
+        </button>
+        <button onClick={() => setShowVoice(true)} aria-label="Voix"
+          style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 9999, width: 36, height: 36, cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <i className="ti ti-microphone" style={{ fontSize: 18 }} />
+        </button>
+      </GradientHeader>
 
       {/* Calorie ring */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '1.25rem 1.25rem 0', background: 'var(--bg-primary)', borderRadius: 20, border: '1px solid var(--border-color)', padding: '1.25rem', boxShadow: '0 2px 12px var(--shadow)' }}>
@@ -359,6 +396,33 @@ export default function JournalPage() {
           }}
           onClose={() => setVoiceModal({ open: false, mealType: null, items: [] })}
         />
+      )}
+
+      {/* Scanner modal overlay */}
+      {showScanner && (
+        <div className="modal-overlay" onClick={() => setShowScanner(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <BarcodeScanner onDetected={handleScanResult} onClose={() => setShowScanner(false)} />
+          </div>
+        </div>
+      )}
+
+      {/* Vision (photo) modal overlay */}
+      {showVision && (
+        <div className="modal-overlay" onClick={() => setShowVision(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <FoodVisionPage onResult={handleVisionResult} onClose={() => setShowVision(false)} />
+          </div>
+        </div>
+      )}
+
+      {/* Voice modal overlay */}
+      {showVoice && (
+        <div className="modal-overlay" onClick={() => setShowVoice(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <VoiceInput onResult={() => setShowVoice(false)} />
+          </div>
+        </div>
       )}
     </div>
   );
