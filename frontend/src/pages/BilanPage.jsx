@@ -250,7 +250,7 @@ function ActivityRow({ activity, t }) {
 }
 
 // ─── Page principale ──────────────────────────────────────────────────────────
-export default function BilanPage() {
+export default function BilanPage({ embedded = false, activeTabOverride }) {
   const { t } = useTranslation();
   const {
     bilan, weeklyStats, monthlyStats, loading,
@@ -261,6 +261,9 @@ export default function BilanPage() {
   const { weightUnit } = useSettingsStore();
 
   const [view, setView] = useState('jour');
+  useEffect(() => {
+    if (activeTabOverride) setView(activeTabOverride.toLowerCase());
+  }, [activeTabOverride]);
   const [monthYear, setMonthYear] = useState({
     year: new Date().getFullYear(),
     month: new Date().getMonth() + 1,
@@ -421,9 +424,10 @@ export default function BilanPage() {
   };
 
   return (
-    <div id="bilan-content" style={{ paddingBottom: 32, minHeight: '100vh', background: 'var(--bg-secondary)' }}>
+    <div id="bilan-content" style={{ paddingBottom: 32, minHeight: embedded ? 'auto' : '100vh', background: 'var(--bg-secondary)' }}>
 
       {/* Header */}
+      {!embedded && (
       <div className="gradient-health" style={{ padding: '1.25rem 1.25rem 1.5rem', borderRadius: '0 0 28px 28px', color: 'white', marginBottom: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
@@ -442,6 +446,7 @@ export default function BilanPage() {
           </button>
         </div>
       </div>
+      )}
 
       <div style={{ padding: '0 16px' }}>
 
