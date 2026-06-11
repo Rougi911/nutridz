@@ -1,6 +1,6 @@
 // src/tests/StatsPage.test.jsx
 import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from './test-utils';
 import StatsPage from '../pages/StatsPage';
@@ -87,6 +87,10 @@ jest.mock('../components/ActivityForm', () => () => (
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('StatsPage', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   test('renders Stats screen with 4 tab buttons', async () => {
     renderWithProviders(<StatsPage />);
 
@@ -103,86 +107,41 @@ describe('StatsPage', () => {
   test('default Jour tab renders BilanPage content', async () => {
     renderWithProviders(<StatsPage />);
 
-    // BilanPage renders a Strava connection card even with no data — look for any bilan content
+    // BilanPage always renders the Strava connection card in the Jour view.
+    // With bilan=null, stravaConnected=false so "Strava non connecté" is always shown.
     await waitFor(() => {
-      // BilanPage always renders the view toggle with 'Jour' in it (even embedded)
-      // or the Strava section which always renders
-      expect(document.body.textContent.length).toBeGreaterThan(50);
-    });
-
-    // BilanPage inner view toggle shows 'Jour' as an option
-    // (the outer pills from StatsPage also have 'Jour', so at least 2 occurrences)
-    const jourButtons = screen.getAllByText('Jour');
-    expect(jourButtons.length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText('Strava non connecté')).toBeInTheDocument();
+    }, { timeout: 3000 });
   });
 
   test('switching to Évolution tab renders HistoryPage content', async () => {
     renderWithProviders(<StatsPage />);
 
-    // Wait for initial render
+    // Wait for initial render with BilanPage content
     await waitFor(() => {
-      expect(screen.getAllByRole('button', { name: 'Évolution' }).length).toBeGreaterThan(0);
-    });
+      expect(screen.getByText('Strava non connecté')).toBeInTheDocument();
+    }, { timeout: 3000 });
 
     // BilanPage also renders an inner 'Évolution' tab — take the first (outer StatsPage pill)
     const evolutionBtn = screen.getAllByRole('button', { name: 'Évolution' })[0];
     userEvent.click(evolutionBtn);
 
-    // HistoryPage renders a stats summary grid regardless of data
-    // It always renders 'avgKcal' and 'daysOnTarget' stat cards
+    // HistoryPage always renders its stats summary cards regardless of data.
+    // The label 'Moy. calories/j' (t('history.avgKcal')) is always present.
     await waitFor(() => {
-      // HistoryPage renders a bar chart container or the "no data" message
-      // Either way, body content changes significantly
-      expect(document.body.textContent.length).toBeGreaterThan(50);
-    });
-
-    // After switching, HistoryPage renders — check it no longer shows Strava content
-    // (Strava card is only in BilanPage jour view, not HistoryPage)
-    // HistoryPage always renders the stats summary section which has the stat divs
-    const recharts = document.querySelectorAll('.recharts-responsive-container');
-    // HistoryPage renders ResponsiveContainer for the bar chart (data may be empty so 0 containers is also ok)
-    // — just confirm the tab switch worked by verifying BilanPage activity section is gone
-    await waitFor(() => {
-      expect(document.body.textContent).not.toContain('Strava non connecté');
-    });
+      expect(screen.getByText('Moy. calories/j')).toBeInTheDocument();
+    }, { timeout: 3000 });
   });
 
   test('PDF export button triggers exportBilanPDF', async () => {
     renderWithProviders(<StatsPage />);
 
-    // Wait for BilanPage to render (default Jour tab)
+    // StatsPage now renders its own PDF export button in the GradientHeader.
     await waitFor(() => {
-      expect(screen.getByText('Statistiques')).toBeInTheDocument();
-    });
+      expect(screen.getByRole('button', { name: /exporter pdf/i })).toBeInTheDocument();
+    }, { timeout: 3000 });
 
-    // BilanPage (embedded) renders the export button when embedded=false only.
-    // When embedded=true the header (with PDF button) is hidden.
-    // The Évolution view inside BilanPage has a standalone export button even when embedded.
-    // So switch to Évolution *within* BilanPage by clicking the inner view toggle.
-
-    // The inner view toggle (rendered by BilanPage) has an 'Évolution' option too.
-    // getAllByText returns all matches; the first one is the outer StatsPage pill,
-    // the second (if present) is BilanPage's inner toggle.
-    // Instead, let's just look for the "Exporter en PDF" button rendered by the Évolution
-    // view of BilanPage after we force it via activeTabOverride.
-
-    // BilanPage also renders an inner 'Évolution' tab — take the first (outer StatsPage pill)
-    const evolutionTab = screen.getAllByRole('button', { name: 'Évolution' })[0];
-    userEvent.click(evolutionTab);
-
-    // HistoryPage is now shown — it does NOT have a PDF export button.
-    // BilanPage's evolution sub-view with export requires data to be loaded.
-    // Since api.get returns [] (no weight data), BilanPage shows "Aucune donnée disponible"
-    // and the export button is hidden.
-
-    // Better approach: use the non-embedded BilanPage PDF button by switching back to Jour
-    // and checking the internal BilanPage view toggle 'Évolution'.
-    // BilanPage embedded=true hides the header PDF button.
-    // The Évolution sub-section PDF button only appears when evolutionData is loaded.
-
-    // Given mocked api returns [] (empty array), let's verify the mock is at least callable.
-    // Manually invoke it to assert the mock works.
-    await exportBilanPDF('test-element', 'test.pdf');
+    fireEvent.click(screen.getByRole('button', { name: /exporter pdf/i }));
     expect(exportBilanPDF).toHaveBeenCalled();
   });
 });
