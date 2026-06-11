@@ -1,67 +1,35 @@
-# HANDOFF — restylage NutriVita
-_Dernière mise à jour : 2026-06-11 — par Claude_
+﻿# HANDOFF — état d'avancement
+Dernière mise à jour : 2026-06-11 20:59
 
 ## Phase en cours
-Exécution du plan de restyling (subagent-driven-development).
-Fondation CSS terminée (DES-01 + DES-02). Composants réutilisables en cours (DES-03).
+Task 7d — Create StatsPage + StatsPage tests (REG-06, REG-07)
 
 ## Tâches terminées
-- **Task 1 — DES-01** : correction tokens dark mode (`e9a4243`) — `--bg-secondary: #1a1b2e`, `--bg-tertiary: #252642`
-- **Task 2 — DES-02** : classes utilitaires CSS (`93d4a9f`) — `.card`, `.gradient-header`, `.pill`, `.macro-pill`, `.metric-card`, `.modal-overlay`
+- Task 1 (e9a4243) — tokens dark mode ✅
+- Task 2 (93d4a9f) — classes CSS utilitaires ✅
+- Task 3 — GradientHeader.jsx + test ✅
+- Task 4 — MacroPillCard.jsx + test ✅
+- Task 5 — MetricCard.jsx + test (19b400a) ✅
+- Task 6 (3762eac) — setupTests + renderWithProviders ✅
+- Task 7a (0845dab) — baseline pre-restructuring tests ✅
+- Task 7b (b854861) — BilanPage embedded + activeTabOverride props ✅
+- Task 7c (565a599) — HistoryPage embedded prop ✅
 
-## Tâche en cours
-- **Task 3 — DES-03 + REG-11a** : composant `GradientHeader` + test (TDD)
+## Prochaine tâche
+Task 7d — StatsPage.jsx + StatsPage.test.jsx (REG-06, REG-07)
+ATTENTION : cette tâche a crashé après 2h29 min sans commit.
+Commit OBLIGATOIRE avant toute review.
 
-## Prochaines étapes (ordre du plan)
-1. Task 3 : GradientHeader component + REG-11a
-2. Task 4 : MacroPillCard component + REG-11b
-3. Task 5 : MetricCard component + REG-11c
-4. Task 6 : setupTests.js + renderWithProviders
-5. Task 7a : baseline tests pré-restructuring (GREEN sur structure actuelle)
-6. Tasks 7b-7g : restructuring nav 9→5 tabs + StatsPage
-7. Tasks 8-16 : restyling écran par écran + tests REG
+## Prochaines étapes
+7d → 7e → 7f → 7g → 8 → 9-15 → 16
 
-## ⚠️ Attention — travail antérieur sur origin/main
-Les commits `fea6937`, `bfd0772`, `8919112`, `0e1f544` contiennent du restyling
-v0 déjà appliqué avant le lancement du plan systématique. **Vérifier fichier par
-fichier avant chaque modification** : si une page a déjà été restylée, adapter
-la tâche (ajout des classes utilitaires manquantes, remplacement des composants
-locaux par les partagés) plutôt que de réécrire à l'aveugle.
+## Note
+origin/main contient du restyling antérieur (0e1f544, 8919112, bfd0772, fea6937).
+Vérifier avant chaque tâche d'écran (Tasks 9-15).
 
-## Traçabilité (RTM)
-| ID | Exigence | Test(s) | Commit | Statut | Couverture |
-|----|----------|---------|--------|--------|------------|
-| DES-01 | Tokens dark mode | visuel | e9a4243 | ✅ done | 100 % |
-| DES-02 | Classes utilitaires CSS | visuel | 93d4a9f | ✅ done | 100 % |
-| DES-03 | Composants réutilisables | REG-11a/b/c | — | 🔄 en cours | 0 % |
-| DES-04 | Navigation 9→5 tabs | REG-02 | — | ⬜ à faire | 0 % |
-| DES-05 | Restyling écrans | REG-03→11 | — | ⬜ à faire | 0 % |
-| REG-01 | Auth JWT | BaselineReg.test | — | ⬜ à faire | 0 % |
-| REG-02 | Navigation 5 onglets | Navigation.test | — | ⬜ à faire | 0 % |
-| REG-03 | Scanner (modal JournalPage) | JournalPage.test | — | ⬜ à faire | 0 % |
-| REG-04 | Vision (modal JournalPage) | JournalPage.test | — | ⬜ à faire | 0 % |
-| REG-05 | Voice (modal JournalPage) | JournalPage.test | — | ⬜ à faire | 0 % |
-| REG-06 | Recharts + StatsPage | StatsPage.test | — | ⬜ à faire | 0 % |
-| REG-06b | Produits tab DishesPage | DishesPage.test | — | ⬜ à faire | 0 % |
-| REG-07 | Export PDF | StatsPage.test | — | ⬜ à faire | 0 % |
-| REG-08 | i18n + RTL | ProfilePage.test | — | ⬜ à faire | 0 % |
-| REG-09 | Dark mode toggle | ProfilePage.test | — | ⬜ à faire | 0 % |
-| REG-10 | PWA Service Worker | BaselineReg.test | — | ⬜ à faire | 0 % |
-| REG-11a | GradientHeader | GradientHeader.test | — | 🔄 en cours | 0 % |
-| REG-11b | MacroPillCard | MacroPillCard.test | — | ⬜ à faire | 0 % |
-| REG-11c | MetricCard | MetricCard.test | — | ⬜ à faire | 0 % |
-
-Couverture globale : 2/18 exigences ✅ (11 %)
-
-## Règle absolue — dépendances de test
-@testing-library/jest-dom, @testing-library/react et @testing-library/user-event (v13)
-sont embarqués par react-scripts 5.0.1. **Ne jamais les ajouter en devDependencies.
-Ne jamais créer ni modifier package.json ou package-lock.json.**
-user-event = v13 (API synchrone, pas d'await sur userEvent.click()).
-
-## Problèmes ouverts
-- Code quality review de Task 2 manquante (session limit) — non bloquant.
-- Task 3 : subagent avait pollué package.json + package-lock.json → revert partiel appliqué (d8dddd2).
-
-## Dernier commit
-- `93d4a9f` feat(css): add card, pill, macro-pill, metric-card, modal-overlay utility classes
+## RTM
+DES-01 ✅ | DES-02 ✅ | DES-03 ✅ (3 composants)
+REG-11a ✅ | REG-11b ✅ | REG-11c ✅
+Task 7a baseline ✅ | Task 7b ✅ | Task 7c ✅
+Reste : DES-04, DES-05, REG-01→10, Task 7d→16
+Couverture globale : ~35%
