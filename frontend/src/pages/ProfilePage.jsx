@@ -7,6 +7,8 @@ import { useTranslation } from '../i18n';
 import { useTheme } from '../contexts/ThemeContext';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import api from '../utils/api';
+import GradientHeader from '../components/GradientHeader';
+import LanguageSelector from '../components/LanguageSelector';
 
 const GOAL_ICONS = { perte: '📉', maintien: '⚖️', prise: '💪', sante: '🫀' };
 const SPORT_EMOJIS = { marche: '🚶', velo: '🚴', course: '🏃', natation: '🏊' };
@@ -47,7 +49,7 @@ export default function ProfilePage() {
     finally { setDeleting(false); setShowDeleteModal(false); }
   }
   const { t } = useTranslation();
-  useTheme(); // ThemeProvider context — keep mounted
+  const { theme, toggleTheme } = useTheme();
   const { permission, subscribe, unsubscribe } = usePushNotifications();
 
   const p = profile;
@@ -94,16 +96,18 @@ export default function ProfilePage() {
 
   return (
     <div>
-      <div style={{ background: '#1A6B3C', color: 'white', padding: '1rem 1.25rem 1.5rem', borderRadius: '0 0 24px 24px' }}>
-        <h1 style={{ fontSize: 22, fontWeight: 500 }}>{t('profile.title')}</h1>
-        {user && <p style={{ fontSize: 13, opacity: 0.8, marginTop: 2 }}>{user.name} · {user.email}</p>}
-      </div>
+      <GradientHeader
+        variant="slate"
+        title={user?.name || t('profile.title')}
+        subtitle={user?.email}
+        icon="👤"
+      />
 
-      <div style={{ margin: '1rem 1.25rem 0', background: '#fff', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 12, overflow: 'hidden' }}>
+      <div className="card" style={{ margin: '1rem 1.25rem 0', overflow: 'hidden' }}>
         {/* Tabs */}
-        <div style={{ display: 'flex', borderBottom: '0.5px solid rgba(0,0,0,0.06)' }}>
+        <div style={{ display: 'flex', borderBottom: '0.5px solid rgba(0,0,0,0.06)', padding: '4px 8px 0', gap: 4 }}>
           {TABS.map(({ id, icon }) => (
-            <button key={id} onClick={() => setTab(id)} style={{ flex: 1, padding: '9px 0', fontSize: 10, fontWeight: 500, textAlign: 'center', border: 'none', background: 'transparent', cursor: 'pointer', color: tab === id ? '#1A6B3C' : '#888', borderBottom: tab === id ? '2px solid #1A6B3C' : '2px solid transparent' }}>
+            <button key={id} onClick={() => setTab(id)} className={`pill${tab === id ? ' active' : ''}`} style={{ flex: 1, fontSize: 10, textAlign: 'center', border: 'none', cursor: 'pointer', padding: '6px 0', borderRadius: '8px 8px 0 0', background: tab === id ? '#1A6B3C' : 'transparent', color: tab === id ? 'white' : '#888' }}>
               <i className={`ti ${icon}`} style={{ display: 'block', fontSize: 16, marginBottom: 2 }} />
               {t(`profile.tabs.${id}`)}
             </button>
@@ -202,7 +206,7 @@ export default function ProfilePage() {
 
       {/* Couverture nutritionnelle */}
       {nutriStats && (
-        <div style={{ margin: '0 1.25rem 1rem', background: '#fff', borderRadius: 12, padding: '14px 16px', border: '0.5px solid rgba(0,0,0,0.08)' }}>
+        <div className="card" style={{ margin: '1rem 1.25rem 0', padding: '14px 16px' }}>
           <h3 style={{ fontSize: 13, fontWeight: 700, color: '#333', margin: '0 0 12px' }}>📊 Bases nutritionnelles</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {[
@@ -224,7 +228,7 @@ export default function ProfilePage() {
       )}
 
       {/* Mes données (RGPD) */}
-      <div style={{ margin: '1rem 1.25rem', background: '#fff', borderRadius: 12, padding: '14px 16px', border: '0.5px solid rgba(0,0,0,0.08)' }}>
+      <div className="card" style={{ margin: '1rem 1.25rem 0', padding: '14px 16px' }}>
         <h3 style={{ fontSize: 13, fontWeight: 700, color: '#333', margin: '0 0 12px' }}>Mes données</h3>
         <button onClick={handleExport}
           style={{ width: '100%', padding: '10px', marginBottom: 8, background: '#EAF3DE', color: '#1A6B3C', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}>
@@ -236,8 +240,32 @@ export default function ProfilePage() {
         </button>
       </div>
 
+      {/* Language + Dark mode */}
+      <div className="card" style={{ margin: '1rem 1.25rem 0', padding: '14px 16px' }}>
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>Langue</div>
+          <LanguageSelector />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Thème sombre</div>
+            <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{theme === 'dark' ? 'Activé' : 'Désactivé'}</div>
+          </div>
+          <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              data-testid="dark-mode-toggle"
+              checked={theme === 'dark'}
+              onChange={toggleTheme}
+              aria-label="Thème sombre"
+              style={{ width: 40, height: 22, cursor: 'pointer', accentColor: '#1A6B3C' }}
+            />
+          </label>
+        </div>
+      </div>
+
       {/* Settings link */}
-      <div style={{ margin: '0 1.25rem 1rem', background: 'var(--bg-primary)', borderRadius: 12, boxShadow: '0 1px 3px var(--shadow)', overflow: 'hidden' }}>
+      <div style={{ margin: '1rem 1.25rem 0', background: 'var(--bg-primary)', borderRadius: 12, boxShadow: '0 1px 3px var(--shadow)', overflow: 'hidden' }}>
         <button
           onClick={() => navigate('/settings')}
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0.85rem 1rem', background: 'transparent', border: 'none', borderBottom: '1px solid var(--border-color)', cursor: 'pointer', color: 'var(--text-primary)' }}
@@ -254,7 +282,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Notifications push */}
-      <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: 12, boxShadow: '0 1px 3px var(--shadow)' }}>
+      <div className="card" style={{ margin: '1rem 1.25rem 0', padding: '1rem' }}>
         <h3 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 12px' }}>
           🔔 {t('profile.notifications')}
         </h3>
@@ -281,7 +309,7 @@ export default function ProfilePage() {
         )}
       </div>
 
-      <div style={{ margin: '0 1.25rem 1rem' }}>
+      <div style={{ margin: '1rem 1.25rem 1rem' }}>
         <button onClick={logout} style={{ width: '100%', padding: 10, background: 'transparent', color: '#993C1D', border: '0.5px solid #993C1D', borderRadius: 10, fontSize: 13, cursor: 'pointer' }}>
           <i className="ti ti-logout" style={{ marginRight: 6 }} />{t('profile.logout')}
         </button>
