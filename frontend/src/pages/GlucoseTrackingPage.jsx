@@ -7,31 +7,13 @@ import VoiceInput from '../components/VoiceInput';
 import { SkeletonCard, SkeletonLine } from '../components/Skeleton';
 import useSettingsStore from '../store/useSettingsStore';
 import { displayGlucose, inputGlucoseToMgdl, glucosePlaceholder, glucoseThresholds, mgdlToMmol } from '../utils/units';
+import GradientHeader from '../components/GradientHeader';
+import MetricCard from '../components/MetricCard';
 import {
   ScatterChart, Scatter,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   ReferenceLine, ReferenceArea,
 } from 'recharts';
-
-function MetricCard({ label, value, subtitle, status }) {
-  const s = {
-    good:    { bg: '#D1FAE5', border: '#A7F3D0', text: '#065F46' },
-    warning: { bg: '#FEF3C7', border: '#FDE68A', text: '#92400E' },
-    danger:  { bg: '#FEE2E2', border: '#FECACA', text: '#991B1B' },
-    neutral: { bg: 'var(--bg-secondary)', border: 'var(--border-color)', text: 'var(--text-primary)' },
-  }[status || 'neutral'];
-  return (
-    <div style={{ padding: '1rem', background: s.bg, borderRadius: 16, border: `1px solid ${s.border}`, textAlign: 'center' }}>
-      <div style={{ fontSize: '0.7rem', color: s.text, marginBottom: '0.3rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.75 }}>{label}</div>
-      <div style={{ fontSize: '1.8rem', fontWeight: 800, color: s.text }}>{value}</div>
-      {subtitle && (
-        <div style={{ marginTop: '0.35rem', display: 'inline-block', padding: '2px 8px', borderRadius: 9999, background: s.text + '18', fontSize: '0.68rem', color: s.text, fontWeight: 600 }}>
-          {subtitle}
-        </div>
-      )}
-    </div>
-  );
-}
 
 function DistributionBar({ label, pct, count, color }) {
   return (
@@ -144,15 +126,11 @@ export default function GlucoseTrackingPage() {
   return (
     <div style={{ paddingBottom: '6rem', background: 'var(--bg-secondary)', minHeight: '100vh' }}>
       {/* Header with period selector */}
-      <div className="gradient-glucose" style={{ padding: '1.25rem 1.25rem 1.25rem', color: 'white', borderRadius: '0 0 24px 24px', marginBottom: 16 }}>
-        <h1 style={{ margin: '0 0 2px', fontSize: '1.4rem', fontWeight: 700 }}>
-          🩸 {t('glucose.title')}
-        </h1>
-        <p style={{ margin: '0 0 12px', opacity: 0.8, fontSize: '0.85rem' }}>{t('glucose.subtitle')}</p>
+      <GradientHeader title="Glycémie" icon="💉" variant="glucose">
         <div style={{ display: 'flex', background: 'rgba(255,255,255,0.12)', borderRadius: 9999, padding: 3, gap: 2 }}>
           {[7, 14, 30].map(days => (
             <button key={days} onClick={() => setPeriod(days)} style={{
-              flex: 1, padding: '0.45rem 0', borderRadius: 9999, cursor: 'pointer', fontSize: 13,
+              flex: 1, padding: '0.45rem 0.75rem', borderRadius: 9999, cursor: 'pointer', fontSize: 13,
               border: 'none',
               background: period === days ? 'rgba(255,255,255,0.2)' : 'transparent',
               fontWeight: period === days ? 700 : 400,
@@ -163,7 +141,7 @@ export default function GlucoseTrackingPage() {
             </button>
           ))}
         </div>
-      </div>
+      </GradientHeader>
 
       {loading ? (
         <div style={{ padding: '1rem' }}>
@@ -179,21 +157,21 @@ export default function GlucoseTrackingPage() {
         <>
           {/* MetricCards 2×2 */}
           {metrics && metrics.total_readings > 0 && (
-            <div style={{ margin: '0 1.25rem 1rem', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.7rem' }}>
-              <MetricCard label={t('glucose.gmi')} value={`${metrics.gmi}%`}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: '0 16px', marginBottom: 16 }}>
+              <MetricCard label={t('glucose.gmi')} value={metrics.gmi} unit="%"
                 status={metrics.gmi < 7 ? 'good' : metrics.gmi < 8 ? 'warning' : 'danger'}
-                subtitle="HbA1c estimé" />
-              <MetricCard label={t('glucose.tir')} value={`${metrics.tir}%`}
+                statusText="HbA1c estimé" />
+              <MetricCard label={t('glucose.tir')} value={metrics.tir} unit="%"
                 status={metrics.tir > 70 ? 'good' : metrics.tir > 50 ? 'warning' : 'danger'}
-                subtitle="70-180 mg/dL" />
-              <MetricCard label={t('glucose.cv')} value={`${metrics.cv}%`}
+                statusText="70-180 mg/dL" />
+              <MetricCard label={t('glucose.cv')} value={metrics.cv} unit="%"
                 status={metrics.cv < 36 ? 'good' : 'warning'}
-                subtitle="Stabilité" />
+                statusText="Stabilité" />
               <MetricCard
                 label={t('glucose.avg')}
-                value={glucoseUnit === 'mmol/L' ? `${mgdlToMmol(metrics.avg_glucose)}` : `${metrics.avg_glucose}`}
-                status="neutral"
-                subtitle={glucoseUnit} />
+                value={glucoseUnit === 'mmol/L' ? mgdlToMmol(metrics.avg_glucose) : metrics.avg_glucose}
+                unit={glucoseUnit}
+                status="neutral" />
             </div>
           )}
 
@@ -319,7 +297,7 @@ export default function GlucoseTrackingPage() {
 
       {/* Manual entry form */}
       {showManual && (
-        <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: 16, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
+        <div className="card" style={{ margin: '16px' }}>
           <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
             ➕ {t('glucose.manualEntry')}
           </h3>
