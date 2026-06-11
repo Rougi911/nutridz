@@ -39,6 +39,7 @@
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 24px;
+  --radius-2xl: 32px;
   --radius-full: 9999px;
 }
 
@@ -238,13 +239,13 @@ input[type="range"] {
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
-  padding: 16px;
+  padding: 24px;
   box-shadow: 0 2px 8px var(--shadow);
 }
 
 /* ─── Gradient header band ──────────────────────────────────────── */
 .gradient-header {
-  padding-block: 20px 24px;
+  padding-block: 24px;
   padding-inline: 16px;
   border-end-start-radius: 24px;
   border-end-end-radius: 24px;
