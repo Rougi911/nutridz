@@ -12,6 +12,7 @@ import { kgToLbs } from '../utils/units';
 import { calcBMR, calcTDEE, calcTarget } from '../utils/api';
 import api from '../utils/api';
 import ActivityForm from '../components/ActivityForm';
+import MetricCard from '../components/MetricCard';
 import { SkeletonCard, SkeletonLine } from '../components/Skeleton';
 import { exportBilanPDF } from '../utils/exportPDF';
 
@@ -49,23 +50,6 @@ function getCellColor(day, goal) {
 
 function getCellTextColor(bg) {
   return (bg === '#F5C842' || bg === '#E0E0E0') ? '#444' : '#fff';
-}
-
-// ─── MetricCard ───────────────────────────────────────────────────────────────
-function MetricCard({ label, value, unit, status }) {
-  const s = {
-    good:    { bg: '#D1FAE5', border: '#A7F3D0', text: '#065F46' },
-    warning: { bg: '#FEF3C7', border: '#FDE68A', text: '#92400E' },
-    danger:  { bg: '#FEE2E2', border: '#FECACA', text: '#991B1B' },
-    neutral: { bg: 'var(--bg-secondary)', border: 'var(--border-color)', text: 'var(--text-primary)' },
-  }[status || 'neutral'];
-  return (
-    <div style={{ padding: '0.85rem', background: s.bg, borderRadius: 14, border: `1px solid ${s.border}`, textAlign: 'center' }}>
-      <div style={{ fontSize: '0.68rem', color: s.text, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.75, marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: '1.4rem', fontWeight: 800, color: s.text }}>{value}</div>
-      {unit && <div style={{ fontSize: '0.68rem', color: s.text, opacity: 0.65, marginTop: 2 }}>{unit}</div>}
-    </div>
-  );
 }
 
 // ─── SVG donut ────────────────────────────────────────────────────────────────
