@@ -34,49 +34,49 @@ export default function RegisterPage() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-secondary)', padding: 16, position: 'relative' }}>
-      <div style={{ position: 'absolute', top: 12, right: 16 }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-secondary)', padding: 'var(--space-card)', position: 'relative' }}>
+      <div style={{ position: 'absolute', top: '12px', right: 'var(--space-card)' }}>
         <LanguageSelector />
       </div>
-      <div className="card" style={{ width: '100%', maxWidth: 400 }}>
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <div style={{ fontSize: 48, marginBottom: 8 }}>🌿</div>
-          <h1 style={{ fontSize: 26, fontWeight: 500, color: '#1A6B3C', marginBottom: 4 }}>{t('auth.register.title')}</h1>
-          <p style={{ fontSize: 14, color: '#888', margin: 0 }}>{t('auth.register.subtitle')}</p>
+      <div className="card" style={{ width: '100%', maxWidth: '400px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 'var(--space-section)' }}>
+          <div style={{ fontSize: 'var(--icon-xl)', marginBottom: 'var(--space-xs)' }}>🌿</div>
+          <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 500, color: 'var(--accent-green)', marginBottom: 'var(--space-2xs)' }}>{t('auth.register.title')}</h1>
+          <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)', margin: 0 }}>{t('auth.register.subtitle')}</p>
         </div>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-tight)' }}>
         {fields.map(({ key, label, type, placeholder }) => (
           <div key={key}>
-            <label style={{ fontSize: 12, color: '#888', display: 'block', marginBottom: 4 }}>{label}</label>
+            <label style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', display: 'block', marginBottom: 'var(--space-2xs)' }}>{label}</label>
             <input type={type} placeholder={placeholder} value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} required
               style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', fontSize: '0.9375rem', background: 'var(--bg-primary)', color: 'var(--text-primary)' }} />
           </div>
         ))}
         {/* RGPD consent checkboxes */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 4 }}>
-          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: 'var(--space-2xs)' }}>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }}>
             <input type="checkbox" checked={consentTerms} onChange={e => setConsentTerms(e.target.checked)}
-              style={{ marginTop: 2, accentColor: '#1A6B3C', flexShrink: 0 }} />
-            <span style={{ fontSize: 12, color: '#555', lineHeight: 1.5 }}>
+              style={{ marginTop: '2px', accentColor: 'var(--accent-green)', flexShrink: 0 }} />
+            <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
               J'accepte les{' '}
-              <Link to="/confidentialite" style={{ color: '#1A6B3C' }}>conditions d'utilisation et la politique de confidentialité</Link>
+              <Link to="/confidentialite" style={{ color: 'var(--accent-green)' }}>conditions d'utilisation et la politique de confidentialité</Link>
             </span>
           </label>
-          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }}>
             <input type="checkbox" checked={consentHealth} onChange={e => setConsentHealth(e.target.checked)}
-              style={{ marginTop: 2, accentColor: '#1A6B3C', flexShrink: 0 }} />
-            <span style={{ fontSize: 12, color: '#555', lineHeight: 1.5 }}>
+              style={{ marginTop: '2px', accentColor: 'var(--accent-green)', flexShrink: 0 }} />
+            <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
               J'accepte que NutriVita traite mes données de santé (poids, calories, activités) pour me fournir le service
             </span>
           </label>
         </div>
 
         <button type="submit" disabled={loading || !consentTerms || !consentHealth}
-          style={{ marginTop: 8, padding: '12px', background: '#1A6B3C', color: 'white', border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 500, cursor: (!consentTerms || !consentHealth) ? 'not-allowed' : 'pointer', opacity: (loading || !consentTerms || !consentHealth) ? 0.5 : 1 }}>
+          style={{ marginTop: 'var(--space-xs)', padding: '12px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: 'var(--radius-md)', fontSize: 'var(--font-size-sm)', fontWeight: 500, cursor: (!consentTerms || !consentHealth) ? 'not-allowed' : 'pointer', opacity: (loading || !consentTerms || !consentHealth) ? 0.5 : 1 }}>
           {loading ? t('auth.register.loading') : t('auth.register.submit')}
         </button>
-          <p style={{ textAlign: 'center', fontSize: 13, color: '#888', margin: 0 }}>
-            {t('auth.register.hasAccount')} <Link to="/login" style={{ color: '#1A6B3C', fontWeight: 500 }}>{t('auth.register.login')}</Link>
+          <p style={{ textAlign: 'center', fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)', margin: 0 }}>
+            {t('auth.register.hasAccount')} <Link to="/login" style={{ color: 'var(--accent-green)', fontWeight: 500 }}>{t('auth.register.login')}</Link>
           </p>
         </form>
       </div>

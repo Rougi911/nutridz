@@ -14,18 +14,18 @@ export default function StatsPage() {
   const handleExport = () => exportBilanPDF('stats-content', 'bilan.pdf');
 
   return (
-    <div style={{ background: 'var(--bg-secondary)', minHeight: '100vh', paddingBottom: 80 }}>
+    <div style={{ background: 'var(--bg-secondary)', minHeight: '100vh', paddingBottom: '80px' }}>
       <GradientHeader title="Statistiques" icon="📊" variant="emerald">
         <button
           aria-label="Exporter PDF"
           onClick={handleExport}
-          style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 9999, width: 36, height: 36, cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 'var(--radius-full)', width: 'var(--size-icon-btn)', height: 'var(--size-icon-btn)', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
-          <i className="ti ti-download" style={{ fontSize: 18 }} />
+          <i className="ti ti-download" style={{ fontSize: 'var(--font-size-lg)' }} />
         </button>
       </GradientHeader>
 
-      <div style={{ display: 'flex', gap: 8, padding: '12px 16px', overflowX: 'auto' }}>
+      <div style={{ display: 'flex', gap: 'var(--space-xs)', padding: 'var(--space-tight) var(--space-card)', overflowX: 'auto' }}>
         {TABS.map(tab => (
           <button
             key={tab}
@@ -37,7 +37,7 @@ export default function StatsPage() {
         ))}
       </div>
 
-      <Suspense fallback={<div style={{ padding: 16 }}>Chargement…</div>}>
+      <Suspense fallback={<div style={{ padding: 'var(--space-card)' }}>Chargement…</div>}>
         {isEvolution
           ? <HistoryPage embedded />
           : <BilanPage embedded activeTabOverride={activeTab} />

@@ -62,7 +62,7 @@ function CalorieRing({ ingested, burned, target }) {
   const balance = ingested - burned;
   const isDeficit = balance <= 0;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
       <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>
         <circle cx={cx} cy={cy} r={R_OUT} fill="none" stroke="#ededf7" strokeWidth={13} />
         <circle cx={cx} cy={cy} r={R_OUT} fill="none" stroke="#f59e0b" strokeWidth={13}
@@ -82,10 +82,10 @@ function CalorieRing({ ingested, burned, target }) {
           {isDeficit ? 'Déficit' : 'Surplus'}
         </text>
       </svg>
-      <div style={{ display: 'flex', gap: 18 }}>
+      <div style={{ display: 'flex', gap: '18px' }}>
         {[['#6366f1', 'Ingérées'], ['#f59e0b', 'Dépensées']].map(([color, label]) => (
-          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--text-secondary)' }}>
-            <div style={{ width: 10, height: 10, borderRadius: 3, background: color }} />{label}
+          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)' }}>
+            <div style={{ width: '10px', height: '10px', borderRadius: 'var(--radius-2xs)', background: color }} />{label}
           </div>
         ))}
       </div>
@@ -97,14 +97,14 @@ function CalorieRing({ ingested, burned, target }) {
 function MacroBar({ label, value, target, color, unit = 'g' }) {
   const pct = Math.min(Math.round((value / (target || 1)) * 100), 100);
   return (
-    <div style={{ marginBottom: 10 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
-        <span style={{ fontWeight: 600, color: '#444' }}>{label}</span>
-        <span style={{ color: '#888' }}>{Math.round(value)}{unit} / {Math.round(target)}{unit} ({pct}%)</span>
+    <div style={{ marginBottom: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-xs)', marginBottom: '4px' }}>
+        <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{label}</span>
+        <span style={{ color: 'var(--text-secondary)' }}>{Math.round(value)}{unit} / {Math.round(target)}{unit} ({pct}%)</span>
       </div>
-      <div style={{ height: 8, background: '#f0f0f0', borderRadius: 4, overflow: 'hidden' }}>
+      <div style={{ height: '8px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-2xs)', overflow: 'hidden' }}>
         <div style={{
-          height: '100%', width: `${pct}%`, borderRadius: 4,
+          height: '100%', width: `${pct}%`, borderRadius: 'var(--radius-2xs)',
           background: pct >= 90 ? color : pct >= 60 ? '#F5A623' : '#FF6B35',
           transition: 'width 0.5s ease',
         }} />
@@ -131,27 +131,27 @@ function EstimationGauge({ avg_balance }) {
   const RANGE = 800;
   const pct = ((Math.max(-RANGE, Math.min(RANGE, avg_balance)) + RANGE) / (2 * RANGE)) * 100;
   return (
-    <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
-      <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: '#333' }}>Estimation hebdomadaire</h3>
-      <div style={{ marginBottom: 10 }}>
-        <div style={{ height: 10, background: 'linear-gradient(to right, #E53E3E, #FF6B35, #1A6B3C, #3B82F6)', borderRadius: 5, position: 'relative' }}>
+    <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-xl)', padding: '16px', marginBottom: '12px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
+      <h3 style={{ margin: '0 0 12px', fontSize: 'var(--font-size-sm)', fontWeight: 700, color: 'var(--text-primary)' }}>Estimation hebdomadaire</h3>
+      <div style={{ marginBottom: '10px' }}>
+        <div style={{ height: '10px', background: 'linear-gradient(to right, #E53E3E, #FF6B35, #1A6B3C, #3B82F6)', borderRadius: 'var(--radius-2xs)', position: 'relative' }}>
           <div style={{
             position: 'absolute', top: -3, left: `${pct}%`, transform: 'translateX(-50%)',
-            width: 16, height: 16, borderRadius: '50%', background: color,
+            width: '16px', height: '16px', borderRadius: '50%', background: color,
             border: '2px solid #fff', boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
             transition: 'left 0.5s ease',
           }} />
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#aaa', marginTop: 4 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-2xs)', color: 'var(--text-tertiary)', marginTop: '4px' }}>
           <span>Perte rapide</span><span>Maintien</span><span>Prise de masse</span>
         </div>
       </div>
-      <div style={{ background: color + '18', borderRadius: 12, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ background: color + '18', borderRadius: 'var(--radius-md)', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div style={{ fontWeight: 700, fontSize: 14, color }}>{label}</div>
-          <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{detail}</div>
+          <div style={{ fontWeight: 700, fontSize: 'var(--font-size-sm)', color }}>{label}</div>
+          <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', marginTop: '2px' }}>{detail}</div>
         </div>
-        <div style={{ fontSize: 26 }}>
+        <div style={{ fontSize: 'var(--font-size-2xl)' }}>
           {avg_balance < -500 ? '🔥' : avg_balance <= -200 ? '📉' : avg_balance <= 200 ? '⚖️' : '💪'}
         </div>
       </div>
@@ -191,12 +191,12 @@ function Recommendations({ stats, profile }) {
 
   if (recs.length === 0) return null;
   return (
-    <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
-      <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: '#333' }}>Recommandations personnalisées</h3>
+    <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-xl)', padding: '16px', marginBottom: '12px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
+      <h3 style={{ margin: '0 0 12px', fontSize: 'var(--font-size-sm)', fontWeight: 700, color: 'var(--text-primary)' }}>Recommandations personnalisées</h3>
       {recs.map((r, i) => (
-        <div key={i} style={{ display: 'flex', gap: 10, padding: '9px 0', borderBottom: i < recs.length - 1 ? '0.5px solid #f5f5f5' : 'none' }}>
-          <span style={{ fontSize: 18, lineHeight: 1.4 }}>{r.icon}</span>
-          <span style={{ fontSize: 13, color: '#444', lineHeight: 1.5 }}>{r.text}</span>
+        <div key={i} style={{ display: 'flex', gap: '10px', padding: '9px 0', borderBottom: i < recs.length - 1 ? '0.5px solid var(--border-color)' : 'none' }}>
+          <span style={{ fontSize: 'var(--font-size-lg)', lineHeight: 1.4 }}>{r.icon}</span>
+          <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)', lineHeight: 1.5 }}>{r.text}</span>
         </div>
       ))}
     </div>
@@ -209,25 +209,25 @@ function ActivityRow({ activity, t }) {
   const isStrava = activity.source === 'strava';
   const label = activity.name || t(`bilan.sport.${activity.type}`) || activity.type;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '0.5px solid #f0f0f0' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ width: 42, height: 42, borderRadius: 12, background: isStrava ? '#FFF0EB' : '#EAF3DE', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '0.5px solid var(--border-color)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ width: '42px', height: '42px', borderRadius: 'var(--radius-md)', background: isStrava ? '#FFF0EB' : 'var(--color-success-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--font-size-xl)' }}>
           {icon}
         </div>
         <div>
-          <div style={{ fontWeight: 600, fontSize: 14, color: '#222' }}>{label}</div>
-          <div style={{ fontSize: 12, color: '#999', marginTop: 2, display: 'flex', alignItems: 'center', gap: 5 }}>
+          <div style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)' }}>{label}</div>
+          <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '5px' }}>
             <span>{activity.duration_min} min</span>
             {activity.distance_km > 0 && <span>· {activity.distance_km} km</span>}
-            <span style={{ fontSize: 10, background: isStrava ? '#FC4C02' : '#1A6B3C', color: '#fff', padding: '1px 6px', borderRadius: 6, fontWeight: 700 }}>
+            <span style={{ fontSize: 'var(--font-size-2xs)', background: isStrava ? '#FC4C02' : 'var(--accent-green)', color: '#fff', padding: '1px 6px', borderRadius: 'var(--radius-xs)', fontWeight: 700 }}>
               {isStrava ? 'Strava' : 'Manuel'}
             </span>
           </div>
         </div>
       </div>
       <div style={{ textAlign: 'right' }}>
-        <div style={{ fontWeight: 700, fontSize: 16, color: '#FF6B35' }}>−{Math.round(activity.calories_burned)}</div>
-        <div style={{ fontSize: 11, color: '#aaa' }}>kcal</div>
+        <div style={{ fontWeight: 700, fontSize: 'var(--font-size-base)', color: '#FF6B35' }}>−{Math.round(activity.calories_burned)}</div>
+        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>kcal</div>
       </div>
     </div>
   );
@@ -391,9 +391,9 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
   }, [monthlyStats, monthYear]);
 
   const navBtnStyle = {
-    width: 36, height: 36, borderRadius: 10, border: '0.5px solid rgba(0,0,0,0.1)',
-    background: '#f5f5f2', cursor: 'pointer', fontSize: 18, display: 'flex',
-    alignItems: 'center', justifyContent: 'center', color: '#444',
+    width: '36px', height: '36px', borderRadius: 'var(--radius-md)', border: '0.5px solid rgba(0,0,0,0.1)',
+    background: 'var(--bg-secondary)', cursor: 'pointer', fontSize: 'var(--font-size-lg)', display: 'flex',
+    alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)',
   };
 
   const handleExportPDF = async () => {
@@ -408,23 +408,23 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
   };
 
   return (
-    <div id="bilan-content" style={{ paddingBottom: 32, minHeight: embedded ? 'auto' : '100vh', background: 'var(--bg-secondary)' }}>
+    <div id="bilan-content" style={{ paddingBottom: '32px', minHeight: embedded ? 'auto' : '100vh', background: 'var(--bg-secondary)' }}>
 
       {/* Header */}
       {!embedded && (
-      <div className="gradient-health" style={{ padding: '1.25rem 1.25rem 1.5rem', borderRadius: '0 0 28px 28px', color: 'white', marginBottom: 16 }}>
+      <div className="gradient-health" style={{ padding: '1.25rem 1.25rem 1.5rem', borderRadius: '0 0 var(--radius-xl) var(--radius-xl)', color: 'white', marginBottom: '16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>{t('bilan.title')}</h1>
-            <p style={{ fontSize: 13, opacity: 0.8, margin: '4px 0 0' }}>
+            <h1 style={{ fontSize: 'var(--font-size-xl)', fontWeight: 700, margin: 0 }}>{t('bilan.title')}</h1>
+            <p style={{ fontSize: 'var(--font-size-sm)', opacity: 0.8, margin: '4px 0 0' }}>
               {new Date().toLocaleDateString('fr-DZ', { weekday: 'long', day: 'numeric', month: 'long' })}
             </p>
           </div>
           <button onClick={handleExportPDF} style={{
-            padding: '8px 14px', borderRadius: 9999,
+            padding: '8px 14px', borderRadius: 'var(--radius-full)',
             border: '1px solid rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.15)',
             color: 'white', fontWeight: 600, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: 6, fontSize: 12,
+            display: 'flex', alignItems: 'center', gap: '6px', fontSize: 'var(--font-size-xs)',
           }}>
             📄 {t('bilan.exportPDF')}
           </button>
@@ -435,13 +435,13 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
       <div style={{ padding: '0 16px' }}>
 
       {/* View toggle */}
-      <div style={{ display: 'flex', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 9999, padding: 4, marginBottom: 16, gap: 4 }}>
+      <div style={{ display: 'flex', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-full)', padding: '4px', marginBottom: '16px', gap: 'var(--space-2xs)' }}>
         {[['jour', 'Jour'], ['semaine', 'Semaine'], ['mois', 'Mois'], ['evolution', t('evolution.title')]].map(([v, label]) => (
           <button key={v} onClick={() => setView(v)} style={{
-            flex: 1, padding: '8px 0', borderRadius: 9999, border: 'none',
+            flex: 1, padding: '8px 0', borderRadius: 'var(--radius-full)', border: 'none',
             background: view === v ? '#10b981' : 'transparent',
             color: view === v ? '#fff' : 'var(--text-secondary)',
-            fontWeight: 600, fontSize: 11, cursor: 'pointer', transition: 'all 0.2s',
+            fontWeight: 600, fontSize: 'var(--font-size-xs)', cursor: 'pointer', transition: 'all 0.2s',
           }}>
             {label}
           </button>
@@ -452,33 +452,33 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
       {view === 'jour' && (
         <>
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '40px 0', color: '#aaa' }}>
-              <i className="ti ti-loader-2" style={{ fontSize: 28 }} /> Chargement...
+            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-tertiary)' }}>
+              <i className="ti ti-loader-2" style={{ fontSize: 'var(--font-size-2xl)' }} /> Chargement...
             </div>
           ) : (
-            <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '18px 16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)', display: 'flex', justifyContent: 'center' }}>
+            <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-xl)', padding: '18px 16px', marginBottom: '12px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)', display: 'flex', justifyContent: 'center' }}>
               <CalorieRing ingested={ingested} burned={burned} target={target_kcal} />
             </div>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '12px' }}>
             {[
               { label: t('bilan.ingested'), value: ingested,    unit: 'kcal', color: 'var(--accent-blue)',   bg: 'rgba(99,102,241,0.08)',  icon: '🍽️' },
               { label: t('bilan.burned'),   value: burned,      unit: 'kcal', color: 'var(--accent-yellow)', bg: 'rgba(245,158,11,0.08)', icon: '🔥' },
               { label: t('bilan.target'),   value: target_kcal, unit: 'kcal', color: 'var(--accent-green)',  bg: 'rgba(16,185,129,0.08)', icon: '🎯' },
             ].map(({ label, value, unit, color, bg, icon }) => (
-              <div key={label} style={{ background: bg, borderRadius: 16, padding: '12px 8px', textAlign: 'center' }}>
-                <div style={{ fontSize: 20 }}>{icon}</div>
-                <div style={{ fontSize: 17, fontWeight: 800, color }}>{Math.round(value)}</div>
-                <div style={{ fontSize: 10, color: '#888' }}>{unit}</div>
-                <div style={{ fontSize: 10, color: '#999', marginTop: 1 }}>{label}</div>
+              <div key={label} style={{ background: bg, borderRadius: 'var(--radius-lg)', padding: '12px 8px', textAlign: 'center' }}>
+                <div style={{ fontSize: 'var(--font-size-xl)' }}>{icon}</div>
+                <div style={{ fontSize: 'var(--font-size-base)', fontWeight: 800, color }}>{Math.round(value)}</div>
+                <div style={{ fontSize: 'var(--font-size-2xs)', color: 'var(--text-secondary)' }}>{unit}</div>
+                <div style={{ fontSize: 'var(--font-size-2xs)', color: 'var(--text-tertiary)', marginTop: '1px' }}>{label}</div>
               </div>
             ))}
           </div>
 
           {ingested > 0 && (
-            <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
-              <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: '#333' }}>Macros du jour</h3>
+            <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-xl)', padding: '16px', marginBottom: '12px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
+              <h3 style={{ margin: '0 0 12px', fontSize: 'var(--font-size-sm)', fontWeight: 700, color: 'var(--text-primary)' }}>Macros du jour</h3>
               <MacroBar label="Glucides"  value={bilan?.glucides  || 0} target={glucTarget} color="#F5A623" />
               <MacroBar label="Protéines" value={bilan?.proteines || 0} target={protTarget} color="#3B82F6" />
               <MacroBar label="Lipides"   value={bilan?.lipides   || 0} target={fatTarget}  color="#8B5CF6" />
@@ -486,57 +486,57 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
           )}
 
           {/* Strava card */}
-          <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '14px 16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
+          <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-xl)', padding: '14px 16px', marginBottom: '12px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
             {stravaConnected ? (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 38, height: 38, borderRadius: 10, background: '#FC4C02', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <i className="ti ti-brand-strava" style={{ fontSize: 20, color: '#fff' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ width: '38px', height: '38px', borderRadius: 'var(--radius-md)', background: '#FC4C02', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <i className="ti ti-brand-strava" style={{ fontSize: 'var(--font-size-xl)', color: '#fff' }} />
                   </div>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: 13, color: '#222' }}>✅ {stravaAthleteName || 'Strava connecté'}</div>
-                    <div style={{ fontSize: 11, color: '#aaa' }}>Compte Strava lié</div>
+                    <div style={{ fontWeight: 700, fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)' }}>✅ {stravaAthleteName || 'Strava connecté'}</div>
+                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>Compte Strava lié</div>
                   </div>
                 </div>
                 <button onClick={handleSyncStrava} disabled={syncingStrava}
-                  style={{ padding: '9px 14px', borderRadius: 12, border: '1.5px solid #FC4C02', background: syncingStrava ? '#f5f5f5' : '#fff', color: '#FC4C02', fontWeight: 700, fontSize: 12, cursor: syncingStrava ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <i className={`ti ${syncingStrava ? 'ti-loader-2' : 'ti-refresh'}`} style={{ fontSize: 15 }} />
+                  style={{ padding: '9px 14px', borderRadius: 'var(--radius-md)', border: '1.5px solid #FC4C02', background: syncingStrava ? 'var(--bg-secondary)' : 'var(--bg-primary)', color: '#FC4C02', fontWeight: 700, fontSize: 'var(--font-size-xs)', cursor: syncingStrava ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <i className={`ti ${syncingStrava ? 'ti-loader-2' : 'ti-refresh'}`} style={{ fontSize: 'var(--font-size-base)' }} />
                   {syncingStrava ? 'Sync...' : '🔄 Synchroniser'}
                 </button>
               </div>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: 13, color: '#555' }}>Strava non connecté</div>
-                  <div style={{ fontSize: 11, color: '#aaa' }}>Liez votre compte pour importer vos activités</div>
+                  <div style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)' }}>Strava non connecté</div>
+                  <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>Liez votre compte pour importer vos activités</div>
                 </div>
                 <button onClick={handleConnectStrava}
-                  style={{ padding: '9px 14px', borderRadius: 12, border: 'none', background: '#FC4C02', color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <i className="ti ti-brand-strava" style={{ fontSize: 15 }} />Connecter
+                  style={{ padding: '9px 14px', borderRadius: 'var(--radius-md)', border: 'none', background: '#FC4C02', color: '#fff', fontWeight: 700, fontSize: 'var(--font-size-xs)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <i className="ti ti-brand-strava" style={{ fontSize: 'var(--font-size-base)' }} />Connecter
                 </button>
               </div>
             )}
             {syncResult !== null && (
-              <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 10, background: syncResult.count > 0 ? '#EAF3DE' : '#f5f5f5', fontSize: 12, color: syncResult.count > 0 ? '#1A6B3C' : '#888' }}>
+              <div style={{ marginTop: '10px', padding: '8px 12px', borderRadius: 'var(--radius-md)', background: syncResult.count > 0 ? 'var(--color-success-bg)' : 'var(--bg-secondary)', fontSize: 'var(--font-size-xs)', color: syncResult.count > 0 ? 'var(--accent-green)' : 'var(--text-secondary)' }}>
                 {syncResult.count > 0 ? `✅ ${syncResult.count} activité(s) importée(s)` : "Aucune activité Strava aujourd'hui"}
               </div>
             )}
           </div>
 
           {/* Activities list */}
-          <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#333' }}>{t('bilan.activities')}</h3>
+          <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-xl)', padding: '16px', marginBottom: '12px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <h3 style={{ margin: 0, fontSize: 'var(--font-size-base)', fontWeight: 700, color: 'var(--text-primary)' }}>{t('bilan.activities')}</h3>
               {burned > 0 && (
-                <span style={{ background: '#FF6B35', color: '#fff', borderRadius: 10, padding: '2px 10px', fontSize: 12, fontWeight: 700 }}>
+                <span style={{ background: '#FF6B35', color: '#fff', borderRadius: 'var(--radius-md)', padding: '2px 10px', fontSize: 'var(--font-size-xs)', fontWeight: 700 }}>
                   −{Math.round(burned)} kcal
                 </span>
               )}
             </div>
             {activities.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '14px 0' }}>
-                <div style={{ fontSize: 28, marginBottom: 4 }}>🏃</div>
-                <p style={{ color: '#bbb', fontSize: 13, margin: 0 }}>
+                <div style={{ fontSize: 'var(--font-size-2xl)', marginBottom: '4px' }}>🏃</div>
+                <p style={{ color: 'var(--text-tertiary)', fontSize: 'var(--font-size-sm)', margin: 0 }}>
                   {stravaConnected ? "Aucune activité Strava aujourd'hui — appuyez sur Synchroniser" : t('bilan.noActivities')}
                 </p>
               </div>
@@ -546,12 +546,12 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
           </div>
 
           <button onClick={() => setShowForm(v => !v)}
-            style={{ width: '100%', padding: '13px', borderRadius: 16, border: 'none', background: showForm ? 'var(--bg-tertiary)' : 'var(--accent-blue)', color: showForm ? 'var(--text-primary)' : '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
-            <i className={`ti ${showForm ? 'ti-x' : 'ti-plus'}`} style={{ fontSize: 18 }} />
+            style={{ width: '100%', padding: '13px', borderRadius: 'var(--radius-lg)', border: 'none', background: showForm ? 'var(--bg-tertiary)' : 'var(--accent-blue)', color: showForm ? 'var(--text-primary)' : '#fff', fontWeight: 700, fontSize: 'var(--font-size-base)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-xs)', marginBottom: '12px' }}>
+            <i className={`ti ${showForm ? 'ti-x' : 'ti-plus'}`} style={{ fontSize: 'var(--font-size-lg)' }} />
             {showForm ? 'Annuler' : t('bilan.addActivity')}
           </button>
           {showForm && (
-            <div style={{ background: '#fff', borderRadius: 20, padding: '20px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+            <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-xl)', padding: '20px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
               <ActivityForm onSave={handleSaveActivity} saving={saving} />
             </div>
           )}
@@ -563,47 +563,47 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
         <>
           {/* Avg stats cards */}
           {weeklyStats ? (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '12px' }}>
               {[
-                { label: 'Moy. ingérées',  value: weeklyStats.avg_calories_in,  color: '#1A6B3C', bg: '#EAF3DE', icon: '🍽️' },
+                { label: 'Moy. ingérées',  value: weeklyStats.avg_calories_in,  color: 'var(--accent-green)', bg: 'var(--color-success-bg)', icon: '🍽️' },
                 { label: 'Moy. dépensées', value: weeklyStats.avg_calories_out, color: '#FF6B35', bg: '#FFF3ED', icon: '🔥' },
                 {
                   label: 'Solde moyen',
                   value: weeklyStats.avg_balance > 0 ? `+${weeklyStats.avg_balance}` : String(weeklyStats.avg_balance),
-                  color: weeklyStats.avg_balance > 0 ? '#CC4400' : '#1A6B3C',
-                  bg:    weeklyStats.avg_balance > 0 ? '#FFF3ED' : '#EAF3DE',
+                  color: weeklyStats.avg_balance > 0 ? '#CC4400' : 'var(--accent-green)',
+                  bg:    weeklyStats.avg_balance > 0 ? '#FFF3ED' : 'var(--color-success-bg)',
                   icon:  '⚖️',
                 },
               ].map(({ label, value, color, bg, icon }) => (
-                <div key={label} style={{ background: bg, borderRadius: 16, padding: '12px 8px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 20 }}>{icon}</div>
-                  <div style={{ fontSize: 15, fontWeight: 800, color }}>{value}</div>
-                  <div style={{ fontSize: 10, color: '#888' }}>kcal/j</div>
-                  <div style={{ fontSize: 9, color: '#999', marginTop: 1 }}>{label}</div>
+                <div key={label} style={{ background: bg, borderRadius: 'var(--radius-lg)', padding: '12px 8px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 'var(--font-size-xl)' }}>{icon}</div>
+                  <div style={{ fontSize: 'var(--font-size-base)', fontWeight: 800, color }}>{value}</div>
+                  <div style={{ fontSize: 'var(--font-size-2xs)', color: 'var(--text-secondary)' }}>kcal/j</div>
+                  <div style={{ fontSize: 'var(--font-size-2xs)', color: 'var(--text-tertiary)', marginTop: '1px' }}>{label}</div>
                 </div>
               ))}
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '20px 0', color: '#bbb', fontSize: 13 }}>Chargement des stats...</div>
+            <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-tertiary)', fontSize: 'var(--font-size-sm)' }}>Chargement des stats...</div>
           )}
 
           {/* Bar chart 7 jours */}
           {weeklyStats && weeklyStats.active_days > 0 && (
-            <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#333' }}>7 derniers jours</h3>
-                <div style={{ display: 'flex', gap: 12, fontSize: 10, color: '#888' }}>
-                  <span><span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: '#1A6B3C', marginRight: 3 }} />Ingérées</span>
-                  <span><span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: '#FF6B35', marginRight: 3 }} />Dépensées</span>
+            <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-xl)', padding: '16px', marginBottom: '12px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <h3 style={{ margin: 0, fontSize: 'var(--font-size-sm)', fontWeight: 700, color: 'var(--text-primary)' }}>7 derniers jours</h3>
+                <div style={{ display: 'flex', gap: '12px', fontSize: 'var(--font-size-2xs)', color: 'var(--text-secondary)' }}>
+                  <span><span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: 'var(--radius-2xs)', background: 'var(--accent-green)', marginRight: '3px' }} />Ingérées</span>
+                  <span><span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: 'var(--radius-2xs)', background: '#FF6B35', marginRight: '3px' }} />Dépensées</span>
                 </div>
               </div>
               <ResponsiveContainer width="100%" height={150}>
                 <BarChart data={chartData} barGap={3} barCategoryGap="25%">
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f5f5f5" />
-                  <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#aaa' }} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="label" tick={{ fontSize: 'var(--font-size-2xs)', fill: '#aaa' }} axisLine={false} tickLine={false} />
                   <YAxis hide domain={[0, 'auto']} />
                   <Tooltip
-                    contentStyle={{ borderRadius: 10, fontSize: 12, border: '1px solid #f0f0f0' }}
+                    contentStyle={{ borderRadius: 'var(--radius-md)', fontSize: 'var(--font-size-xs)', border: '1px solid var(--border-color)' }}
                     formatter={(v, name) => [`${Math.round(v)} kcal`, name === 'calories_in' ? 'Ingérées' : 'Dépensées']}
                   />
                   <ReferenceLine y={weeklyStats.target_kcal} stroke="#5B6EF5" strokeDasharray="4 3" strokeWidth={1.5} />
@@ -616,19 +616,19 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
                   <Bar dataKey="calories_out" fill="#FF6B35" radius={[4,4,0,0]} maxBarSize={18} />
                 </BarChart>
               </ResponsiveContainer>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 6, marginTop: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '6px', marginTop: '12px' }}>
                 {[
-                  { label: 'Moy. ingérées',  value: weeklyStats.avg_calories_in,  unit: 'kcal', color: '#1A6B3C' },
+                  { label: 'Moy. ingérées',  value: weeklyStats.avg_calories_in,  unit: 'kcal', color: 'var(--accent-green)' },
                   { label: 'Moy. dépensées', value: weeklyStats.avg_calories_out, unit: 'kcal', color: '#FF6B35' },
-                  { label: 'Solde moyen',    value: weeklyStats.avg_balance,       unit: 'kcal', color: weeklyStats.avg_balance > 0 ? '#CC4400' : '#1A6B3C' },
+                  { label: 'Solde moyen',    value: weeklyStats.avg_balance,       unit: 'kcal', color: weeklyStats.avg_balance > 0 ? '#CC4400' : 'var(--accent-green)' },
                   { label: 'Jours ✓',        value: weeklyStats.days_on_target,    unit: `/ ${weeklyStats.active_days}`, color: '#5B6EF5' },
                 ].map(({ label, value, unit, color }) => (
-                  <div key={label} style={{ background: '#f9f9f9', borderRadius: 12, padding: '8px 6px', textAlign: 'center' }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color }}>
+                  <div key={label} style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', padding: '8px 6px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 'var(--font-size-sm)', fontWeight: 800, color }}>
                       {label === 'Solde moyen' && value > 0 ? `+${value}` : value}
                     </div>
-                    <div style={{ fontSize: 9, color: '#aaa' }}>{unit}</div>
-                    <div style={{ fontSize: 9, color: '#bbb', marginTop: 1 }}>{label}</div>
+                    <div style={{ fontSize: 'var(--font-size-2xs)', color: 'var(--text-tertiary)' }}>{unit}</div>
+                    <div style={{ fontSize: 'var(--font-size-2xs)', color: 'var(--text-tertiary)', marginTop: '1px' }}>{label}</div>
                   </div>
                 ))}
               </div>
@@ -637,9 +637,9 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
 
           {/* Estimation text */}
           {weeklyStats && weeklyStats.active_days > 0 && (
-            <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
-              <h3 style={{ margin: '0 0 10px', fontSize: 14, fontWeight: 700, color: '#333' }}>Estimation cette semaine</h3>
-              <p style={{ margin: 0, fontSize: 13, color: '#444', lineHeight: 1.6 }}>
+            <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-xl)', padding: '16px', marginBottom: '12px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
+              <h3 style={{ margin: '0 0 10px', fontSize: 'var(--font-size-sm)', fontWeight: 700, color: 'var(--text-primary)' }}>Estimation cette semaine</h3>
+              <p style={{ margin: 0, fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)', lineHeight: 1.6 }}>
                 {weeklyStats.goal === 'perte' && (
                   weeklyStats.avg_balance < 0
                     ? `Déficit moyen ${Math.abs(weeklyStats.avg_balance)} kcal/j → perte estimée ${Math.abs(weeklyStats.avg_balance * 7 / 3500).toFixed(2)} kg cette semaine`
@@ -664,9 +664,9 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
           <Recommendations stats={weeklyStats} profile={profile} />
 
           {(!weeklyStats || weeklyStats.active_days === 0) && (
-            <div style={{ textAlign: 'center', padding: '30px 0', color: '#bbb' }}>
-              <div style={{ fontSize: 40, marginBottom: 8 }}>📊</div>
-              <p style={{ fontSize: 13, margin: 0 }}>Pas encore de données cette semaine.<br />Commencez à logger vos repas !</p>
+            <div style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-tertiary)' }}>
+              <div style={{ fontSize: '40px', marginBottom: '8px' }}>📊</div>
+              <p style={{ fontSize: 'var(--font-size-sm)', margin: 0 }}>Pas encore de données cette semaine.<br />Commencez à logger vos repas !</p>
             </div>
           )}
         </>
@@ -675,14 +675,14 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
       {/* ═══ VUE MENSUELLE ═══ */}
       {view === 'mois' && (
         <>
-          <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
+          <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-xl)', padding: '16px', marginBottom: '12px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
             {/* Month navigation */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
               <button style={navBtnStyle}
                 onClick={() => setMonthYear(my => my.month === 1 ? { year: my.year - 1, month: 12 } : { ...my, month: my.month - 1 })}>
                 ‹
               </button>
-              <span style={{ fontWeight: 700, fontSize: 16, color: '#1a1a1a' }}>
+              <span style={{ fontWeight: 700, fontSize: 'var(--font-size-base)', color: 'var(--text-primary)' }}>
                 {MONTH_NAMES[monthYear.month - 1]} {monthYear.year}
               </span>
               <button style={navBtnStyle}
@@ -692,28 +692,28 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
             </div>
 
             {/* Day headers */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3, marginBottom: 6 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px', marginBottom: '6px' }}>
               {WEEK_DAYS.map(d => (
-                <div key={d} style={{ textAlign: 'center', fontSize: 10, color: '#aaa', fontWeight: 600, paddingBottom: 2 }}>{d}</div>
+                <div key={d} style={{ textAlign: 'center', fontSize: 'var(--font-size-2xs)', color: 'var(--text-tertiary)', fontWeight: 600, paddingBottom: '2px' }}>{d}</div>
               ))}
             </div>
 
             {/* Calendar grid */}
             {monthlyStats && monthlyStats.year === monthYear.year && monthlyStats.month === monthYear.month ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px' }}>
                 {calendarCells.map((day, i) => {
-                  if (!day) return <div key={`e-${i}`} style={{ minHeight: 52 }} />;
+                  if (!day) return <div key={`e-${i}`} style={{ minHeight: '52px' }} />;
                   const bg = getCellColor(day, monthlyStats.goal);
                   const tc = getCellTextColor(bg);
                   return (
                     <div key={day.date} style={{
-                      background: bg, borderRadius: 8, minHeight: 52,
+                      background: bg, borderRadius: 'var(--radius-sm)', minHeight: '52px',
                       display: 'flex', flexDirection: 'column',
                       alignItems: 'center', justifyContent: 'center', padding: '4px 2px',
                     }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: tc }}>{day.day}</div>
+                      <div style={{ fontSize: 'var(--font-size-xs)', fontWeight: 700, color: tc }}>{day.day}</div>
                       {day.has_data && (
-                        <div style={{ fontSize: 9, color: tc, marginTop: 2, fontWeight: 600, lineHeight: 1.2 }}>
+                        <div style={{ fontSize: 'var(--font-size-2xs)', color: tc, marginTop: '2px', fontWeight: 600, lineHeight: 1.2 }}>
                           {day.deviation > 0 ? '+' : ''}{day.deviation}
                         </div>
                       )}
@@ -722,13 +722,13 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
                 })}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '30px 0', color: '#bbb', fontSize: 13 }}>
-                <i className="ti ti-loader-2" style={{ fontSize: 22 }} />
+              <div style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-tertiary)', fontSize: 'var(--font-size-sm)' }}>
+                <i className="ti ti-loader-2" style={{ fontSize: 'var(--font-size-xl)' }} />
               </div>
             )}
 
             {/* Legend */}
-            <div style={{ marginTop: 14, display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
+            <div style={{ marginTop: '14px', display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
               {[
                 ['#1A6B3C', 'Parfait (±150)'],
                 ['#97C459', 'Bon (±300)'],
@@ -737,8 +737,8 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
                 ['#D63B2F', 'Très mauvais'],
                 ['#E0E0E0', 'Pas de données'],
               ].map(([color, label]) => (
-                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: '#666' }}>
-                  <div style={{ width: 12, height: 12, borderRadius: 3, background: color, flexShrink: 0, border: '0.5px solid rgba(0,0,0,0.08)' }} />
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2xs)', fontSize: 'var(--font-size-2xs)', color: 'var(--text-secondary)' }}>
+                  <div style={{ width: '12px', height: '12px', borderRadius: 'var(--radius-2xs)', background: color, flexShrink: 0, border: '0.5px solid rgba(0,0,0,0.08)' }} />
                   {label}
                 </div>
               ))}
@@ -747,41 +747,41 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
 
           {/* Monthly summary */}
           {monthlyStats && monthlyStats.total_tracked > 0 && (
-            <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '16px', marginBottom: 12, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
-              <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: '#333' }}>Résumé du mois</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
-                <div style={{ background: '#EAF3DE', borderRadius: 12, padding: '10px 12px' }}>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: '#1A6B3C' }}>
+            <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-xl)', padding: '16px', marginBottom: '12px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
+              <h3 style={{ margin: '0 0 12px', fontSize: 'var(--font-size-sm)', fontWeight: 700, color: 'var(--text-primary)' }}>Résumé du mois</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-xs)', marginBottom: '10px' }}>
+                <div style={{ background: 'var(--color-success-bg)', borderRadius: 'var(--radius-md)', padding: '10px 12px' }}>
+                  <div style={{ fontSize: 'var(--font-size-xl)', fontWeight: 800, color: 'var(--accent-green)' }}>
                     {monthlyStats.days_on_target}
-                    <span style={{ fontSize: 13, fontWeight: 400, color: '#888' }}>/{monthlyStats.total_tracked}</span>
+                    <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 400, color: 'var(--text-secondary)' }}>/{monthlyStats.total_tracked}</span>
                   </div>
-                  <div style={{ fontSize: 11, color: '#5a8a5a', marginTop: 2 }}>Jours dans la cible</div>
+                  <div style={{ fontSize: 'var(--font-size-xs)', color: '#5a8a5a', marginTop: '2px' }}>Jours dans la cible</div>
                 </div>
-                <div style={{ background: monthlyStats.avg_balance > 200 ? '#FFF3ED' : '#EAF3DE', borderRadius: 12, padding: '10px 12px' }}>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: monthlyStats.avg_balance > 200 ? '#CC4400' : '#1A6B3C' }}>
+                <div style={{ background: monthlyStats.avg_balance > 200 ? '#FFF3ED' : 'var(--color-success-bg)', borderRadius: 'var(--radius-md)', padding: '10px 12px' }}>
+                  <div style={{ fontSize: 'var(--font-size-xl)', fontWeight: 800, color: monthlyStats.avg_balance > 200 ? '#CC4400' : 'var(--accent-green)' }}>
                     {monthlyStats.avg_balance > 0 ? '+' : ''}{monthlyStats.avg_balance}
                   </div>
-                  <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>Solde moyen (kcal/j)</div>
+                  <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', marginTop: '2px' }}>Solde moyen (kcal/j)</div>
                 </div>
                 {monthlyStats.best_day && (
-                  <div style={{ background: '#f5f9f2', borderRadius: 12, padding: '10px 12px' }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#1A6B3C' }}>
+                  <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', padding: '10px 12px' }}>
+                    <div style={{ fontSize: 'var(--font-size-sm)', fontWeight: 700, color: 'var(--accent-green)' }}>
                       {new Date(monthlyStats.best_day + 'T12:00:00').toLocaleDateString('fr-DZ', { day: 'numeric', month: 'short' })}
                     </div>
-                    <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>Meilleur jour 🏆</div>
+                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', marginTop: '2px' }}>Meilleur jour 🏆</div>
                   </div>
                 )}
                 {monthlyStats.worst_day && (
-                  <div style={{ background: '#fff5f5', borderRadius: 12, padding: '10px 12px' }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#CC4400' }}>
+                  <div style={{ background: '#fff5f5', borderRadius: 'var(--radius-md)', padding: '10px 12px' }}>
+                    <div style={{ fontSize: 'var(--font-size-sm)', fontWeight: 700, color: '#CC4400' }}>
                       {new Date(monthlyStats.worst_day + 'T12:00:00').toLocaleDateString('fr-DZ', { day: 'numeric', month: 'short' })}
                     </div>
-                    <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>Pire jour 📉</div>
+                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', marginTop: '2px' }}>Pire jour 📉</div>
                   </div>
                 )}
               </div>
-              <div style={{ padding: '10px 12px', borderRadius: 12, background: '#f5f5f2' }}>
-                <div style={{ fontSize: 12, color: '#555', lineHeight: 1.5 }}>
+              <div style={{ padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-tertiary)' }}>
+                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                   <strong>Projection fin de mois :</strong>{' '}
                   {monthlyStats.projected_weight_change > 0
                     ? `+${monthlyStats.projected_weight_change.toFixed(2)} kg (surplus moyen)`
@@ -794,9 +794,9 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
           )}
 
           {monthlyStats && monthlyStats.total_tracked === 0 && (
-            <div style={{ textAlign: 'center', padding: '20px 0', color: '#bbb' }}>
-              <div style={{ fontSize: 36, marginBottom: 8 }}>📅</div>
-              <p style={{ fontSize: 13, margin: 0 }}>Aucune donnée pour ce mois.</p>
+            <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-tertiary)' }}>
+              <div style={{ fontSize: 'var(--font-size-4xl)', marginBottom: '8px' }}>📅</div>
+              <p style={{ fontSize: 'var(--font-size-sm)', margin: 0 }}>Aucune donnée pour ce mois.</p>
             </div>
           )}
         </>
@@ -815,13 +815,13 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
           ) : evolutionData ? (
             <>
               {/* Sélecteur période */}
-              <div style={{ display: 'flex', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 9999, padding: 4, marginBottom: '1rem', gap: 4 }}>
+              <div style={{ display: 'flex', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-full)', padding: '4px', marginBottom: '1rem', gap: 'var(--space-2xs)' }}>
                 {[7, 30, 90, 365].map(days => (
                   <button key={days} onClick={() => { setEvolutionPeriod(days); setEvolutionData(null); }} style={{
-                    flex: 1, padding: '0.45rem 0', borderRadius: 9999, border: 'none', cursor: 'pointer',
-                    background: evolutionPeriod === days ? '#6366F1' : 'transparent',
+                    flex: 1, padding: '0.45rem 0', borderRadius: 'var(--radius-full)', border: 'none', cursor: 'pointer',
+                    background: evolutionPeriod === days ? 'var(--accent-blue)' : 'transparent',
                     color: evolutionPeriod === days ? '#fff' : 'var(--text-secondary)',
-                    fontWeight: evolutionPeriod === days ? 700 : 400, fontSize: 12, transition: 'all 0.2s',
+                    fontWeight: evolutionPeriod === days ? 700 : 400, fontSize: 'var(--font-size-xs)', transition: 'all 0.2s',
                   }}>
                     {days}j
                   </button>
@@ -829,22 +829,22 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
               </div>
 
               {/* Graphique poids */}
-              <div style={{ background: 'white', borderRadius: '12px', padding: '1rem', marginBottom: '1rem', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-                <h3 style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: 700, color: '#333' }}>
+              <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', padding: '1rem', marginBottom: '1rem', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+                <h3 style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                   {t('evolution.weightChart')}
                 </h3>
                 {evolutionData.weight_entries.length > 0 ? (
                   <ResponsiveContainer width="100%" height={220}>
                     <LineChart data={evolutionData.weight_entries.map(e => ({ ...e, weight_display: weightUnit === 'lbs' ? kgToLbs(e.weight_kg) : e.weight_kg }))}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
-                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#aaa' }} tickFormatter={d => d.slice(5)} />
-                      <YAxis domain={['dataMin - 1', 'dataMax + 1']} tick={{ fontSize: 10 }} unit={` ${weightUnit}`} width={55} />
+                      <XAxis dataKey="date" tick={{ fontSize: 'var(--font-size-2xs)', fill: '#aaa' }} tickFormatter={d => d.slice(5)} />
+                      <YAxis domain={['dataMin - 1', 'dataMax + 1']} tick={{ fontSize: 'var(--font-size-2xs)' }} unit={` ${weightUnit}`} width={55} />
                       <Tooltip formatter={(v) => [`${v} ${weightUnit}`, t('evolution.weightChart')]} labelFormatter={l => l} />
                       <Line type="monotone" dataKey="weight_display" stroke="#6366F1" strokeWidth={2} dot={{ r: 4, fill: '#6366F1' }} activeDot={{ r: 6 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '2rem', color: '#bbb', fontSize: 13 }}>
+                  <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-tertiary)', fontSize: 'var(--font-size-sm)' }}>
                     Aucune entrée de poids sur cette période
                   </div>
                 )}
@@ -852,21 +852,21 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
 
               {/* Graphique composition */}
               {evolutionData.period && evolutionData.weight_entries.length > 1 && (
-                <div style={{ background: 'white', borderRadius: '12px', padding: '1rem', marginBottom: '1rem', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-                  <h3 style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: 700, color: '#333' }}>
+                <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', padding: '1rem', marginBottom: '1rem', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+                  <h3 style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                     {t('evolution.compositionChart')}
                   </h3>
                   <ResponsiveContainer width="100%" height={220}>
                     <AreaChart data={prepareCompositionData(evolutionData)}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
-                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#aaa' }} tickFormatter={d => d.slice(5)} />
-                      <YAxis tick={{ fontSize: 10 }} unit=" kg" width={50} />
+                      <XAxis dataKey="date" tick={{ fontSize: 'var(--font-size-2xs)', fill: '#aaa' }} tickFormatter={d => d.slice(5)} />
+                      <YAxis tick={{ fontSize: 'var(--font-size-2xs)' }} unit=" kg" width={50} />
                       <Tooltip formatter={(v, name) => [`${v} kg`, name]} />
                       <Area type="monotone" dataKey="lean_kg" stackId="1" stroke="#1A6B3C" fill="#EAF3DE" name={t('evolution.leanMass')} />
                       <Area type="monotone" dataKey="fat_kg"  stackId="1" stroke="#ef4444" fill="#fee2e2" name={t('evolution.fatMass')} />
                     </AreaChart>
                   </ResponsiveContainer>
-                  <p style={{ fontSize: '0.78rem', color: '#9ca3af', marginTop: '0.5rem', fontStyle: 'italic' }}>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', marginTop: '0.5rem', fontStyle: 'italic' }}>
                     {t('evolution.disclaimer')}
                   </p>
                 </div>
@@ -875,9 +875,9 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
               {/* Récap période — MetricCards 2×2 */}
               {evolutionData.period && (
                 <>
-                  <div style={{ background: 'var(--bg-primary)', borderRadius: 16, padding: '1rem', marginBottom: '1rem', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
-                    <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{t('evolution.summary')}</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-lg)', padding: '1rem', marginBottom: '1rem', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
+                    <h3 style={{ margin: '0 0 12px', fontSize: 'var(--font-size-sm)', fontWeight: 700, color: 'var(--text-primary)' }}>{t('evolution.summary')}</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                       <MetricCard
                         label="Poids perdu"
                         value={`${evolutionData.period.total_delta_weight_kg > 0 ? '+' : ''}${evolutionData.period.total_delta_weight_kg?.toFixed(1)} kg`}
@@ -900,14 +900,14 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
                         status="neutral"
                       />
                     </div>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 10, fontStyle: 'italic', lineHeight: 1.4 }}>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '10px', fontStyle: 'italic', lineHeight: 1.4 }}>
                       {t('evolution.disclaimer')}
                     </p>
                   </div>
                   <button onClick={handleExportPDF} style={{
-                    width: '100%', padding: '0.85rem', borderRadius: 12, cursor: 'pointer',
-                    border: '1px solid #6366F1', background: 'transparent', color: '#6366F1',
-                    fontWeight: 700, fontSize: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    width: '100%', padding: '0.85rem', borderRadius: 'var(--radius-md)', cursor: 'pointer',
+                    border: '1px solid var(--accent-blue)', background: 'transparent', color: 'var(--accent-blue)',
+                    fontWeight: 700, fontSize: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-xs)',
                   }}>
                     📄 Exporter en PDF
                   </button>
@@ -915,9 +915,9 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
               )}
             </>
           ) : (
-            <div style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
-              <div style={{ fontSize: 40, marginBottom: 8 }}>⚖️</div>
-              <p style={{ fontSize: 13, margin: 0 }}>Aucune donnée disponible</p>
+            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+              <div style={{ fontSize: '40px', marginBottom: '8px' }}>⚖️</div>
+              <p style={{ fontSize: 'var(--font-size-sm)', margin: 0 }}>Aucune donnée disponible</p>
             </div>
           )}
         </div>

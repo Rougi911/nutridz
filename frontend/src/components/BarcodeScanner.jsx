@@ -61,7 +61,7 @@ export default function BarcodeScanner({ onDetected, onError }) {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div style={{ position: 'relative', width: '100%', borderRadius: 12, overflow: 'hidden', background: '#000', minHeight: 260 }}>
+    <div style={{ position: 'relative', width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden', background: '#000', minHeight: '260px' }}>
       {/* Quagga injecte <video> et <canvas> ici */}
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
 
@@ -73,9 +73,9 @@ export default function BarcodeScanner({ onDetected, onError }) {
       }}>
         <div style={{
           position: 'relative',
-          width: '72%', height: 80,
+          width: '72%', height: '80px',
           border: '1.5px solid rgba(255,255,255,0.5)',
-          borderRadius: 6,
+          borderRadius: 'var(--radius-xs)',
           boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)',
         }}>
           {/* Coins verts */}
@@ -85,10 +85,10 @@ export default function BarcodeScanner({ onDetected, onError }) {
             { bottom: -2, left: -2, borderBottom: '3px solid #4ADE80', borderLeft: '3px solid #4ADE80', borderRadius: '0 0 0 4px' },
             { bottom: -2, right: -2, borderBottom: '3px solid #4ADE80', borderRight: '3px solid #4ADE80', borderRadius: '0 0 4px 0' },
           ].map((s, i) => (
-            <div key={i} style={{ position: 'absolute', width: 18, height: 18, ...s }} />
+            <div key={i} style={{ position: 'absolute', width: '18px', height: '18px', ...s }} />
           ))}
         </div>
-        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 14, letterSpacing: 0.2 }}>
+        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 'var(--font-size-xs)', marginTop: '14px', letterSpacing: 0.2 }}>
           Cadrez le code-barres dans la zone
         </p>
       </div>

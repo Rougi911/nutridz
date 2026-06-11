@@ -44,25 +44,25 @@ export default function CookieBanner() {
 
   return (
     <div style={{
-      position: 'fixed', bottom: 70, left: '50%', transform: 'translateX(-50%)',
-      width: 'calc(100% - 32px)', maxWidth: 448,
-      background: '#fff', borderRadius: 16, padding: '14px 16px',
+      position: 'fixed', bottom: '70px', left: '50%', transform: 'translateX(-50%)',
+      width: 'calc(100% - 32px)', maxWidth: '448px',
+      background: 'var(--bg-primary)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-card)',
       boxShadow: '0 4px 24px rgba(0,0,0,0.14)',
       zIndex: 200, border: '0.5px solid rgba(0,0,0,0.08)',
     }}>
-      <p style={{ fontSize: 13, color: '#444', margin: '0 0 12px', lineHeight: 1.5 }}>
+      <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)', margin: '0 0 var(--space-tight)', lineHeight: 1.5 }}>
         NutriVita utilise des cookies pour améliorer votre expérience.{' '}
-        <Link to="/confidentialite" style={{ color: '#1A6B3C', fontWeight: 600 }}>
+        <Link to="/confidentialite" style={{ color: 'var(--accent-green)', fontWeight: 600 }}>
           Politique de confidentialité
         </Link>.
       </p>
-      <div style={{ display: 'flex', gap: 10 }}>
+      <div style={{ display: 'flex', gap: '10px' }}>
         <button
           onClick={handleRefuse}
           style={{
-            flex: 1, padding: '10px', borderRadius: 10,
-            border: '1px solid #ddd', background: '#f5f5f5',
-            color: '#555', fontWeight: 600, fontSize: 13, cursor: 'pointer',
+            flex: 1, padding: '10px', borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--border-color)', background: 'var(--bg-secondary)',
+            color: 'var(--text-secondary)', fontWeight: 600, fontSize: 'var(--font-size-sm)', cursor: 'pointer',
           }}
         >
           Refuser
@@ -70,9 +70,9 @@ export default function CookieBanner() {
         <button
           onClick={handleAccept}
           style={{
-            flex: 1, padding: '10px', borderRadius: 10,
-            border: 'none', background: '#1A6B3C',
-            color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer',
+            flex: 1, padding: '10px', borderRadius: 'var(--radius-md)',
+            border: 'none', background: 'var(--accent-green)',
+            color: '#fff', fontWeight: 600, fontSize: 'var(--font-size-sm)', cursor: 'pointer',
           }}
         >
           Accepter

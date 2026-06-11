@@ -35,28 +35,28 @@ export default function ActivityForm({ onSave, saving }) {
   const intensities = ['legere', 'moderee', 'intense'];
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-card)' }}>
       {/* Sport selector */}
       <div>
-        <label style={{ fontSize: 13, fontWeight: 600, color: '#444', display: 'block', marginBottom: 8 }}>
+        <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 'var(--space-xs)' }}>
           {t('bilan.sport.marche') ? 'Sport' : 'Sport'}
         </label>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-xs)', flexWrap: 'wrap' }}>
           {sports.map(s => (
             <button
               key={s}
               type="button"
               onClick={() => setSport(s)}
               style={{
-                flex: 1, minWidth: 70, padding: '10px 6px',
-                borderRadius: 12, border: `2px solid ${sport === s ? '#1A6B3C' : '#e0e0e0'}`,
-                background: sport === s ? '#EAF3DE' : '#fff',
-                color: sport === s ? '#1A6B3C' : '#666',
-                fontWeight: 600, fontSize: 12, cursor: 'pointer',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                flex: 1, minWidth: '70px', padding: '10px 6px',
+                borderRadius: 'var(--radius-md)', border: `2px solid ${sport === s ? 'var(--accent-green)' : 'var(--border-color)'}`,
+                background: sport === s ? 'var(--color-success-bg)' : 'var(--bg-primary)',
+                color: sport === s ? 'var(--accent-green)' : 'var(--text-secondary)',
+                fontWeight: 600, fontSize: 'var(--font-size-xs)', cursor: 'pointer',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-2xs)',
               }}
             >
-              <span style={{ fontSize: 22 }}>{SPORT_ICONS[s]}</span>
+              <span style={{ fontSize: 'var(--font-size-xl)' }}>{SPORT_ICONS[s]}</span>
               {t(`bilan.sport.${s}`)}
             </button>
           ))}
@@ -65,37 +65,37 @@ export default function ActivityForm({ onSave, saving }) {
 
       {/* Duration slider */}
       <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <label style={{ fontSize: 13, fontWeight: 600, color: '#444' }}>{t('bilan.duration')}</label>
-          <span style={{ fontSize: 18, fontWeight: 700, color: '#1A6B3C' }}>{duration} {t('bilan.minutes')}</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-xs)' }}>
+          <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--text-primary)' }}>{t('bilan.duration')}</label>
+          <span style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, color: 'var(--accent-green)' }}>{duration} {t('bilan.minutes')}</span>
         </div>
         <input
           type="range" min={5} max={180} step={5} value={duration}
           onChange={e => setDuration(Number(e.target.value))}
-          style={{ width: '100%', accentColor: '#1A6B3C' }}
+          style={{ width: '100%', accentColor: 'var(--accent-green)' }}
         />
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#aaa', marginTop: 2 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)', marginTop: '2px' }}>
           <span>5 min</span><span>1h</span><span>3h</span>
         </div>
       </div>
 
       {/* Intensity */}
       <div>
-        <label style={{ fontSize: 13, fontWeight: 600, color: '#444', display: 'block', marginBottom: 8 }}>
+        <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 'var(--space-xs)' }}>
           Intensité
         </label>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 'var(--space-xs)' }}>
           {intensities.map(i => (
             <button
               key={i}
               type="button"
               onClick={() => setIntensity(i)}
               style={{
-                flex: 1, padding: '9px 0', borderRadius: 10,
-                border: `2px solid ${intensite === i ? '#1A6B3C' : '#e0e0e0'}`,
-                background: intensite === i ? '#1A6B3C' : '#fff',
-                color: intensite === i ? '#fff' : '#666',
-                fontWeight: 600, fontSize: 12, cursor: 'pointer',
+                flex: 1, padding: '9px 0', borderRadius: 'var(--radius-md)',
+                border: `2px solid ${intensite === i ? 'var(--accent-green)' : 'var(--border-color)'}`,
+                background: intensite === i ? 'var(--accent-green)' : 'var(--bg-primary)',
+                color: intensite === i ? '#fff' : 'var(--text-secondary)',
+                fontWeight: 600, fontSize: 'var(--font-size-xs)', cursor: 'pointer',
               }}
             >
               {t(`bilan.intensity.${i}`)}
@@ -106,24 +106,24 @@ export default function ActivityForm({ onSave, saving }) {
 
       {/* Calorie preview */}
       <div style={{
-        background: 'linear-gradient(135deg, #EAF3DE, #d4edda)',
-        borderRadius: 14, padding: '14px 18px',
+        background: 'var(--color-success-bg)',
+        borderRadius: 'var(--radius-lg)', padding: '14px 18px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div>
-          <div style={{ fontSize: 12, color: '#555', fontWeight: 500 }}>{t('bilan.caloriesBurned')}</div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: '#1A6B3C' }}>{kcal} kcal</div>
+          <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', fontWeight: 500 }}>{t('bilan.caloriesBurned')}</div>
+          <div style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 800, color: 'var(--accent-green)' }}>{kcal} kcal</div>
         </div>
-        <div style={{ fontSize: 36 }}>🔥</div>
+        <div style={{ fontSize: 'var(--font-size-4xl)' }}>🔥</div>
       </div>
 
       <button
         type="submit"
         disabled={saving}
         style={{
-          padding: '14px', borderRadius: 14, border: 'none',
-          background: saving ? '#ccc' : '#1A6B3C',
-          color: '#fff', fontWeight: 700, fontSize: 15, cursor: saving ? 'not-allowed' : 'pointer',
+          padding: '14px', borderRadius: 'var(--radius-lg)', border: 'none',
+          background: saving ? 'var(--bg-tertiary)' : 'var(--accent-green)',
+          color: saving ? 'var(--text-secondary)' : '#fff', fontWeight: 700, fontSize: 'var(--font-size-base)', cursor: saving ? 'not-allowed' : 'pointer',
         }}
       >
         {saving ? t('bilan.saving') : t('bilan.addActivity')}

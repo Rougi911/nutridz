@@ -94,9 +94,9 @@ export default function VoiceFoodModal({ mealType, rawItems, onConfirm, onClose 
     }}>
       <div style={{
         background: 'var(--bg-primary)',
-        borderRadius: '16px 16px 0 0',
+        borderRadius: 'var(--radius-xl) var(--radius-xl) 0 0',
         padding: '1.5rem',
-        width: '100%', maxWidth: 500,
+        width: '100%', maxWidth: '500px',
         maxHeight: '80vh', overflowY: 'auto',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -121,14 +121,14 @@ export default function VoiceFoodModal({ mealType, rawItems, onConfirm, onClose 
           return (
             <div key={idx} style={{
               display: 'flex', alignItems: 'center', gap: '0.75rem',
-              padding: '0.75rem', borderRadius: '8px',
+              padding: '0.75rem', borderRadius: 'var(--radius-sm)',
               background: 'var(--bg-secondary)', marginBottom: '0.5rem',
             }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {item.name}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 2 }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
                   {item.loading ? '...' : estimatedKcal !== null ? `~${estimatedKcal} kcal` : '~? kcal'}
                 </div>
               </div>
@@ -138,14 +138,14 @@ export default function VoiceFoodModal({ mealType, rawItems, onConfirm, onClose 
                 min="1"
                 onChange={e => updateGrams(idx, e.target.value)}
                 style={{
-                  width: 64, padding: '0.4rem',
-                  borderRadius: '6px', border: '1px solid var(--border-color)',
+                  width: '64px', padding: '0.4rem',
+                  borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-color)',
                   background: 'var(--bg-primary)', color: 'var(--text-primary)',
                   textAlign: 'center', fontSize: '0.9rem',
                 }}
               />
               <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>g</span>
-              <button onClick={() => removeItem(idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '1rem', padding: '4px', lineHeight: 1 }}>
+              <button onClick={() => removeItem(idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent-red)', fontSize: '1rem', padding: 'var(--space-2xs)', lineHeight: 1 }}>
                 ✕
               </button>
             </div>
@@ -154,7 +154,7 @@ export default function VoiceFoodModal({ mealType, rawItems, onConfirm, onClose 
 
         <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
           <button onClick={onClose} style={{
-            flex: 1, padding: '0.75rem', borderRadius: '8px',
+            flex: 1, padding: '0.75rem', borderRadius: 'var(--radius-sm)',
             border: '1px solid var(--border-color)', background: 'var(--bg-secondary)',
             color: 'var(--text-primary)', fontWeight: 600, cursor: 'pointer',
           }}>
@@ -164,8 +164,8 @@ export default function VoiceFoodModal({ mealType, rawItems, onConfirm, onClose 
             onClick={handleConfirm}
             disabled={saving || items.length === 0}
             style={{
-              flex: 2, padding: '0.75rem', borderRadius: '8px', border: 'none',
-              background: items.length > 0 && !saving ? '#1A6B3C' : 'var(--bg-tertiary)',
+              flex: 2, padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: 'none',
+              background: items.length > 0 && !saving ? 'var(--accent-green)' : 'var(--bg-tertiary)',
               color: items.length > 0 && !saving ? 'white' : 'var(--text-secondary)',
               fontWeight: 600, cursor: items.length > 0 && !saving ? 'pointer' : 'not-allowed',
             }}

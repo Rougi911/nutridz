@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { useProductsStore, useJournalStore, useProfileStore } from '../store';
 import { calcWalkTime } from '../utils/api';
 
-const SCORE_COLORS = { A: '#1A6B3C', B: '#0F6E56', C: '#BA7517', D: '#993C1D' };
+const SCORE_COLORS = { A: 'var(--accent-green)', B: '#0F6E56', C: '#BA7517', D: 'var(--accent-red)' };
 const SPORTS = { marche: { label: 'Marche', met: 3.5, emoji: '🚶' }, velo: { label: 'Vélo', met: 6.0, emoji: '🚴' }, course: { label: 'Course', met: 9.0, emoji: '🏃' }, natation: { label: 'Natation', met: 7.0, emoji: '🏊' } };
 
 export default function ProductDetailPage() {
@@ -20,7 +20,7 @@ export default function ProductDetailPage() {
 
   useEffect(() => { fetchProduct(id); }, [id]);
 
-  if (!product) return <div style={{ padding: '2rem', textAlign: 'center', color: '#aaa' }}>Chargement...</div>;
+  if (!product) return <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-tertiary)' }}>Chargement...</div>;
 
   const ratio = grams / 100;
   const kcal = Math.round(product.kcal_per100 * ratio);
@@ -31,7 +31,7 @@ export default function ProductDetailPage() {
     { key: 'glucides', label: 'Glucides', color: '#BA7517', max: 100 },
     { key: 'proteines', label: 'Protéines', color: '#185FA5', max: 50 },
     { key: 'lipides', label: 'Lipides', color: '#993C1D', max: 40 },
-    { key: 'fibres', label: 'Fibres', color: '#1A6B3C', max: 15 }
+    { key: 'fibres', label: 'Fibres', color: 'var(--accent-green)', max: 15 }
   ];
 
   const handleAdd = async () => {
@@ -49,63 +49,63 @@ export default function ProductDetailPage() {
   return (
     <div>
       {/* Back */}
-      <div style={{ padding: '12px 1.25rem 0' }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1A6B3C', fontSize: 14, display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div style={{ padding: 'var(--space-tight) 1.25rem 0' }}>
+        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent-green)', fontSize: 'var(--font-size-sm)', display: 'flex', alignItems: 'center', gap: 'var(--space-2xs)' }}>
           <i className="ti ti-arrow-left" /> Retour
         </button>
       </div>
 
       {/* Header produit */}
-      <div style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: 16 }}>
-        <div style={{ fontSize: 56 }}>{product.emoji}</div>
+      <div style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: 'var(--space-card)' }}>
+        <div style={{ fontSize: '56px' }}>{product.emoji}</div>
         <div>
-          <h2 style={{ fontSize: 20, fontWeight: 500 }}>{product.name}</h2>
-          <p style={{ fontSize: 14, color: '#888', marginTop: 2 }}>{product.brand}</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: SCORE_COLORS[product.score], display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 14, fontWeight: 500 }}>
+          <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: 500 }}>{product.name}</h2>
+          <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)', marginTop: '2px' }}>{product.brand}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)', marginTop: 'var(--space-xs)' }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: SCORE_COLORS[product.score], display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 'var(--font-size-sm)', fontWeight: 500 }}>
               {product.score}
             </div>
-            <span style={{ fontSize: 13, color: '#555' }}>{product.comment}</span>
+            <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)' }}>{product.comment}</span>
           </div>
         </div>
       </div>
 
       {/* Portion slider */}
-      <div style={{ margin: '0 1.25rem', background: '#fff', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 12, padding: '12px 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <label style={{ fontSize: 13, color: '#888', flex: 1 }}>
-            <i className="ti ti-scale" style={{ marginRight: 4 }} />Portion
+      <div style={{ margin: '0 1.25rem', background: 'var(--bg-primary)', border: '0.5px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: 'var(--space-tight) var(--space-card)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <label style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)', flex: 1 }}>
+            <i className="ti ti-scale" style={{ marginRight: 'var(--space-2xs)' }} />Portion
           </label>
           <input type="range" min="10" max="500" step="5" value={grams} onChange={e => setGrams(parseInt(e.target.value))} style={{ flex: 2 }} />
-          <span style={{ fontSize: 13, fontWeight: 500, minWidth: 40, textAlign: 'right' }}>{grams}g</span>
+          <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 500, minWidth: '40px', textAlign: 'right' }}>{grams}g</span>
         </div>
       </div>
 
       {/* Calories banner */}
-      <div style={{ margin: '10px 1.25rem 0', background: '#f5f9f5', border: '0.5px solid rgba(0,0,0,0.06)', borderRadius: 12, padding: '12px 16px' }}>
+      <div style={{ margin: '10px 1.25rem 0', background: 'var(--color-success-bg)', border: '0.5px solid rgba(0,0,0,0.06)', borderRadius: 'var(--radius-md)', padding: 'var(--space-tight) var(--space-card)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <div style={{ fontSize: 28, fontWeight: 500, color: '#1A6B3C' }}>{kcal} kcal</div>
-            <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>pour {grams}g · cible {target} kcal/j</div>
+            <div style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 500, color: 'var(--accent-green)' }}>{kcal} kcal</div>
+            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', marginTop: '2px' }}>pour {grams}g · cible {target} kcal/j</div>
           </div>
-          <span style={{ fontSize: 11, fontWeight: 500, padding: '3px 9px', borderRadius: 20, background: pct < 10 ? '#EAF3DE' : pct < 25 ? '#FAEEDA' : '#FAECE7', color: pct < 10 ? '#3B6D11' : pct < 25 ? '#854F0B' : '#993C1D' }}>
+          <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: 500, padding: '3px 9px', borderRadius: 'var(--radius-xl)', background: pct < 10 ? 'var(--color-success-bg)' : pct < 25 ? 'var(--color-warning-bg)' : 'var(--color-danger-bg)', color: pct < 10 ? 'var(--accent-green)' : pct < 25 ? '#854F0B' : 'var(--accent-red)' }}>
             {pct}% de l'objectif
           </span>
         </div>
       </div>
 
       {/* Effort physique */}
-      <div style={{ margin: '10px 1.25rem 0', background: '#fff', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 12, overflow: 'hidden' }}>
-        <div style={{ padding: '8px 16px', borderBottom: '0.5px solid rgba(0,0,0,0.06)', fontSize: 12, color: '#888' }}>Temps pour brûler ces calories</div>
+      <div style={{ margin: '10px 1.25rem 0', background: 'var(--bg-primary)', border: '0.5px solid var(--border-color)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
+        <div style={{ padding: 'var(--space-xs) var(--space-card)', borderBottom: '0.5px solid var(--border-color)', fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)' }}>Temps pour brûler ces calories</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 0 }}>
           {Object.entries(SPORTS).map(([key, sport], i) => {
             const mins = calcWalkTime(kcal, key, profile.weight || 70);
             const isActive = key === (profile.sport || 'marche');
             return (
-              <div key={key} style={{ padding: '10px', textAlign: 'center', background: isActive ? '#EAF3DE' : 'transparent', borderRight: i % 2 === 0 ? '0.5px solid rgba(0,0,0,0.06)' : 'none', borderTop: i > 1 ? '0.5px solid rgba(0,0,0,0.06)' : 'none' }}>
-                <div style={{ fontSize: 20, marginBottom: 2 }}>{sport.emoji}</div>
-                <div style={{ fontSize: 15, fontWeight: 500 }}>{mins} min</div>
-                <div style={{ fontSize: 11, color: '#888' }}>{sport.label}</div>
+              <div key={key} style={{ padding: '10px', textAlign: 'center', background: isActive ? 'var(--color-success-bg)' : 'transparent', borderRight: i % 2 === 0 ? '0.5px solid var(--border-color)' : 'none', borderTop: i > 1 ? '0.5px solid var(--border-color)' : 'none' }}>
+                <div style={{ fontSize: 'var(--icon-sm)', marginBottom: '2px' }}>{sport.emoji}</div>
+                <div style={{ fontSize: 'var(--font-size-base)', fontWeight: 500 }}>{mins} min</div>
+                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)' }}>{sport.label}</div>
               </div>
             );
           })}
@@ -113,29 +113,29 @@ export default function ProductDetailPage() {
       </div>
 
       {/* Valeurs nutritionnelles */}
-      <div style={{ margin: '10px 1.25rem 0', background: '#fff', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 12, padding: '12px 16px' }}>
-        <div style={{ fontSize: 12, color: '#888', marginBottom: 10 }}>Valeurs nutritionnelles pour {grams}g</div>
+      <div style={{ margin: '10px 1.25rem 0', background: 'var(--bg-primary)', border: '0.5px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: 'var(--space-tight) var(--space-card)' }}>
+        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', marginBottom: '10px' }}>Valeurs nutritionnelles pour {grams}g</div>
         {NUT_KEYS.map(({ key, label, color, max }) => {
           const val = (product.per100[key] * ratio).toFixed(1);
           const barPct = Math.min(100, Math.round(product.per100[key] * ratio / max * 100));
           return (
-            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 13, color: '#888', width: 80, flexShrink: 0 }}>{label}</span>
-              <div style={{ flex: 1, height: 6, background: '#f0f0ec', borderRadius: 3, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${barPct}%`, background: color, borderRadius: 3, transition: 'width 0.35s' }} />
+            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)', marginBottom: 'var(--space-xs)' }}>
+              <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)', width: '80px', flexShrink: 0 }}>{label}</span>
+              <div style={{ flex: 1, height: '6px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-2xs)', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${barPct}%`, background: color, borderRadius: 'var(--radius-2xs)', transition: 'width 0.35s' }} />
               </div>
-              <span style={{ fontSize: 12, fontWeight: 500, minWidth: 40, textAlign: 'right' }}>{val}g</span>
+              <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: 500, minWidth: '40px', textAlign: 'right' }}>{val}g</span>
             </div>
           );
         })}
       </div>
 
       {/* Additifs */}
-      <div style={{ margin: '10px 1.25rem 0', background: '#fff', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 12, padding: '12px 16px' }}>
-        <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>Additifs</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+      <div style={{ margin: '10px 1.25rem 0', background: 'var(--bg-primary)', border: '0.5px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: 'var(--space-tight) var(--space-card)' }}>
+        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', marginBottom: 'var(--space-xs)' }}>Additifs</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2xs)' }}>
           {(product.additifs || []).map((a, i) => (
-            <span key={i} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, background: a.type === 'ok' ? '#EAF3DE' : a.type === 'warn' ? '#FAEEDA' : '#FAECE7', color: a.type === 'ok' ? '#3B6D11' : a.type === 'warn' ? '#854F0B' : '#993C1D' }}>
+            <span key={i} style={{ fontSize: 'var(--font-size-xs)', padding: '3px 8px', borderRadius: 'var(--radius-xl)', background: a.type === 'ok' ? 'var(--color-success-bg)' : a.type === 'warn' ? 'var(--color-warning-bg)' : 'var(--color-danger-bg)', color: a.type === 'ok' ? '#3B6D11' : a.type === 'warn' ? '#854F0B' : '#993C1D' }}>
               {a.name}
             </span>
           ))}
@@ -144,7 +144,7 @@ export default function ProductDetailPage() {
 
       {/* CTA */}
       <div style={{ padding: '1rem 1.25rem' }}>
-        <button onClick={handleAdd} disabled={adding} style={{ width: '100%', padding: '12px', background: '#1A6B3C', color: 'white', border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: adding ? 0.7 : 1 }}>
+        <button onClick={handleAdd} disabled={adding} style={{ width: '100%', padding: 'var(--space-tight)', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: 'var(--radius-md)', fontSize: 'var(--font-size-sm)', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-xs)', opacity: adding ? 0.7 : 1 }}>
           <i className="ti ti-notebook" />
           {adding ? 'Ajout...' : `Ajouter au journal (${grams}g · ${kcal} kcal)`}
         </button>

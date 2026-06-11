@@ -13,7 +13,7 @@ const STEPS = [
 
 const inputStyle = {
   padding: '0.75rem',
-  borderRadius: 12,
+  borderRadius: 'var(--radius-md)',
   border: '1px solid var(--border-color)',
   background: 'var(--bg-secondary)',
   color: 'var(--text-primary)',
@@ -97,13 +97,13 @@ export default function OnboardingModal({ onComplete }) {
       display: 'flex', alignItems: 'flex-end',
       zIndex: 300,
     }}>
-      <div className="modal-content" style={{ borderRadius: '24px 24px 0 0', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
+      <div className="modal-content" style={{ borderRadius: 'var(--radius-xl) var(--radius-xl) 0 0', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
         {/* Progress bar — 4 segments, current gets flex:2 */}
-        <div style={{ display: 'flex', gap: 4, marginBottom: isWelcome ? '2rem' : '1.5rem' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2xs)', marginBottom: isWelcome ? '2rem' : '1.5rem' }}>
           {STEPS.map((_, i) => (
             <div key={i} style={{
-              flex: i === step ? 2 : 1, height: 4, borderRadius: 2,
-              background: i < step ? 'rgba(99,102,241,0.4)' : i === step ? '#6366F1' : 'var(--bg-tertiary)',
+              flex: i === step ? 2 : 1, height: 'var(--space-2xs)', borderRadius: 'var(--radius-2xs)',
+              background: i < step ? 'rgba(99,102,241,0.4)' : i === step ? 'var(--accent-blue)' : 'var(--bg-tertiary)',
               transition: 'all 0.3s',
             }} />
           ))}
@@ -123,8 +123,8 @@ export default function OnboardingModal({ onComplete }) {
         {/* ── Step 0: Welcome ── */}
         {isWelcome && (
           <div style={{ textAlign: 'center' }}>
-            <div className="gradient-header gradient-hero" style={{ padding: '24px 20px', borderRadius: '24px 24px 0 0', color: '#fff', textAlign: 'center', margin: '-20px -20px 1.5rem' }}>
-              <div className="animate-float" style={{ fontSize: 64, marginBottom: '0.5rem', display: 'block' }}>🥗</div>
+            <div className="gradient-header gradient-hero" style={{ padding: '24px 20px', borderRadius: 'var(--radius-xl) var(--radius-xl) 0 0', color: '#fff', textAlign: 'center', margin: '-20px -20px 1.5rem' }}>
+              <div className="animate-float" style={{ fontSize: 'var(--icon-2xl)', marginBottom: '0.5rem', display: 'block' }}>🥗</div>
               <h2 style={{ fontSize: '1.6rem', fontWeight: 500, marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>
                 {STEPS[0].title}
               </h2>
@@ -156,11 +156,11 @@ export default function OnboardingModal({ onComplete }) {
             <input type="text" placeholder="Prénom (optionnel)" value={data.prenom}
               onChange={e => setData({ ...data, prenom: e.target.value })}
               style={inputStyle} />
-            <div style={{ display: 'flex', background: 'var(--bg-tertiary)', borderRadius: 9999, padding: 4, gap: 4 }}>
+            <div style={{ display: 'flex', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', padding: 'var(--space-2xs)', gap: 'var(--space-2xs)' }}>
               {[['h', t('onboarding.male')], ['f', t('onboarding.female')]].map(([v, label]) => (
                 <button key={v} onClick={() => setData({ ...data, sexe: v })} style={{
-                  flex: 1, padding: '0.6rem', borderRadius: 9999, cursor: 'pointer', border: 'none',
-                  background: data.sexe === v ? '#6366F1' : 'transparent',
+                  flex: 1, padding: '0.6rem', borderRadius: 'var(--radius-full)', cursor: 'pointer', border: 'none',
+                  background: data.sexe === v ? 'var(--accent-blue)' : 'transparent',
                   color: data.sexe === v ? 'white' : 'var(--text-secondary)',
                   fontWeight: 600, fontSize: '0.9rem', transition: 'all 0.15s',
                 }}>
@@ -194,7 +194,7 @@ export default function OnboardingModal({ onComplete }) {
               <option value="mod">{t('onboarding.moderate')}</option>
               <option value="actif">{t('onboarding.active')}</option>
             </select>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               {[
                 { v: 'perte',    label: t('onboarding.lose'),     icon: 'ti-trending-down' },
                 { v: 'maintien', label: t('onboarding.maintain'), icon: 'ti-trending-right' },
@@ -202,14 +202,14 @@ export default function OnboardingModal({ onComplete }) {
                 { v: 'sante',    label: t('onboarding.health'),   icon: 'ti-droplet-half-2' },
               ].map(({ v, label, icon }) => (
                 <button key={v} onClick={() => setData({ ...data, goal: v })} style={{
-                  padding: '1rem 0.75rem', borderRadius: 14, cursor: 'pointer',
-                  border: data.goal === v ? '2px solid #6366F1' : '1px solid var(--border-color)',
-                  background: data.goal === v ? '#EEF2FF' : 'var(--bg-secondary)',
-                  color: data.goal === v ? '#6366F1' : 'var(--text-primary)',
+                  padding: '1rem 0.75rem', borderRadius: 'var(--radius-lg)', cursor: 'pointer',
+                  border: data.goal === v ? '2px solid var(--accent-blue)' : '1px solid var(--border-color)',
+                  background: data.goal === v ? 'var(--color-info-bg)' : 'var(--bg-secondary)',
+                  color: data.goal === v ? 'var(--accent-blue)' : 'var(--text-primary)',
                   fontWeight: data.goal === v ? 700 : 500, fontSize: '0.9rem',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, transition: 'all 0.15s',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-xs)', transition: 'all 0.15s',
                 }}>
-                  <i className={`ti ${icon}`} style={{ fontSize: 26, color: data.goal === v ? '#6366F1' : 'var(--text-secondary)' }} />
+                  <i className={`ti ${icon}`} style={{ fontSize: 'var(--font-size-2xl)', color: data.goal === v ? 'var(--accent-blue)' : 'var(--text-secondary)' }} />
                   <span>{label}</span>
                 </button>
               ))}
@@ -222,15 +222,15 @@ export default function OnboardingModal({ onComplete }) {
           <div style={{ marginBottom: '1.5rem' }}>
             <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
               <div style={{
-                width: 60, height: 60, borderRadius: 9999, background: '#EEF2FF',
+                width: '60px', height: '60px', borderRadius: 'var(--radius-full)', background: 'var(--color-info-bg)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 28, margin: '0 auto 0.75rem',
+                fontSize: 'var(--font-size-2xl)', margin: '0 auto 0.75rem',
               }}>✅</div>
               <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 0.3rem' }}>
                 Tout est prêt !
               </h2>
               {targetKcal ? (
-                <p style={{ color: '#6366F1', fontWeight: 700, fontSize: '1.05rem', margin: 0 }}>
+                <p style={{ color: 'var(--accent-blue)', fontWeight: 700, fontSize: '1.05rem', margin: 0 }}>
                   Objectif : {targetKcal} kcal/jour
                 </p>
               ) : (
@@ -242,33 +242,33 @@ export default function OnboardingModal({ onComplete }) {
 
             {/* Macro breakdown */}
             {targetKcal && (
-              <div style={{ background: 'var(--bg-secondary)', borderRadius: 14, padding: '0.85rem', marginBottom: '1rem', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+              <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', padding: '0.85rem', marginBottom: '1rem', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-xs)' }}>
                 {[
-                  { label: 'Glucides',  kcal: Math.round(targetKcal * 0.50), color: '#6366F1' },
-                  { label: 'Protéines', kcal: Math.round(targetKcal * 0.25), color: '#10b981' },
-                  { label: 'Lipides',   kcal: Math.round(targetKcal * 0.25), color: '#f59e0b' },
+                  { label: 'Glucides',  kcal: Math.round(targetKcal * 0.50), color: 'var(--accent-blue)' },
+                  { label: 'Protéines', kcal: Math.round(targetKcal * 0.25), color: 'var(--accent-green)' },
+                  { label: 'Lipides',   kcal: Math.round(targetKcal * 0.25), color: 'var(--accent-yellow)' },
                 ].map(({ label, kcal, color }) => (
-                  <div key={label} style={{ textAlign: 'center', padding: '0.6rem 0.3rem', background: 'var(--bg-primary)', borderRadius: 10 }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color }}>{kcal}</div>
-                    <div style={{ fontSize: 9, color: 'var(--text-secondary)', marginTop: 2 }}>{label}</div>
-                    <div style={{ fontSize: 9, color, fontWeight: 600, marginTop: 1 }}>kcal</div>
+                  <div key={label} style={{ textAlign: 'center', padding: '0.6rem 0.3rem', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)' }}>
+                    <div style={{ fontSize: 'var(--font-size-sm)', fontWeight: 800, color }}>{kcal}</div>
+                    <div style={{ fontSize: 'var(--font-size-2xs)', color: 'var(--text-secondary)', marginTop: '2px' }}>{label}</div>
+                    <div style={{ fontSize: 'var(--font-size-2xs)', color, fontWeight: 600, marginTop: '1px' }}>kcal</div>
                   </div>
                 ))}
               </div>
             )}
 
             {/* 3 features */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {[
                 ['📓', 'Journal alimentaire quotidien'],
                 ['⚖️', 'Suivi du poids et composition'],
                 ['📊', "Graphiques d'évolution"],
               ].map(([icon, text], i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-tight)' }}>
                   <div style={{
-                    width: 36, height: 36, borderRadius: 9999, background: '#EEF2FF',
+                    width: 'var(--size-icon-btn)', height: 'var(--size-icon-btn)', borderRadius: 'var(--radius-full)', background: 'var(--color-info-bg)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 18, flexShrink: 0,
+                    fontSize: 'var(--font-size-lg)', flexShrink: 0,
                   }}>
                     {icon}
                   </div>
@@ -283,7 +283,7 @@ export default function OnboardingModal({ onComplete }) {
         <div style={{ display: 'flex', gap: '0.75rem' }}>
           {step > 0 && !isFinish && (
             <button onClick={handleBack} style={{
-              flex: 1, padding: '0.85rem', borderRadius: 12,
+              flex: 1, padding: '0.85rem', borderRadius: 'var(--radius-md)',
               border: '1px solid var(--border-color)', background: 'var(--bg-secondary)',
               color: 'var(--text-primary)', fontWeight: 600, cursor: 'pointer', fontSize: '0.95rem',
             }}>
@@ -293,12 +293,12 @@ export default function OnboardingModal({ onComplete }) {
           <button onClick={handleNext} disabled={!canProceed} style={{
             flex: 1,
             padding: isWelcome ? '1rem' : '0.85rem',
-            borderRadius: isWelcome ? 16 : 12,
+            borderRadius: isWelcome ? 'var(--radius-lg)' : 'var(--radius-md)',
             border: 'none',
-            background: canProceed ? '#6366F1' : 'var(--bg-tertiary)',
+            background: canProceed ? 'var(--accent-blue)' : 'var(--bg-tertiary)',
             color: canProceed ? 'white' : 'var(--text-secondary)',
             fontWeight: 700, cursor: canProceed ? 'pointer' : 'not-allowed',
-            fontSize: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            fontSize: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
           }}>
             {isWelcome ? 'Commencer →' : isFinish ? 'Commencer mon parcours →' : `${t('onboarding.next')} →`}
           </button>

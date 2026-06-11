@@ -22,7 +22,7 @@ function DistributionBar({ label, pct, count, color }) {
         <span>{label}</span>
         <span style={{ fontWeight: 700 }}>{pct}% <span style={{ fontWeight: 400, color: 'var(--text-secondary)' }}>({count})</span></span>
       </div>
-      <div style={{ background: 'var(--bg-tertiary)', borderRadius: '4px', height: 8, overflow: 'hidden' }}>
+      <div style={{ background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-2xs)', height: '8px', overflow: 'hidden' }}>
         <div style={{ background: color, height: '100%', width: `${pct}%`, transition: 'width 0.4s', minWidth: pct > 0 ? 4 : 0 }} />
       </div>
     </div>
@@ -127,10 +127,10 @@ export default function GlucoseTrackingPage() {
     <div style={{ paddingBottom: '6rem', background: 'var(--bg-secondary)', minHeight: '100vh' }}>
       {/* Header with period selector */}
       <GradientHeader title="Glycémie" icon="💉" variant="glucose">
-        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.12)', borderRadius: 9999, padding: 3, gap: 2 }}>
+        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.12)', borderRadius: 'var(--radius-full)', padding: '3px', gap: '2px' }}>
           {[7, 14, 30].map(days => (
             <button key={days} onClick={() => setPeriod(days)} style={{
-              flex: 1, padding: '0.45rem 0.75rem', borderRadius: 9999, cursor: 'pointer', fontSize: 13,
+              flex: 1, padding: '0.45rem 0.75rem', borderRadius: 'var(--radius-full)', cursor: 'pointer', fontSize: 'var(--font-size-sm)',
               border: 'none',
               background: period === days ? 'rgba(255,255,255,0.2)' : 'transparent',
               fontWeight: period === days ? 700 : 400,
@@ -157,7 +157,7 @@ export default function GlucoseTrackingPage() {
         <>
           {/* MetricCards 2×2 */}
           {metrics && metrics.total_readings > 0 && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: '0 16px', marginBottom: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', padding: '0 16px', marginBottom: '16px' }}>
               <MetricCard label={t('glucose.gmi')} value={metrics.gmi} unit="%"
                 status={metrics.gmi < 7 ? 'good' : metrics.gmi < 8 ? 'warning' : 'danger'}
                 statusText="HbA1c estimé" />
@@ -177,7 +177,7 @@ export default function GlucoseTrackingPage() {
 
           {/* Distribution 5 zones */}
           {metrics && metrics.distribution && (
-            <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: 16, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
+            <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
               <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                 {t('glucose.distribution')}
               </h3>
@@ -193,7 +193,7 @@ export default function GlucoseTrackingPage() {
 
           {/* Scatter chart with ReferenceArea */}
           {chartData.length > 0 && (
-            <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: 16, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
+            <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
               <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                 {t('glucose.chart')}
               </h3>
@@ -205,20 +205,20 @@ export default function GlucoseTrackingPage() {
                     type="number"
                     domain={['auto', 'auto']}
                     scale="time"
-                    tick={{ fontSize: 9, fill: '#aaa' }}
+                    tick={{ fontSize: 'var(--font-size-2xs)', fill: '#aaa' }}
                     tickFormatter={(ms) => format(new Date(ms), 'dd/MM')}
                   />
-                  <YAxis dataKey="y" domain={glucoseUnit === 'mmol/L' ? [2, 20] : [40, 320]} tick={{ fontSize: 10 }} unit={glucoseUnit === 'mmol/L' ? ' mmol' : ' mg'} width={65} />
+                  <YAxis dataKey="y" domain={glucoseUnit === 'mmol/L' ? [2, 20] : [40, 320]} tick={{ fontSize: 'var(--font-size-2xs)' }} unit={glucoseUnit === 'mmol/L' ? ' mmol' : ' mg'} width={65} />
                   <Tooltip
                     cursor={{ strokeDasharray: '3 3' }}
                     content={({ active, payload }) => {
                       if (!active || !payload || !payload[0]) return null;
                       const d = payload[0].payload;
                       return (
-                        <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', padding: '8px 12px', borderRadius: 8, fontSize: 12 }}>
+                        <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', padding: '8px 12px', borderRadius: 'var(--radius-sm)', fontSize: 'var(--font-size-xs)' }}>
                           <div style={{ fontWeight: 700 }}>{displayGlucose(d.glucose_mg_dl, glucoseUnit)}</div>
-                          <div style={{ color: '#888' }}>{format(new Date(d.timestamp), 'dd/MM/yyyy HH:mm')}</div>
-                          <div style={{ color: '#666' }}>{d.reading_type}</div>
+                          <div style={{ color: 'var(--text-secondary)' }}>{format(new Date(d.timestamp), 'dd/MM/yyyy HH:mm')}</div>
+                          <div style={{ color: 'var(--text-secondary)' }}>{d.reading_type}</div>
                         </div>
                       );
                     }}
@@ -245,11 +245,11 @@ export default function GlucoseTrackingPage() {
 
           {/* Recent readings */}
           {readings.length > 0 && (
-            <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: 16, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
+            <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
               <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                 {t('glucose.recentReadings')}
               </h3>
-              <div style={{ maxHeight: 280, overflowY: 'auto' }}>
+              <div style={{ maxHeight: '280px', overflowY: 'auto' }}>
                 {readings.slice(0, 20).map((r) => {
                   const g = r.glucose_mg_dl;
                   const outBg    = g < thresholds.low ? '#fee2e2' : g > thresholds.targetHigh ? '#fef3c7' : '#dcfce7';
@@ -260,10 +260,10 @@ export default function GlucoseTrackingPage() {
                         <div style={{ fontWeight: 700, fontSize: '1rem', color: outColor }}>{displayGlucose(g, glucoseUnit)}</div>
                         <div style={{ fontSize: '0.78rem', color: '#9ca3af' }}>
                           {format(new Date(r.timestamp), 'dd/MM/yyyy HH:mm')}
-                          {r.source === 'libreview_csv' && <span style={{ marginLeft: 6, fontSize: 10, background: '#ede9fe', color: '#7c3aed', padding: '1px 5px', borderRadius: 4 }}>LibreView</span>}
+                          {r.source === 'libreview_csv' && <span style={{ marginLeft: 6, fontSize: 'var(--font-size-2xs)', background: '#ede9fe', color: '#7c3aed', padding: '1px 5px', borderRadius: 'var(--radius-2xs)' }}>LibreView</span>}
                         </div>
                       </div>
-                      <div style={{ padding: '0.25rem 0.6rem', borderRadius: 6, background: outBg, color: outColor, fontSize: '0.75rem', fontWeight: 600 }}>
+                      <div style={{ padding: '0.25rem 0.6rem', borderRadius: 'var(--radius-xs)', background: outBg, color: outColor, fontSize: '0.75rem', fontWeight: 600 }}>
                         {t(`glucose.${r.reading_type}`) || r.reading_type}
                       </div>
                     </div>
@@ -274,22 +274,22 @@ export default function GlucoseTrackingPage() {
           )}
 
           {readings.length === 0 && !loading && (
-            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#9ca3af' }}>
-              <div style={{ fontSize: 48, marginBottom: 12 }}>🩸</div>
-              <p style={{ fontSize: 14, margin: 0 }}>{t('glucose.noData')}</p>
+            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-tertiary)' }}>
+              <div style={{ fontSize: 'var(--icon-xl)', marginBottom: 12 }}>🩸</div>
+              <p style={{ fontSize: 'var(--font-size-sm)', margin: 0 }}>{t('glucose.noData')}</p>
             </div>
           )}
         </>
       )}
 
       {/* Bottom action buttons */}
-      <div style={{ padding: '0 1.25rem 0.75rem', display: 'flex', gap: 12 }}>
+      <div style={{ padding: '0 1.25rem 0.75rem', display: 'flex', gap: '12px' }}>
         <button onClick={() => { setShowManual(!showManual); setShowImport(false); }} style={{
-          flex: 1, padding: '0.85rem', borderRadius: 12, border: 'none',
-          background: 'rgba(99,102,241,0.1)', color: '#6366F1', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem',
+          flex: 1, padding: '0.85rem', borderRadius: 'var(--radius-md)', border: 'none',
+          background: 'rgba(99,102,241,0.1)', color: 'var(--accent-blue)', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem',
         }}>+ Saisie manuelle</button>
         <button onClick={() => { setShowImport(!showImport); setShowManual(false); }} style={{
-          flex: 1, padding: '0.85rem', borderRadius: 12,
+          flex: 1, padding: '0.85rem', borderRadius: 'var(--radius-md)',
           border: '1px solid var(--border-color)', background: 'var(--bg-primary)',
           color: 'var(--text-primary)', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem',
         }}>Import LibreView CSV</button>
@@ -307,12 +307,12 @@ export default function GlucoseTrackingPage() {
               placeholder={glucosePlaceholder(glucoseUnit)}
               value={glucoseValue}
               onChange={(e) => setGlucoseValue(e.target.value)}
-              style={{ flex: '1 1 140px', padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: '8px', fontSize: '1rem', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+              style={{ flex: '1 1 140px', padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', fontSize: '1rem', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
             />
             <select
               value={readingType}
               onChange={(e) => setReadingType(e.target.value)}
-              style={{ flex: '1 1 140px', padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: '8px', fontSize: '0.9rem', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+              style={{ flex: '1 1 140px', padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', fontSize: '0.9rem', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
             >
               <option value="fasting">{t('glucose.fasting')}</option>
               <option value="pre_meal">{t('glucose.preMeal')}</option>
@@ -323,8 +323,8 @@ export default function GlucoseTrackingPage() {
             <div style={{ display: 'flex', gap: '0.5rem', flex: '1 1 100%' }}>
               <button type="submit" style={{
                 flex: 1, padding: '0.7rem 1.5rem',
-                background: 'rgba(99,102,241,0.1)', color: '#6366F1',
-                border: 'none', borderRadius: 9999, fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem',
+                background: 'rgba(99,102,241,0.1)', color: 'var(--accent-blue)',
+                border: 'none', borderRadius: 'var(--radius-full)', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem',
               }}>
                 {t('glucose.add')}
               </button>
@@ -336,20 +336,20 @@ export default function GlucoseTrackingPage() {
 
       {/* CSV import */}
       {showImport && (
-        <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: 16, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
+        <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
           <h3 style={{ margin: '0 0 0.4rem', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
             📂 {t('glucose.importCSV')}
           </h3>
-          <p style={{ margin: '0 0 0.75rem', fontSize: '0.82rem', color: '#6b7280', lineHeight: 1.4 }}>
+          <p style={{ margin: '0 0 0.75rem', fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
             {t('glucose.importHelp')}
           </p>
           <input
             type="file" accept=".csv"
             onChange={handleCSVImport}
             disabled={importing}
-            style={{ padding: '0.5rem', border: '1px solid var(--border-color)', borderRadius: '8px', width: '100%', fontSize: '0.85rem', boxSizing: 'border-box', background: 'var(--bg-secondary)' }}
+            style={{ padding: '0.5rem', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', width: '100%', fontSize: '0.85rem', boxSizing: 'border-box', background: 'var(--bg-secondary)' }}
           />
-          {importing && <p style={{ marginTop: '0.5rem', color: '#3b82f6', fontSize: '0.85rem' }}>Import en cours...</p>}
+          {importing && <p style={{ marginTop: '0.5rem', color: 'var(--accent-blue)', fontSize: '0.85rem' }}>Import en cours...</p>}
         </div>
       )}
     </div>

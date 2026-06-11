@@ -108,7 +108,7 @@ export default function DishDetailPage() {
   }, [dish, portion, modifiers, modifierCatalog]);
 
   if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', color: '#888', fontSize: 14 }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', color: 'var(--text-secondary)', fontSize: 'var(--font-size-sm)' }}>
       {t('common.loading')}
     </div>
   );
@@ -140,7 +140,7 @@ export default function DishDetailPage() {
   };
 
   return (
-    <div style={{ paddingBottom: 100 }}>
+    <div style={{ paddingBottom: '100px' }}>
       {/* Header */}
       <GradientHeader
         title={dishName || ''}
@@ -148,16 +148,16 @@ export default function DishDetailPage() {
         icon={dish.emoji || '🍽️'}
         variant="emerald"
       >
-        <button onClick={() => navigate(-1)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: 14 }}>
+        <button onClick={() => navigate(-1)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: 'var(--radius-sm)', padding: '5px 12px', cursor: 'pointer', fontSize: 'var(--font-size-sm)' }}>
           ‹ Retour
         </button>
         <button
           onClick={() => favorite ? removeFavorite(parseInt(id)) : addFavorite(parseInt(id))}
           style={{
-            background: favorite ? '#FEF3C7' : 'rgba(255,255,255,0.15)',
+            background: favorite ? 'var(--color-warning-bg)' : 'rgba(255,255,255,0.15)',
             border: 'none',
-            color: favorite ? '#f59e0b' : 'white',
-            borderRadius: 20, padding: '5px 14px', cursor: 'pointer', fontSize: 18,
+            color: favorite ? 'var(--accent-yellow)' : 'white',
+            borderRadius: 'var(--radius-xl)', padding: '5px 14px', cursor: 'pointer', fontSize: 'var(--font-size-lg)',
           }}
         >
           {favorite ? '⭐' : '☆'}
@@ -166,22 +166,22 @@ export default function DishDetailPage() {
 
       <div style={{ padding: '1rem 1.25rem' }}>
         {/* Badges */}
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 14 }}>
+        <div style={{ display: 'flex', gap: 'var(--space-xs)', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '14px' }}>
           {dish.prep_time_min > 0 && (
-            <span style={{ background: '#f0f5ee', color: '#1A6B3C', borderRadius: 20, padding: '5px 12px', fontSize: 12, fontWeight: 500 }}>
+            <span style={{ background: 'var(--color-success-bg)', color: 'var(--accent-green)', borderRadius: 'var(--radius-xl)', padding: '5px 12px', fontSize: 'var(--font-size-xs)', fontWeight: 500 }}>
               ⏲ {t('dishes.prep')} {dish.prep_time_min} min
             </span>
           )}
           {dish.cook_time_min > 0 && (
-            <span style={{ background: '#f0f5ee', color: '#1A6B3C', borderRadius: 20, padding: '5px 12px', fontSize: 12, fontWeight: 500 }}>
+            <span style={{ background: 'var(--color-success-bg)', color: 'var(--accent-green)', borderRadius: 'var(--radius-xl)', padding: '5px 12px', fontSize: 'var(--font-size-xs)', fontWeight: 500 }}>
               🔥 {t('dishes.cook')} {dish.cook_time_min} min
             </span>
           )}
-          <span style={{ background: diff.bg, color: diff.color, borderRadius: 20, padding: '5px 12px', fontSize: 12, fontWeight: 500 }}>
+          <span style={{ background: diff.bg, color: diff.color, borderRadius: 'var(--radius-xl)', padding: '5px 12px', fontSize: 'var(--font-size-xs)', fontWeight: 500 }}>
             {diff.label}
           </span>
           {dish.is_user_created ? (
-            <span style={{ background: '#E3F2FD', color: '#1565C0', borderRadius: 20, padding: '5px 12px', fontSize: 12, fontWeight: 500 }}>
+            <span style={{ background: '#E3F2FD', color: '#1565C0', borderRadius: 'var(--radius-xl)', padding: '5px 12px', fontSize: 'var(--font-size-xs)', fontWeight: 500 }}>
               ✨ {t('dishes.customBadge')}
             </span>
           ) : null}
@@ -189,24 +189,24 @@ export default function DishDetailPage() {
 
         {/* Description */}
         {dish.description ? (
-          <p style={{ fontSize: 13, color: '#666', textAlign: 'center', margin: '0 0 14px', fontStyle: 'italic', lineHeight: 1.5 }}>
+          <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)', textAlign: 'center', margin: '0 0 14px', fontStyle: 'italic', lineHeight: 1.5 }}>
             {dish.description}
           </p>
         ) : null}
 
         {/* Portion slider */}
-        <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 16, padding: '14px 16px', marginBottom: 10 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{t('dishes.adjustPortion')}</span>
-            <span style={{ fontSize: 20, fontWeight: 700, color: '#6366F1' }}>{portion}g</span>
+        <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '14px 16px', marginBottom: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--text-primary)' }}>{t('dishes.adjustPortion')}</span>
+            <span style={{ fontSize: 'var(--font-size-xl)', fontWeight: 700, color: 'var(--accent-blue)' }}>{portion}g</span>
           </div>
           {/* Quick-pick portion chips */}
-          <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '6px', marginBottom: '10px', flexWrap: 'wrap' }}>
             {[50, 100, 150, 200].map(g => (
               <button key={g} onClick={() => setPortion(g)} style={{
-                padding: '4px 12px', borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                padding: '4px 12px', borderRadius: 'var(--radius-full)', fontSize: 'var(--font-size-xs)', fontWeight: 600, cursor: 'pointer',
                 border: portion === g ? 'none' : '1px solid var(--border-color)',
-                background: portion === g ? '#6366F1' : 'var(--bg-secondary)',
+                background: portion === g ? 'var(--accent-blue)' : 'var(--bg-secondary)',
                 color: portion === g ? 'white' : 'var(--text-secondary)',
                 transition: 'all 0.15s',
               }}>{g}g</button>
@@ -214,20 +214,20 @@ export default function DishDetailPage() {
           </div>
           <input type="range" min={50} max={800} step={10} value={portion}
             onChange={e => setPortion(Number(e.target.value))}
-            style={{ width: '100%', accentColor: '#6366F1', cursor: 'pointer' }}
+            style={{ width: '100%', accentColor: 'var(--accent-blue)', cursor: 'pointer' }}
           />
           {/* Quick presets */}
-          <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+          <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
             {[
               { label: '½ portion', val: Math.round(defaultPortion / 2) },
               { label: 'Normal',   val: defaultPortion },
               { label: 'Double',   val: defaultPortion * 2 },
             ].map(({ label, val }) => (
               <button key={label} onClick={() => setPortion(val)} style={{
-                flex: 1, padding: '5px 0', borderRadius: 9999, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                flex: 1, padding: '5px 0', borderRadius: 'var(--radius-full)', fontSize: 'var(--font-size-xs)', fontWeight: 600, cursor: 'pointer',
                 border: portion === val ? 'none' : '1px solid var(--border-color)',
                 background: portion === val ? 'rgba(99,102,241,0.12)' : 'var(--bg-secondary)',
-                color: portion === val ? '#6366F1' : 'var(--text-secondary)',
+                color: portion === val ? 'var(--accent-blue)' : 'var(--text-secondary)',
                 transition: 'all 0.15s',
               }}>{label}</button>
             ))}
@@ -236,44 +236,44 @@ export default function DishDetailPage() {
 
         {/* Modifier panel */}
         {modifierCatalog && (
-          <div style={{ marginBottom: 10 }}>
+          <div style={{ marginBottom: '10px' }}>
             <button
               type="button"
               onClick={() => setShowPanel(!showPanel)}
-              style={{ width: '100%', padding: '12px 16px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 13, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--text-primary)' }}
+              style={{ width: '100%', padding: '12px 16px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: 600, fontSize: 'var(--font-size-sm)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--text-primary)' }}
             >
-              <span>⚙️ {t('modifiers.title')} {modifiers.length > 0 && <span style={{ color: '#1A6B3C' }}>({modifiers.length})</span>}</span>
-              <span style={{ color: '#888' }}>{showPanel ? '▼' : '▶'}</span>
+              <span>⚙️ {t('modifiers.title')} {modifiers.length > 0 && <span style={{ color: 'var(--accent-green)' }}>({modifiers.length})</span>}</span>
+              <span style={{ color: 'var(--text-secondary)' }}>{showPanel ? '▼' : '▶'}</span>
             </button>
 
             {showPanel && (
-              <div style={{ marginTop: 6, border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
+              <div style={{ marginTop: '6px', border: '0.5px solid rgba(0,0,0,0.1)', borderRadius: 'var(--radius-md)', overflow: 'hidden', background: 'var(--bg-primary)' }}>
                 {Object.entries(modifierCatalog).map(([category, items]) => {
                   const isOpen = openCategory === category;
                   const selectedInCategory = modifiers.filter(m => items.some(i => i.id === m.id));
                   return (
-                    <div key={category} style={{ borderBottom: '0.5px solid #f0f0ec' }}>
+                    <div key={category} style={{ borderBottom: '0.5px solid var(--border-color)' }}>
                       <button
                         type="button"
                         onClick={() => setOpenCategory(isOpen ? null : category)}
-                        style={{ width: '100%', padding: '11px 14px', background: '#fff', border: 'none', textAlign: 'left', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}
+                        style={{ width: '100%', padding: '11px 14px', background: 'var(--bg-primary)', border: 'none', textAlign: 'left', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 'var(--font-size-sm)' }}
                       >
                         <span style={{ fontWeight: 500 }}>
                           {t(`modifiers.categories.${category}`)}
-                          {selectedInCategory.length > 0 && <span style={{ marginLeft: 6, color: '#1A6B3C', fontWeight: 700 }}>· {selectedInCategory.length}</span>}
+                          {selectedInCategory.length > 0 && <span style={{ marginLeft: '6px', color: 'var(--accent-green)', fontWeight: 700 }}>· {selectedInCategory.length}</span>}
                         </span>
-                        <span style={{ color: '#aaa', fontSize: 11 }}>{isOpen ? '▼' : '▶'}</span>
+                        <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--font-size-xs)' }}>{isOpen ? '▼' : '▶'}</span>
                       </button>
 
                       {isOpen && (
-                        <div style={{ padding: '8px 14px 12px', background: '#fafaf8' }}>
+                        <div style={{ padding: '8px 14px 12px', background: 'var(--bg-secondary)' }}>
                           {selectedInCategory.map(m => {
                             const item = items.find(i => i.id === m.id);
                             if (!item) return null;
                             return (
-                              <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                                <span style={{ fontSize: 18, flexShrink: 0 }}>{item.emoji}</span>
-                                <span style={{ flex: 1, fontSize: 12, fontWeight: 500, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</span>
+                              <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)', marginBottom: '10px' }}>
+                                <span style={{ fontSize: 'var(--font-size-lg)', flexShrink: 0 }}>{item.emoji}</span>
+                                <span style={{ flex: 1, fontSize: 'var(--font-size-xs)', fontWeight: 500, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</span>
                                 <input
                                   type="range"
                                   min={0}
@@ -281,13 +281,13 @@ export default function DishDetailPage() {
                                   step={1}
                                   value={m.amount_g}
                                   onChange={e => setModifiers(modifiers.map(x => x.id === m.id ? { ...x, amount_g: +e.target.value } : x))}
-                                  style={{ width: 80, accentColor: '#1A6B3C' }}
+                                  style={{ width: '80px', accentColor: 'var(--accent-green)' }}
                                 />
-                                <span style={{ minWidth: 34, textAlign: 'right', fontSize: 12, color: '#555' }}>{m.amount_g}g</span>
+                                <span style={{ minWidth: '34px', textAlign: 'right', fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)' }}>{m.amount_g}g</span>
                                 <button
                                   type="button"
                                   onClick={() => setModifiers(modifiers.filter(x => x.id !== m.id))}
-                                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#cc4444', fontSize: 16, padding: 2, flexShrink: 0 }}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent-red)', fontSize: 'var(--font-size-base)', padding: '2px', flexShrink: 0 }}
                                 >✕</button>
                               </div>
                             );
@@ -299,7 +299,7 @@ export default function DishDetailPage() {
                               const item = items.find(i => i.id === e.target.value);
                               if (item) setModifiers([...modifiers, { id: item.id, amount_g: item.default_amount_g || 10 }]);
                             }}
-                            style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '0.5px solid rgba(0,0,0,0.15)', fontSize: 12, marginTop: 4, background: '#fff' }}
+                            style={{ width: '100%', padding: '8px 10px', borderRadius: 'var(--radius-sm)', border: '0.5px solid rgba(0,0,0,0.15)', fontSize: 'var(--font-size-xs)', marginTop: 'var(--space-2xs)', background: 'var(--bg-primary)' }}
                           >
                             <option value="">+ {t('modifiers.add')}...</option>
                             {items.filter(i => !modifiers.some(m => m.id === i.id)).map(i => (
@@ -317,7 +317,7 @@ export default function DishDetailPage() {
         )}
 
         {/* Macros grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: '0 0', marginTop: 12, marginBottom: 10 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', padding: '0 0', marginTop: '12px', marginBottom: '10px' }}>
           <MacroPillCard
             icon="🥩"
             value={computed.proteines}
@@ -352,15 +352,15 @@ export default function DishDetailPage() {
         <div className="card" style={{ margin: '12px 0' }}>
           {/* Ingredients */}
           {dish.ingredients?.length > 0 && (
-            <div style={{ marginBottom: 14 }}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 10px', color: '#333' }}>{t('dishes.ingredients')}</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            <div style={{ marginBottom: '14px' }}>
+              <h3 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, margin: '0 0 10px', color: 'var(--text-primary)' }}>{t('dishes.ingredients')}</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
                 {dish.ingredients.map((ing, i) => {
                   const ratio = portion / defaultPortion;
                   return (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
-                      <span style={{ color: '#444' }}>{ing.name || `Ingrédient ${i + 1}`}</span>
-                      <span style={{ color: '#888', fontWeight: 500 }}>{Math.round(ing.grams * ratio)}g</span>
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 'var(--font-size-sm)' }}>
+                      <span style={{ color: 'var(--text-primary)' }}>{ing.name || `Ingrédient ${i + 1}`}</span>
+                      <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{Math.round(ing.grams * ratio)}g</span>
                     </div>
                   );
                 })}
@@ -369,14 +369,14 @@ export default function DishDetailPage() {
           )}
 
           {/* Meal type selector */}
-          <div style={{ marginBottom: 14 }}>
-            <p style={{ fontSize: 13, fontWeight: 600, margin: '0 0 10px', color: 'var(--text-primary)' }}>Repas</p>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ marginBottom: '14px' }}>
+            <p style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, margin: '0 0 10px', color: 'var(--text-primary)' }}>Repas</p>
+            <div style={{ display: 'flex', gap: 'var(--space-xs)', flexWrap: 'wrap' }}>
               {MEAL_IDS.map(m => (
                 <button key={m} onClick={() => setMealType(m)} style={{
-                  padding: '6px 14px', borderRadius: 20, fontSize: 12, cursor: 'pointer', fontWeight: 500,
+                  padding: '6px 14px', borderRadius: 'var(--radius-xl)', fontSize: 'var(--font-size-xs)', cursor: 'pointer', fontWeight: 500,
                   border: mealType === m ? 'none' : '1px solid var(--border-color)',
-                  background: mealType === m ? '#6366F1' : 'var(--bg-secondary)',
+                  background: mealType === m ? 'var(--accent-blue)' : 'var(--bg-secondary)',
                   color: mealType === m ? '#fff' : 'var(--text-secondary)',
                   transition: 'all 0.15s',
                 }}>
@@ -389,10 +389,10 @@ export default function DishDetailPage() {
           {/* CTA */}
           <button onClick={handleLog} disabled={logging} style={{
             width: '100%', padding: '16px',
-            background: logging ? 'var(--bg-tertiary)' : '#6366F1',
+            background: logging ? 'var(--bg-tertiary)' : 'var(--accent-blue)',
             color: logging ? 'var(--text-secondary)' : 'white',
-            border: 'none', borderRadius: 16,
-            fontSize: 15, fontWeight: 700,
+            border: 'none', borderRadius: 'var(--radius-lg)',
+            fontSize: 'var(--font-size-base)', fontWeight: 700,
             cursor: logging ? 'not-allowed' : 'pointer',
             boxShadow: logging ? 'none' : '0 4px 14px rgba(99,102,241,0.3)',
           }}>

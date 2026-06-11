@@ -18,7 +18,7 @@ export default function LandingPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-secondary)', overflowX: 'hidden' }}>
       {/* Hero */}
-      <div className="gradient-header gradient-hero" style={{ padding: '48px 24px 56px', textAlign: 'center', color: '#fff', borderRadius: '0 0 32px 32px' }}>
+      <div className="gradient-header gradient-hero" style={{ padding: '48px 24px 56px', textAlign: 'center', color: '#fff', borderRadius: '0 0 var(--radius-2xl) var(--radius-2xl)' }}>
         <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>🥗</div>
         <h1 style={{ fontSize: '2.5rem', margin: '0 0 1rem', fontWeight: '800' }}>NutriVita</h1>
         <p style={{ fontSize: '1.2rem', margin: '0 0 2rem', opacity: 0.9 }}>
@@ -60,7 +60,7 @@ export default function LandingPage() {
 
       {/* CTA */}
       <section style={{
-        background: '#1A6B3C', color: 'white',
+        background: 'var(--accent-green)', color: 'white',
         padding: '3rem 2rem', textAlign: 'center',
       }}>
         <h2 style={{ fontSize: '1.8rem', margin: '0 0 1rem' }}>

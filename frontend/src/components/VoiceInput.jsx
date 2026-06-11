@@ -100,7 +100,7 @@ export default function VoiceInput({
 
   if (!supported) {
     return (
-      <div style={{ fontSize: '0.8rem', color: '#6b7280', fontStyle: 'italic' }}>
+      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
         {t('voice.notSupported')}
       </div>
     );
@@ -113,9 +113,9 @@ export default function VoiceInput({
         onClick={isListening ? stopListening : startListening}
         style={{
           padding: '0.6rem 1rem',
-          borderRadius: '6px',
+          borderRadius: 'var(--radius-xs)',
           border: 'none',
-          background: isListening ? '#ef4444' : '#3b82f6',
+          background: isListening ? 'var(--accent-red)' : 'var(--accent-blue)',
           color: 'white',
           fontWeight: '600',
           cursor: 'pointer',
@@ -133,8 +133,8 @@ export default function VoiceInput({
         <div style={{
           marginTop: '0.5rem',
           padding: '0.5rem',
-          background: '#f3f4f6',
-          borderRadius: '4px',
+          background: 'var(--bg-tertiary)',
+          borderRadius: 'var(--radius-2xs)',
           fontSize: '0.9rem',
           fontStyle: 'italic',
         }}>

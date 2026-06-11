@@ -10,13 +10,13 @@ import { useProfileStore } from '../store';
 function Section({ title, icon, children }) {
   return (
     <div style={{ margin: '0 1.25rem 1.25rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem', paddingLeft: 2 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem', paddingLeft: '2px' }}>
         <span style={{ fontSize: '0.9rem' }}>{icon}</span>
         <span style={{ fontWeight: 600, fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           {title}
         </span>
       </div>
-      <div style={{ background: 'var(--bg-primary)', borderRadius: 16, border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)', overflow: 'hidden' }}>
+      <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)', overflow: 'hidden' }}>
         {children}
       </div>
     </div>
@@ -43,7 +43,7 @@ function SettingRow({ label, desc, children, last }) {
 
 function UnitToggle({ value, options, onChange }) {
   return (
-    <div style={{ display: 'flex', background: 'var(--bg-tertiary)', borderRadius: 9999, padding: 3, gap: 2 }}>
+    <div style={{ display: 'flex', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', padding: '3px', gap: '2px' }}>
       {options.map(opt => (
         <button
           key={opt.value}
@@ -51,7 +51,7 @@ function UnitToggle({ value, options, onChange }) {
           style={{
             padding: '0.3rem 0.7rem',
             border: 'none',
-            borderRadius: 9999,
+            borderRadius: 'var(--radius-full)',
             background: value === opt.value ? 'var(--accent-blue)' : 'transparent',
             color: value === opt.value ? 'white' : 'var(--text-secondary)',
             fontWeight: value === opt.value ? 700 : 400,
@@ -100,10 +100,10 @@ export default function SettingsPage() {
   };
 
   const deleteOptions = [
-    { id: 'journal', label: 'Effacer le journal alimentaire', desc: 'Supprime toutes les entrées de repas', icon: '🍽️', endpoint: '/journal/all', color: '#f59e0b' },
-    { id: 'weight',  label: 'Effacer les données de poids',   desc: "Supprime tout l'historique de poids",   icon: '⚖️', endpoint: '/weight/all',  color: '#f59e0b' },
-    { id: 'glucose', label: 'Effacer les données de glycémie', desc: 'Supprime toutes les lectures de glycémie', icon: '🩸', endpoint: '/glucose/all', color: '#f59e0b' },
-    { id: 'all',     label: 'Réinitialiser toutes les données', desc: 'Supprime TOUTES les données (irréversible)', icon: '⚠️', endpoint: '/profile/reset-data', color: '#ef4444' },
+    { id: 'journal', label: 'Effacer le journal alimentaire', desc: 'Supprime toutes les entrées de repas', icon: '🍽️', endpoint: '/journal/all', color: 'var(--accent-yellow)' },
+    { id: 'weight',  label: 'Effacer les données de poids',   desc: "Supprime tout l'historique de poids",   icon: '⚖️', endpoint: '/weight/all',  color: 'var(--accent-yellow)' },
+    { id: 'glucose', label: 'Effacer les données de glycémie', desc: 'Supprime toutes les lectures de glycémie', icon: '🩸', endpoint: '/glucose/all', color: 'var(--accent-yellow)' },
+    { id: 'all',     label: 'Réinitialiser toutes les données', desc: 'Supprime TOUTES les données (irréversible)', icon: '⚠️', endpoint: '/profile/reset-data', color: 'var(--accent-red)' },
   ];
 
   const handleDeleteAccount = async () => {
@@ -156,20 +156,20 @@ export default function SettingsPage() {
       {/* Profile card */}
       {profile && (
         <div style={{ margin: '0 1.25rem 1rem' }}>
-          <div className="gradient-hero" style={{ padding: '1.25rem', borderRadius: 16, color: 'white' }}>
+          <div className="gradient-hero" style={{ padding: '1.25rem', borderRadius: 'var(--radius-lg)', color: 'white' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <div style={{ width: 60, height: 60, borderRadius: 9999, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <div style={{ width: '60px', height: '60px', borderRadius: 'var(--radius-full)', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--font-size-2xl)', flexShrink: 0 }}>
                   👤
                 </div>
                 <div>
                   <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>{profile.prenom || 'Utilisateur'}</h2>
-                  {profile.age && <p style={{ margin: '2px 0 0', fontSize: 13, opacity: 0.8 }}>{profile.age} ans{profile.height ? ` · ${profile.height} cm` : ''}{profile.weight ? ` · ${profile.weight} kg` : ''}</p>}
-                  {profile.goal && <p style={{ margin: '2px 0 0', fontSize: 12, opacity: 0.8 }}>Objectif : {GOAL_LABELS[profile.goal] || profile.goal}</p>}
-                  {profile.target_kcal && <p style={{ margin: '2px 0 0', fontSize: 13, fontWeight: 600, opacity: 0.95 }}>{profile.target_kcal} kcal/jour recommandées</p>}
+                  {profile.age && <p style={{ margin: '2px 0 0', fontSize: 'var(--font-size-sm)', opacity: 0.8 }}>{profile.age} ans{profile.height ? ` · ${profile.height} cm` : ''}{profile.weight ? ` · ${profile.weight} kg` : ''}</p>}
+                  {profile.goal && <p style={{ margin: '2px 0 0', fontSize: 'var(--font-size-xs)', opacity: 0.8 }}>Objectif : {GOAL_LABELS[profile.goal] || profile.goal}</p>}
+                  {profile.target_kcal && <p style={{ margin: '2px 0 0', fontSize: 'var(--font-size-sm)', fontWeight: 600, opacity: 0.95 }}>{profile.target_kcal} kcal/jour recommandées</p>}
                 </div>
               </div>
-              <button onClick={() => navigate('/profile')} style={{ background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.35)', color: 'white', padding: '6px 12px', borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}>
+              <button onClick={() => navigate('/profile')} style={{ background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.35)', color: 'white', padding: '6px 12px', borderRadius: 'var(--radius-full)', fontSize: 'var(--font-size-xs)', fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}>
                 Modifier
               </button>
             </div>
@@ -222,15 +222,15 @@ export default function SettingsPage() {
             </div>
           ))}
           <div style={{
-            padding: '0.5rem 0.75rem', borderRadius: '8px',
-            background: macrosTotal === 100 ? '#dcfce7' : '#fee2e2',
+            padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)',
+            background: macrosTotal === 100 ? 'var(--color-success-bg)' : 'var(--color-danger-bg)',
             marginBottom: '0.75rem',
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: macrosTotal === 100 ? '#10b981' : '#ef4444' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: macrosTotal === 100 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
               Total : {macrosTotal}%
             </span>
-            <span style={{ fontSize: '0.85rem', color: macrosTotal === 100 ? '#10b981' : '#ef4444' }}>
+            <span style={{ fontSize: '0.85rem', color: macrosTotal === 100 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
               {macrosTotal === 100 ? '✅ Correct' : `${100 - macrosTotal > 0 ? '+' : ''}${100 - macrosTotal}% manquants`}
             </span>
           </div>
@@ -238,8 +238,8 @@ export default function SettingsPage() {
             onClick={saveMacros}
             disabled={macrosTotal !== 100}
             style={{
-              width: '100%', padding: '0.75rem', borderRadius: '8px', border: 'none',
-              background: macrosTotal === 100 ? 'rgba(99,102,241,0.1)' : 'var(--bg-tertiary)',
+              width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: 'none',
+              background: macrosTotal === 100 ? 'var(--color-info-bg)' : 'var(--bg-tertiary)',
               color: macrosTotal === 100 ? 'var(--accent-blue)' : 'var(--text-secondary)',
               fontWeight: '600', cursor: macrosTotal === 100 ? 'pointer' : 'not-allowed',
             }}
@@ -259,10 +259,10 @@ export default function SettingsPage() {
           />
         </SettingRow>
         <SettingRow label="Langue" last>
-          <div style={{ display: 'flex', background: 'var(--bg-tertiary)', borderRadius: 9999, padding: 3, gap: 2 }}>
+          <div style={{ display: 'flex', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', padding: '3px', gap: '2px' }}>
             {[['fr', 'FR'], ['en', 'EN'], ['ar', 'عربي']].map(([code, label]) => (
               <button key={code} onClick={() => setLang(code)} style={{
-                padding: '0.3rem 0.6rem', border: 'none', borderRadius: 9999,
+                padding: '0.3rem 0.6rem', border: 'none', borderRadius: 'var(--radius-full)',
                 background: lang === code ? 'var(--accent-blue)' : 'transparent',
                 color: lang === code ? 'white' : 'var(--text-secondary)',
                 fontWeight: lang === code ? 700 : 400, cursor: 'pointer', fontSize: '0.82rem', transition: 'all 0.15s',
@@ -278,7 +278,7 @@ export default function SettingsPage() {
           <SettingRow key={option.id} label={`${option.icon} ${option.label}`} desc={option.desc} last={i === deleteOptions.length - 1}>
             <button
               onClick={() => setConfirmDelete(option)}
-              style={{ padding: '0.4rem 0.75rem', borderRadius: '6px', border: `1px solid ${option.color}`, background: 'transparent', color: option.color, fontWeight: '600', cursor: 'pointer', fontSize: '0.85rem', whiteSpace: 'nowrap' }}
+              style={{ padding: '0.4rem 0.75rem', borderRadius: 'var(--radius-xs)', border: `1px solid ${option.color}`, background: 'transparent', color: option.color, fontWeight: '600', cursor: 'pointer', fontSize: '0.85rem', whiteSpace: 'nowrap' }}
             >
               Effacer
             </button>
@@ -299,7 +299,7 @@ export default function SettingsPage() {
                 toast.error('Erreur export');
               }
             }}
-            style={{ padding: '0.4rem 0.75rem', borderRadius: '6px', border: '1px solid var(--accent-blue)', background: 'transparent', color: 'var(--accent-blue)', fontWeight: '600', cursor: 'pointer', fontSize: '0.85rem' }}
+            style={{ padding: '0.4rem 0.75rem', borderRadius: 'var(--radius-xs)', border: '1px solid var(--accent-blue)', background: 'transparent', color: 'var(--accent-blue)', fontWeight: '600', cursor: 'pointer', fontSize: '0.85rem' }}
           >
             Exporter
           </button>
@@ -317,7 +317,7 @@ export default function SettingsPage() {
       <div style={{ margin: '0.5rem 1.25rem 1.5rem' }}>
         <button
           onClick={() => setShowDeleteAccount(true)}
-          style={{ width: '100%', padding: '0.85rem', borderRadius: 12, border: 'none', background: '#ef4444', color: 'white', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+          style={{ width: '100%', padding: '0.85rem', borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--accent-red)', color: 'white', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-xs)' }}
         >
           🗑️ Supprimer mon compte
         </button>
@@ -326,7 +326,7 @@ export default function SettingsPage() {
       {/* Modal confirmation suppression */}
       {confirmDelete && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '1.5rem' }}>
-          <div style={{ background: 'var(--bg-primary)', borderRadius: '12px', padding: '1.5rem', maxWidth: '360px', width: '100%' }}>
+          <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', padding: '1.5rem', maxWidth: '360px', width: '100%' }}>
             <h3 style={{ margin: '0 0 0.75rem', color: confirmDelete.color }}>
               {confirmDelete.icon} Confirmer la suppression
             </h3>
@@ -334,10 +334,10 @@ export default function SettingsPage() {
               {confirmDelete.desc}. <strong>Cette action est irréversible.</strong>
             </p>
             <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <button onClick={() => setConfirmDelete(null)} disabled={deleting} style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontWeight: '600', cursor: 'pointer' }}>
+              <button onClick={() => setConfirmDelete(null)} disabled={deleting} style={{ flex: 1, padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontWeight: '600', cursor: 'pointer' }}>
                 Annuler
               </button>
-              <button onClick={() => handleDelete(confirmDelete)} disabled={deleting} style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: 'none', background: confirmDelete.color, color: 'white', fontWeight: '700', cursor: deleting ? 'not-allowed' : 'pointer' }}>
+              <button onClick={() => handleDelete(confirmDelete)} disabled={deleting} style={{ flex: 1, padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: 'none', background: confirmDelete.color, color: 'white', fontWeight: '700', cursor: deleting ? 'not-allowed' : 'pointer' }}>
                 {deleting ? '...' : 'Confirmer'}
               </button>
             </div>
@@ -348,16 +348,16 @@ export default function SettingsPage() {
       {/* Modal confirmation suppression compte */}
       {showDeleteAccount && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '1.5rem' }}>
-          <div style={{ background: 'var(--bg-primary)', borderRadius: 16, padding: '1.5rem', maxWidth: '360px', width: '100%' }}>
-            <h3 style={{ margin: '0 0 0.75rem', color: '#ef4444' }}>🗑️ Supprimer le compte</h3>
+          <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', maxWidth: '360px', width: '100%' }}>
+            <h3 style={{ margin: '0 0 0.75rem', color: 'var(--accent-red)' }}>🗑️ Supprimer le compte</h3>
             <p style={{ margin: '0 0 1.5rem', color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
               Cette action est <strong>irréversible</strong>. Toutes vos données (journal, poids, glycémie, profil) seront définitivement supprimées.
             </p>
             <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <button onClick={() => setShowDeleteAccount(false)} disabled={deletingAccount} style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontWeight: '600', cursor: 'pointer' }}>
+              <button onClick={() => setShowDeleteAccount(false)} disabled={deletingAccount} style={{ flex: 1, padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontWeight: '600', cursor: 'pointer' }}>
                 Annuler
               </button>
-              <button onClick={handleDeleteAccount} disabled={deletingAccount} style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: 'none', background: '#ef4444', color: 'white', fontWeight: '700', cursor: deletingAccount ? 'not-allowed' : 'pointer' }}>
+              <button onClick={handleDeleteAccount} disabled={deletingAccount} style={{ flex: 1, padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: 'none', background: 'var(--accent-red)', color: 'white', fontWeight: '700', cursor: deletingAccount ? 'not-allowed' : 'pointer' }}>
                 {deletingAccount ? '...' : 'Supprimer'}
               </button>
             </div>

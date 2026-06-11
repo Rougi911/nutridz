@@ -35,6 +35,8 @@
   --nav-glass: rgba(255, 255, 255, 0.88);
 
   /* Border radius scale */
+  --radius-2xs: 4px;
+  --radius-xs:  6px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -43,19 +45,40 @@
   --radius-full: 9999px;
 
   /* Typography scale — matches v0 Tailwind text-* */
-  --font-size-xs:   0.625rem;   /* text-[10px] */
-  --font-size-sm:   0.875rem;   /* text-sm     = 14px */
-  --font-size-base: 1rem;       /* text-base   = 16px */
-  --font-size-lg:   1.125rem;   /* text-lg     = 18px */
-  --font-size-xl:   1.25rem;    /* text-xl     = 20px */
-  --font-size-2xl:  1.5rem;     /* text-2xl    = 24px */
-  --font-size-3xl:  1.875rem;   /* text-3xl    = 30px */
+  --font-size-2xs:  0.625rem;   /* text-[10px] — micro labels   */
+  --font-size-xs:   0.75rem;    /* text-xs  = 12px              */
+  --font-size-sm:   0.875rem;   /* text-sm  = 14px              */
+  --font-size-base: 1rem;       /* text-base = 16px             */
+  --font-size-lg:   1.125rem;   /* text-lg  = 18px              */
+  --font-size-xl:   1.25rem;    /* text-xl  = 20px              */
+  --font-size-2xl:  1.5rem;     /* text-2xl = 24px              */
+  --font-size-3xl:  1.875rem;   /* text-3xl = 30px              */
+  --font-size-4xl:  2.25rem;    /* text-4xl = 36px              */
+
+  /* Icon / emoji display sizes */
+  --icon-sm:  1.25rem;  /* 20px */
+  --icon-md:  1.5rem;   /* 24px */
+  --icon-lg:  2.5rem;   /* 40px */
+  --icon-xl:  3rem;     /* 48px */
+  --icon-2xl: 4rem;     /* 64px */
+
+  /* Interactive element sizes */
+  --size-icon-btn:    36px;  /* standard icon button */
+  --size-icon-btn-sm: 28px;  /* small icon button    */
 
   /* Spacing scale — matches v0 Tailwind space-y-* / p-* */
+  --space-2xs:     4px;   /* gap-1  */
+  --space-xs:      8px;   /* gap-2  */
   --space-tight:   12px;  /* p-3 — small stat boxes    */
   --space-card:    16px;  /* p-4 — card internal        */
   --space-section: 24px;  /* space-y-6 — between sections */
   --page-padding:  16px;  /* px-4 — page side margins  */
+
+  /* Semantic background tints (adapt with accent via color-mix) */
+  --color-success-bg: color-mix(in srgb, var(--accent-green)  12%, transparent);
+  --color-warning-bg: color-mix(in srgb, var(--accent-yellow) 10%, transparent);
+  --color-danger-bg:  color-mix(in srgb, var(--accent-red)    10%, transparent);
+  --color-info-bg:    color-mix(in srgb, var(--accent-blue)   10%, transparent);
 }
 
 /* ─── Design tokens — Dark ──────────────────────────────────────── */
