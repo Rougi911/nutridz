@@ -7,7 +7,7 @@ const { getDB } = require('../db');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'nutridz_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET; // server.js guarantees JWT_SECRET is set before this module loads
 
 // POST /api/auth/register
 router.post('/register', [
@@ -109,7 +109,7 @@ router.delete('/account', auth, async (req, res) => {
   await db.prepare('DELETE FROM journal_entries WHERE user_id = ?').run(userId);
   await db.prepare('DELETE FROM activities WHERE user_id = ?').run(userId);
   await db.prepare('DELETE FROM dish_analyses WHERE user_id = ?').run(userId);
-  await db.prepare('DELETE FROM weight_history WHERE user_id = ?').run(userId);
+  try { await db.prepare('DELETE FROM weight_history WHERE user_id = ?').run(userId); } catch (_) {} // DEF-13: table dropped at migration
   await db.prepare('DELETE FROM weight_entries WHERE user_id = ?').run(userId);
   await db.prepare('DELETE FROM glucose_readings WHERE user_id = ?').run(userId);
   await db.prepare('DELETE FROM favorites WHERE user_id = ?').run(userId);

@@ -404,7 +404,7 @@ Une contrainte UNIQUE au niveau SQL n'est pas ajoutée car la même ligne peut �
 2. Repères OMS mensuels :
    - Sucres libres : < 50 g/j × 30 = 1500 g/mois
    - Sel : < 5 g/j × 30 = 150 g/mois
-   - AGS : < 10 % apport énergétique journalier × 30 (calculé sur base 2000 kcal/j → < 22 g/j → 660 g/mois)
+   - AGS : < 10 % du TDEE réel (AL-01) × 30 jours ÷ 9 kcal/g. Exemple : TDEE 2200 kcal → AGS max = 2200 × 10 % ÷ 9 × 30 ≈ 733 g/mois. (DEF-11 : seuil dynamique, pas la base fixe 2000 kcal)
 3. Calcul % du repère pour chaque nutriment.
 4. Code couleur : ≤ 80 % → "teal", 80-110 % → "amber", > 110 % → "red"
 5. Liste des additifs à risque du mois (union des `additives_json`).
@@ -586,7 +586,7 @@ Exposition via GET /api/profile (champs `glucose_target_min_mg_dl`, `glucose_tar
 **Garde statistique (AL-05) — exigence normative** : l'endpoint GET /api/glucose/metrics DOIT retourner
 `{ "insufficient_data": true, "total_readings": N, "message": "Données insuffisantes (N mesures ponctuelles)" }`
 si `total_readings < 12`. Les champs `gmi`, `tir`, `cv` sont absents de la réponse dans ce cas.
-Cette garde est couverte par TU-02. Le code actuel (`calculatePeriodMetrics()`) ne l'implémente pas — correction obligatoire avant gate implémentation.
+Cette garde est couverte par TU-02. Implémentée dans `calculatePeriodMetrics()` (DEF-06 corrigé 2026-06-12). CV calculé avec écart-type d'échantillon (÷ n-1, DEF-08). TIR accepte `targetMin`/`targetMax` personnalisés issus de `profiles` (DEF-09).
 
 ---
 
@@ -604,10 +604,28 @@ Cette garde est couverte par TU-02. Le code actuel (`calculatePeriodMetrics()`) 
 | EB-03 | AL-10 (cascade) | /api/nutrition (existant) | TU-08 partiel | Cascade CIQUAL/USDA déjà présente |
 | EB-06 | AL-01/AL-02/AL-03 | /api/activity/stats (existant) | TU-03/TU-04 | |
 | EB-07 | AL-06 | /api/weight (existant) | TU-05 | REG-04 |
-| EB-11 | — | Tous endpoints (lang param) | VAL-11 | RTL pour arabe |
+| EB-11 | AL-12 | Tous endpoints (param lang validé) | VAL-11 | RTL pour arabe — DEF-14 |
 | EB-12 | — | Architecture REST + PWA | VAL-12 | |
-| EB-13 | — | Phase 3 uniquement | — | REG-06/07 bloquants avant impl. |
-| EB-14 | — | /api/profile (existant) | VAL-14 | diabetic_mode à ajouter |
+| EB-13 | HORS PERIMETRE | — | — | Phase 3 — REG-06/07 bloquants avant impl. — DEF-15 |
+| EB-14 | AL-13 | /api/profile (existant, toggle diabetic_mode) | VAL-14 | DEF-15 |
+
+---
+
+### AL-12 — Sélection et validation de langue côté serveur (DEF-14)
+
+Tous les endpoints acceptent le paramètre `lang` (query string ou header `Accept-Language`).
+- Valeurs acceptées : `fr`, `ar`, `en`
+- Défaut si absent : `fr`
+- Fallback si valeur non reconnue : `fr`
+- Réponses localisées (messages d'erreur, labels) suivent la langue sélectionnée.
+- Arabe active le flag RTL dans les réponses JSON si applicable.
+
+### AL-13 — Mode diabétique (toggle diabetic_mode) (DEF-15)
+
+Colonne `diabetic_mode` (BOOLEAN, défaut 0) dans `profiles`.
+- Si `diabetic_mode = 1` : activer le suivi glycémique, afficher les cibles TIR personnalisées, proposer l'import LibreView CSV.
+- Si `diabetic_mode = 0` : masquer les fonctionnalités glycémiques avancées (UI seulement — données conservées).
+- Endpoint de mise à jour : PATCH /api/profile avec `{ diabetic_mode: true/false }`.
 
 ---
 

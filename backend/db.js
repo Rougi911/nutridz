@@ -144,14 +144,6 @@ async function initDB() {
     FOREIGN KEY (product_id) REFERENCES products(id)
   )`);
 
-  await db.exec(`CREATE TABLE IF NOT EXISTS weight_history (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL,
-    weight REAL NOT NULL,
-    date TEXT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-  )`);
-
   await db.exec(`CREATE TABLE IF NOT EXISTS weight_entries (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL,
@@ -263,13 +255,30 @@ async function initDB() {
   }
 
   // REG-01 Art.9 RGPD — explicit glucose consent proof (date + version)
-  const consentColumns = [
+  // DEF-09 — personalized TIR targets per user
+  const profileColumns = [
     'ALTER TABLE profiles ADD COLUMN consent_glucose_date TEXT',
     'ALTER TABLE profiles ADD COLUMN consent_glucose_version TEXT',
+    'ALTER TABLE profiles ADD COLUMN glucose_target_min_mg_dl INTEGER DEFAULT 70',
+    'ALTER TABLE profiles ADD COLUMN glucose_target_max_mg_dl INTEGER DEFAULT 180',
   ];
-  for (const sql of consentColumns) {
+  for (const sql of profileColumns) {
     try { await db.exec(sql); } catch (_) { /* column already exists */ }
   }
+
+  // DEF-13 — migrate weight_history (legacy) → weight_entries, then drop
+  try {
+    const legacy = await db.prepare('SELECT * FROM weight_history').all();
+    if (legacy.length > 0) {
+      for (const row of legacy) {
+        try {
+          await db.prepare('INSERT OR IGNORE INTO weight_entries (user_id, weight_kg, date) VALUES (?, ?, ?)').run(row.user_id, row.weight, row.date);
+        } catch (_) {}
+      }
+      console.log(`🔄 Migré ${legacy.length} entrée(s) weight_history → weight_entries`);
+    }
+    await db.exec('DROP TABLE IF EXISTS weight_history');
+  } catch (_) { /* table may not exist */ }
 
   // One-time cleanup: remove hardcoded seed products (barcodes 619110000000*)
   try {

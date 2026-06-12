@@ -6,7 +6,7 @@ function authMiddleware(req, res, next) {
   if (!token) return res.status(401).json({ error: 'Token manquant' });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nutridz_secret_key');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = decoded.userId;
     next();
   } catch {

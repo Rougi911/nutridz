@@ -2,8 +2,25 @@
 _Dernière mise à jour : 2026-06-12 — par Claude_
 
 ## Phase en cours
-**P1.5-A TERMINÉE** — levée des 5 KO réglementaires bloquants gate SL-API.
-Gate SL-API v1 : GO (double GO reglementaire + revue-code, 2026-06-12).
+**P1.5-B TERMINÉE** — levée des écarts calculs/sécurité gate SL-API.
+Gate SL-API v1 : GO COMPLET (P1.5-A + P1.5-B, 2026-06-12) → Prochaine étape : Phase P2 (implémentation SL-API-01 à SL-API-06).
+
+## Corrections P1.5-B appliquées
+
+| DEF | Gravité initiale | Fichiers modifiés | Statut |
+|-----|-----------------|-------------------|--------|
+| DEF-06 | MAJEUR | glucoseMetrics.js, GlucoseTrackingPage.jsx | ✅ RÉSOLU |
+| DEF-07 | MAJEUR | routes/activity.js | ✅ RÉSOLU |
+| DEF-08 | MAJEUR | glucoseMetrics.js | ✅ RÉSOLU |
+| DEF-09 | MAJEUR | glucoseMetrics.js, routes/glucose.js, db.js | ✅ RÉSOLU |
+| DEF-10 | MAJEUR (spec) | docs/cycle-v-nutrivita.md | ✅ RÉSOLU |
+| DEF-11 | MAJEUR (spec) | docs/sl-api.md | Spec ✅ / Code P2 |
+| DEF-12 | MAJEUR | server.js, middleware/auth.js, routes/auth.js | ✅ RÉSOLU |
+| DEF-13 | MINEUR | db.js, routes/auth.js | ✅ RÉSOLU |
+| DEF-14 | MINEUR (spec) | docs/sl-api.md, docs/cycle-v-nutrivita.md | ✅ RÉSOLU |
+| DEF-15 | MINEUR (spec) | docs/sl-api.md, docs/cycle-v-nutrivita.md | ✅ RÉSOLU |
+
+Tests ajoutés : `backend/tests/glucoseMetrics.test.js` (16 tests) + `backend/tests/activityCap.test.js` (7 tests)
 
 ## Corrections P1.5-A appliquées
 

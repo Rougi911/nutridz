@@ -138,7 +138,7 @@ TU-02 AL-05 : GMI(moyenne 154 mg/dL)=7.0 ; TIR sur jeu de 20 mesures connu ; CV 
       "données insuffisantes".
 TU-03 AL-01 : homme 34 ans, 178 cm, 78 kg, modéré => BMR 1759, TDEE 2726 (tolérance ±1 kcal).
 TU-04 AL-02 : course 9.0 MET * 78 kg * 0.5 h = 351 kcal ; priorité kcal Strava vérifiée.
-TU-05 AL-06 : Deurenberg homme 34 ans IMC 24.6 => 21.0 % (tolérance ±0.1).
+TU-05 AL-06 : Deurenberg homme 34 ans IMC 24.6 => 21.0 % (tolérance ±0.3 — DEF-10, décision Ahmed 2026-06-12).
 TU-06 AL-08 : produit Nutri-Score D + E150d => 35-30 = 5 => "Mauvais" avec additif cité.
 TU-07 AL-11 : (45,30,25) +10 sur glucides => (55,24.5,20.5) arrondi, somme 100 ; bornes min.
 TU-08 AL-07 : jeu de 14 jours d'apports connus => statut attendu par nutriment ; bascule du
@@ -169,7 +169,9 @@ EB-07 -> AL-06 -> TU-05 -> VAL-07 (+REG-04)
 EB-08 -> AL-07 -> TU-08 -> VAL-08 (+REG-03/04)
 EB-09 -> AL-04/05 -> TU-01/02, TI-05 -> VAL-09 (+REG-04/05)
 EB-10 -> AL-09 -> TI-03 -> VAL-10
-(compléter les lignes restantes au gate SB ; toute case vide = écart bloquant)
+EB-11 -> AL-12 -> VAL-11 (lang param, RTL arabe)
+EB-13 -> HORS PERIMETRE Phase 3 (REG-06/07 bloquants avant impl.)
+EB-14 -> AL-13 -> VAL-14 (diabetic_mode toggle)
 
 ================================================================
 6. DEROULEMENT DES SESSIONS CLAUDE CODE

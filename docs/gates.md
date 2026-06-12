@@ -4,6 +4,7 @@
 |------|------|---------|--------|-----------------|
 | 2026-06-12 | SL-API v1 | GO (spec) / NO-GO (code existant) | Spec corrigée sur 6 bloquants. Code existant contient 5 KO réglementaires différés. | Voir tableau ci-dessous |
 | 2026-06-12 | SL-API v1 (P1.5-A) | GO | Double GO : reglementaire + revue-code. DEF-01/02/03/05/16 levés. DEF-04 hors périmètre marché FR. | — |
+| 2026-06-12 | SL-API v1 (P1.5-B) | GO | GO : critique-algo (5/5 formules CONFORME) + revue-code après correction auth.js. DEF-06/07/08/09/12/13/10/14/15 levés. DEF-11 spec corrigée (TDEE dynamique) — implémentation endpoint reportée en P2. | DEF-11 code (P2) |
 
 ---
 
@@ -35,14 +36,14 @@
 | DEF-03 | ~~KO BLOQUANT~~ RÉSOLU 2026-06-12 | reglementaire KO-4 | Case consentGlucose séparée, opt-in, stockée en DB (consent_glucose_date + version) | ✅ |
 | DEF-04 | KO BLOQUANT (code) | reglementaire KO-5 | PrivacyPage.jsx ne mentionne ni loi 18-07 ni ANPDP — marché algérien | Prérequis bloquant de l'ouverture marché DZ — session juridique dédiée, hors périmètre actuel (marché France) |
 | DEF-05 | ~~KO BLOQUANT~~ RÉSOLU 2026-06-12 | reglementaire KO-2 (note) | Label renommé GMI (estimation indicative) + note gmiDisclaimer — aucun texte diagnostique | ✅ |
-| DEF-06 | MAJEUR (code) | critique-algo #4 | `calculatePeriodMetrics()` calcule GMI/TIR pour n=1 mesure — garde < 12 absente | Corriger services/glucoseMetrics.js avant gate Implémentation |
-| DEF-07 | MAJEUR (code) | critique-algo #3 | Plafond 1000 kcal/j AL-03 absent de GET /activity/bilan/:date | Corriger routes/activity.js |
-| DEF-08 | MAJEUR (code) | critique-algo #5 | CV calculé avec variance population (÷ n) au lieu de variance échantillon (÷ n-1) | Corriger services/glucoseMetrics.js |
-| DEF-09 | MAJEUR (code) | critique-algo #6 | TIR avec bornes fixes [70;180] — cibles personnalisées utilisateur non passées en paramètre | Corriger après ajout de `glucose_target_min/max` dans profiles |
-| DEF-10 | MAJEUR (spec) | critique-algo #7 | TU-05 : résultat calculé 21.2 % vs spec 21.0 % (±0.1) — valeur de référence TU-05 à revoir | Ahmed valide si tolérance ±0.2 acceptable ou si formule doit être ajustée |
-| DEF-11 | MAJEUR (spec) | critique-algo #12 | Seuil AGS mensuel basé sur 2000 kcal fixe au lieu du TDEE utilisateur — erreur 21-30 % pour profils actifs | Ahmed arbitre : seuil fixe (simple) vs TDEE dynamique |
-| DEF-12 | MAJEUR (code) | critique-spec #12 | JWT_SECRET fallback codé en dur — le serveur doit refuser de démarrer si JWT_SECRET absent | Corriger server.js avant gate Implémentation |
-| DEF-13 | MINEUR (code) | critique-spec #11 | Table `weight_history` dupliquée — dépréciation/suppression à planifier | Planifier migration en phase Implémentation |
-| DEF-14 | MINEUR (spec) | critique-spec #4 | EB-11 sans AL assigné (i18n) — AL manquant | Créer AL-11 ou référencer AL existant |
-| DEF-15 | MINEUR (spec) | critique-spec #9 | EB-13/EB-14 sans AL dans la matrice | Marquer EB-13 hors périmètre ; créer AL pour EB-14 diabetic_mode |
+| DEF-06 | ~~MAJEUR~~ RÉSOLU 2026-06-12 | critique-algo #4 | Garde `< 12 mesures` ajoutée dans `calculatePeriodMetrics()` — retourne `insufficient_data: true` | ✅ |
+| DEF-07 | ~~MAJEUR~~ RÉSOLU 2026-06-12 | critique-algo #3 | `Math.min(burned_kcal, 1000)` ajouté dans GET /activity/bilan/:date | ✅ |
+| DEF-08 | ~~MAJEUR~~ RÉSOLU 2026-06-12 | critique-algo #5 | CV avec écart-type d'échantillon `/ (n-1)` — formule correcte dans `calculateCV` | ✅ |
+| DEF-09 | ~~MAJEUR~~ RÉSOLU 2026-06-12 | critique-algo #6 | `calculateTIR(readings, targetMin, targetMax)` + colonnes `glucose_target_min/max_mg_dl` dans profiles + endpoint lit profil | ✅ |
+| DEF-10 | ~~MAJEUR~~ RÉSOLU 2026-06-12 | critique-algo #7 | Tolérance TU-05 élargie à ±0.3 dans cycle-v-nutrivita.md (décision Ahmed) | ✅ |
+| DEF-11 | MAJEUR (spec corrigée) | critique-algo #12 | Spec AL-09 mise à jour : AGS = TDEE×10%÷9×30 (dynamique) — implémentation endpoint SL-API-03 reportée en P2 | Spec ✅ / Code P2 |
+| DEF-12 | ~~MAJEUR~~ RÉSOLU 2026-06-12 | critique-spec #12 | `process.exit(1)` si JWT_SECRET absent dans server.js ; fallback retiré de auth.js et middleware | ✅ |
+| DEF-13 | ~~MINEUR~~ RÉSOLU 2026-06-12 | critique-spec #11 | Migration weight_history→weight_entries + DROP TABLE dans initDB() ; CREATE TABLE supprimé | ✅ |
+| DEF-14 | ~~MINEUR~~ RÉSOLU 2026-06-12 | critique-spec #4 | AL-12 créé (sélection/validation langue) ; EB-11 rattaché à AL-12 dans matrice | ✅ |
+| DEF-15 | ~~MINEUR~~ RÉSOLU 2026-06-12 | critique-spec #9 | EB-13 marqué HORS PERIMETRE Phase 3 ; AL-13 créé pour EB-14 (diabetic_mode) | ✅ |
 | DEF-16 | ~~MINEUR~~ RÉSOLU 2026-06-12 | reglementaire note | Disclaimer Forbes arabe complété : "لأغراض إعلامية فقط" — équivalent "à titre indicatif uniquement" | ✅ |

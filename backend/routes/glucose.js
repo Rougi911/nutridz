@@ -84,17 +84,24 @@ router.get('/latest', auth, async (req, res) => {
 });
 
 // GET /api/glucose/metrics?days=N
+// DEF-09: uses personalized TIR targets from profiles (glucose_target_min/max_mg_dl)
 router.get('/metrics', auth, async (req, res) => {
   const days = Math.min(365, parseInt(req.query.days) || 14);
   const db = getDB();
   const from = new Date();
   from.setDate(from.getDate() - days);
 
-  const readings = await db.prepare(
-    'SELECT * FROM glucose_readings WHERE user_id = ? AND timestamp >= ? ORDER BY timestamp ASC'
-  ).all(req.userId, from.toISOString());
+  const [readings, profile] = await Promise.all([
+    db.prepare(
+      'SELECT * FROM glucose_readings WHERE user_id = ? AND timestamp >= ? ORDER BY timestamp ASC'
+    ).all(req.userId, from.toISOString()),
+    db.prepare('SELECT glucose_target_min_mg_dl, glucose_target_max_mg_dl FROM profiles WHERE user_id = ?').get(req.userId),
+  ]);
 
-  res.json(calculatePeriodMetrics(readings));
+  const targetMin = profile?.glucose_target_min_mg_dl || 70;
+  const targetMax = profile?.glucose_target_max_mg_dl || 180;
+
+  res.json(calculatePeriodMetrics(readings, targetMin, targetMax));
 });
 
 // DELETE /api/glucose/:id

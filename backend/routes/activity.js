@@ -158,8 +158,10 @@ router.get('/bilan/:date', auth, async (req, res) => {
   ]);
 
   const ingested_kcal = Math.round(journalRow?.ingested_kcal || 0);
-  const burned_kcal = Math.round(
-    activities.reduce((sum, a) => sum + (a.calories_burned || 0), 0)
+  // AL-03: cap activity credit at 1000 kcal/day to avoid unrealistic deficits
+  const burned_kcal = Math.min(
+    Math.round(activities.reduce((sum, a) => sum + (a.calories_burned || 0), 0)),
+    1000
   );
 
   const weight = profile?.weight || 70;

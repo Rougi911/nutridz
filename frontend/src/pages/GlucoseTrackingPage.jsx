@@ -162,15 +162,24 @@ export default function GlucoseTrackingPage() {
             </p>
           </div>
 
+          {/* DEF-06: données insuffisantes < 12 mesures */}
+          {metrics && metrics.insufficient_data && (
+            <div style={{ margin: '0 1rem 1rem', padding: '0.75rem 1rem', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', textAlign: 'center' }}>
+              <p style={{ margin: 0, fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)' }}>
+                {metrics.message}
+              </p>
+            </div>
+          )}
+
           {/* MetricCards 2×2 */}
-          {metrics && metrics.total_readings > 0 && (
+          {metrics && !metrics.insufficient_data && metrics.total_readings > 0 && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', padding: '0 16px', marginBottom: '8px' }}>
               <MetricCard label={t('glucose.gmiLabel')} value={metrics.gmi} unit="%"
                 status={metrics.gmi < 7 ? 'good' : metrics.gmi < 8 ? 'warning' : 'danger'}
                 statusText={t('glucose.gmiSubtitle')} />
               <MetricCard label={t('glucose.tir')} value={metrics.tir} unit="%"
                 status={metrics.tir > 70 ? 'good' : metrics.tir > 50 ? 'warning' : 'danger'}
-                statusText="70-180 mg/dL" />
+                statusText={`${metrics.target_min || 70}-${metrics.target_max || 180} mg/dL`} />
               <MetricCard label={t('glucose.cv')} value={metrics.cv} unit="%"
                 status={metrics.cv < 36 ? 'good' : 'warning'}
                 statusText="Stabilité" />
@@ -183,14 +192,14 @@ export default function GlucoseTrackingPage() {
           )}
 
           {/* REG-05 — Note GMI non diagnostique */}
-          {metrics && metrics.total_readings > 0 && (
+          {metrics && !metrics.insufficient_data && metrics.total_readings > 0 && (
             <p style={{ margin: '0 1rem 1rem', fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
               {t('glucose.gmiDisclaimer')}
             </p>
           )}
 
           {/* Distribution 5 zones */}
-          {metrics && metrics.distribution && (
+          {metrics && !metrics.insufficient_data && metrics.distribution && (
             <div style={{ margin: '0 1.25rem 1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px var(--shadow)' }}>
               <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                 {t('glucose.distribution')}

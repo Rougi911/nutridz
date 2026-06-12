@@ -1,4 +1,11 @@
 require('dotenv').config();
+
+// DEF-12: refuse to start without JWT_SECRET — no insecure fallback
+if (!process.env.JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET non défini. Définir la variable d\'environnement.');
+  process.exit(1);
+}
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
