@@ -98,4 +98,17 @@ function mapStravaType(type) {
   return map[type] || 'marche';
 }
 
-module.exports = { getAuthUrl, exchangeCode, getValidToken, getTodayActivities };
+async function getActivityById(activityId, accessToken) {
+  try {
+    const { data } = await axios.get(`${STRAVA_BASE}/activities/${activityId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      timeout: 10000,
+    });
+    return data;
+  } catch (err) {
+    console.error(`[Strava] getActivityById(${activityId}) failed:`, err.message);
+    return null;
+  }
+}
+
+module.exports = { getAuthUrl, exchangeCode, getValidToken, getTodayActivities, mapStravaType, getActivityById };

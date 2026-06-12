@@ -2,125 +2,110 @@
 _Dernière mise à jour : 2026-06-12 — par Claude_
 
 ## Phase en cours
-**P2 TERMINÉE** — Implémentation backend SL-API-01 (interpret), migration Gemini, AGS utility, bugs 4a/4b/4c.
-Gate P2 : GO (revue-code + reglementaire, 2026-06-12) → Prochaine étape : Phase P3 (endpoints SL-API-02 à SL-API-06).
+**P3 TERMINÉE** — SL-API-02/03/04/05 implémentés et gatés.
+Gate P3 : GO (revue-code + reglementaire, 2026-06-12) — commit "backend : scan produits + bilan courses + carences + webhooks Strava (cycle V)"
 
-## Changements P2 appliqués
+## Changements P3 appliqués
 
-| Tâche | Fichiers modifiés | Statut |
-|-------|-------------------|--------|
-| Migration Clarifai → Gemini | backend/services/foodvision.js | ✅ |
-| POST /api/interpret (SL-API-01) | backend/routes/interpret.js (nouveau) | ✅ |
-| AGS utility (DEF-11) | backend/services/agsUtils.js (nouveau) | ✅ |
-| Route registered | backend/server.js | ✅ |
-| Bug 4b (dishes.js kcal fallback) | backend/routes/dishes.js | ✅ |
-| Bug 4a (ciqual.js regex) | Déjà corrigé avant P2 | ✅ |
-| Tests P2 | backend/tests/p2.test.js (17 tests) | ✅ |
+| Tâche | Fichiers | Statut |
+|-------|----------|--------|
+| SL-API-02 POST /api/scan (AL-08, COR-09) | backend/routes/scan.js (nouveau) | ✅ |
+| SL-API-03 GET /api/groceries/summary (AL-09) | backend/routes/scan.js | ✅ |
+| SL-API-04 GET /api/stats/deficiencies (AL-07) | backend/routes/deficiencies.js (nouveau) | ✅ |
+| SL-API-05 Strava webhooks GET+POST | backend/routes/strava.js (nouveau) | ✅ |
+| Micronutrients service (AL-07) | backend/services/micronutrientsService.js (nouveau) | ✅ |
+| Additives risk data (AL-08) | backend/data/additives.json (nouveau) | ✅ |
+| getActivityById + export mapStravaType | backend/services/strava.js | ✅ |
+| DB: scanned_products + profil colonnes | backend/db.js | ✅ |
+| Routes enregistrées | backend/server.js | ✅ |
+| Tests P3 (42 tests) | backend/tests/p3.test.js (nouveau) | ✅ |
 | Gate docs | docs/gates.md | ✅ |
 
-**Tests : 37/37 PASS** (3 suites : glucoseMetrics, activityCap, p2)
+**Tests : 79/79 PASS** (4 suites : glucoseMetrics, activityCap, p2, p3)
 
-## Détail technique P2
+## Détail technique P3
 
-### foodvision.js — Gemini
-- `callGemini(base64Image, mimeType)` via REST axios → `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`
-- Modèle : `process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite'`
-- Sortie `[{name, value}]` identique à l'ancienne interface Clarifai
-- `callGemini` exportée pour usage dans interpret.js
-- Suppression totale de CLARIFAI_API_URL et CLARIFAI_API_KEY
+### POST /api/scan (SL-API-02)
+- Lookup OpenFoodFacts `https://world.openfoodfacts.org/api/v0/product/{barcode}.json`
+- AL-08 score = NutriScore base (A=90,B=75,C=55,D=35,E=15) − malus risque élevé (−30: E150c/d, E249-E252, E621) − risque modéré (−15: E471, E955, E951) clamped [0,100]
+- verdict: ≥65→Excellent, 35-64→Médiocre, <35→Mauvais
+- COR-09: upsert applicatif — vérification (user_id, barcode, mois) → UPDATE times_this_month ou INSERT
+- Monté : /api/scan + /api/groceries (même router)
 
-### POST /api/interpret (SL-API-01)
-- Entrée : `{ mode: "photo"|"voice"|"text", payload, lang, mimeType? }`
-- Sortie : `{ intents: [...] }`
-- mode photo → callGemini vision (concepts → intents type "food")
-- mode voice/text → callGeminiText avec prompt JSON strict, REG-05 interdit médical
-- Nutrition : cascade CIQUAL → USDA, jamais LLM. null si non trouvé (nutrition_found: false)
-- confidence < 0.6 → needs_confirmation: true
-- 422 si JSON Gemini non parseable. 502 si Gemini indisponible.
-- Parsing défensif : strip backticks, regex fallback, try/catch
+### GET /api/groceries/summary (SL-API-03)
+- `?period=month|week` (défaut: month)
+- Agrège sugars_g*times, salt_g*times, sat_fat_g*times
+- Références OMS: sucres 50g/j×période, sel 5g/j×période, AGS = TDEE×10%÷9×période/30 (DEF-11)
+- Couleurs: ≤80%→teal, 80-110%→amber, >110%→red
+- TDEE calculé inline Mifflin-St Jeor + activity_level multiplier
 
-### agsUtils.js (DEF-11)
-- `calcMonthlyAGSTarget(profile)` → `{ target_g, default_used, tdee_used }`
-- Formule : `TDEE × 10% ÷ 9 × 30`
-- Fallback 2000 kcal si TDEE absent/invalide, `default_used: true`
+### GET /api/stats/deficiencies (SL-API-04)
+- Fenêtre 14 jours glissants; 204 si < 3 jours journal
+- REG-04: disclaimer non vide obligatoire dans chaque réponse
+- Micronutriments: fer, calcium, vitD, vitB12, magnésium, folates
+- Lookup par mot-clé sur product.name → micronutrientsService.js (ANSES CIQUAL 2023 approximations)
+- ANSES par sexe: fer H=9/F=16, Ca=950, vitD=15µg, B12=4µg, Mg H=380/F=300, folates=330µg
+- Facteur vitD: latitude_approx > 35 ET mois ∈ {10,11,12,1,2,3} → seuil 80% (sinon 70%)
+- REG-03: lat arrondie au degré (Math.round)
+- REG-05: status = "Apports très faibles" | "Apports à améliorer" | "Apports satisfaisants"
 
-### dishes.js bug 4b
-- Condition `ing.kcal_per100 != null || ing.kcal != null` (accepte les deux champs)
-- `const kcal100 = ing.kcal_per100 ?? ing.kcal ?? 0` (kcal_per100 prioritaire)
+### Webhooks Strava (SL-API-05)
+- GET /api/strava/webhook : valide hub.mode=subscribe + hub.verify_token + retourne hub.challenge
+- POST /api/strava/webhook : vérifie verify_token dans body (COR-05 obligatoire); répond 200 immédiatement; traitement async (setImmediate)
+- AL-02: MET modérée = course 9.0, vélo 7.0, marche 3.5, natation 6.0, muscu 5.0
+- Priorité kcal: kilojoules×0.239 → calories → MET×poids×heures
+- Lookup userId par strava_athlete_id dans profiles
 
-## Variable d'environnement à ajouter sur Render (backend)
+### micronutrientsService.js
+- `lookupMicro(productName)` → fuzzy keyword matching sur 16 catégories d'aliments
+- `calcDeficiencies(entries, dayCount, profile, month)` → pure function exportée et testée
+- Exportée pour tests unitaires
+
+### services/strava.js — nouveautés
+- `getActivityById(activityId, accessToken)` — GET /activities/{id} (pour webhook)
+- `mapStravaType` maintenant exportée
+
+## Variables d'environnement à ajouter sur Render (backend)
+
 ```
-GEMINI_API_KEY=...          # Gemini 2.5 Flash-Lite (remplace CLARIFAI_API_KEY)
-GEMINI_MODEL=gemini-2.5-flash-lite   # optionnel, valeur par défaut
+STRAVA_VERIFY_TOKEN=...    # Token arbitraire à choisir — obligatoire pour activer les webhooks Strava
+GEMINI_API_KEY=...         # Gemini 2.5 Flash-Lite (depuis P2)
+GEMINI_MODEL=gemini-2.5-flash-lite   # optionnel
 ```
-CLARIFAI_API_KEY peut être supprimée de Render.
 
-## Corrections P1.5-B appliquées
+Après déploiement, enregistrer le webhook Strava :
+```
+POST https://www.strava.com/api/v3/push_subscriptions
+  client_id=STRAVA_CLIENT_ID
+  client_secret=STRAVA_CLIENT_SECRET
+  callback_url=https://nutridz.onrender.com/api/strava/webhook
+  verify_token=STRAVA_VERIFY_TOKEN
+```
 
-| DEF | Gravité initiale | Fichiers modifiés | Statut |
-|-----|-----------------|-------------------|--------|
-| DEF-06 | MAJEUR | glucoseMetrics.js, GlucoseTrackingPage.jsx | ✅ RÉSOLU |
-| DEF-07 | MAJEUR | routes/activity.js | ✅ RÉSOLU |
-| DEF-08 | MAJEUR | glucoseMetrics.js | ✅ RÉSOLU |
-| DEF-09 | MAJEUR | glucoseMetrics.js, routes/glucose.js, db.js | ✅ RÉSOLU |
-| DEF-10 | MAJEUR (spec) | docs/cycle-v-nutrivita.md | ✅ RÉSOLU |
-| DEF-11 | MAJEUR (spec) | docs/sl-api.md | Spec ✅ / Code P2 ✅ |
-| DEF-12 | MAJEUR | server.js, middleware/auth.js, routes/auth.js | ✅ RÉSOLU |
-| DEF-13 | MINEUR | db.js, routes/auth.js | ✅ RÉSOLU |
-| DEF-14 | MINEUR (spec) | docs/sl-api.md, docs/cycle-v-nutrivita.md | ✅ RÉSOLU |
-| DEF-15 | MINEUR (spec) | docs/sl-api.md, docs/cycle-v-nutrivita.md | ✅ RÉSOLU |
+## Changements P2 appliqués (rappel)
 
-Tests ajoutés : `backend/tests/glucoseMetrics.test.js` (16 tests) + `backend/tests/activityCap.test.js` (7 tests)
+| Tâche | Fichiers | Statut |
+|-------|----------|--------|
+| Migration Clarifai → Gemini | backend/services/foodvision.js | ✅ |
+| POST /api/interpret (SL-API-01) | backend/routes/interpret.js | ✅ |
+| AGS utility (DEF-11) | backend/services/agsUtils.js | ✅ |
+| Bug 4b dishes.js kcal fallback | backend/routes/dishes.js | ✅ |
 
-## Corrections P1.5-A appliquées
+**Tests P2 : 37/37 PASS**
 
-| DEF | Gravité initiale | Fichiers modifiés | Statut |
-|-----|-----------------|-------------------|--------|
-| DEF-01 | KO BLOQUANT | GlucoseTrackingPage.jsx, i18n.js | ✅ RÉSOLU |
-| DEF-02 | KO BLOQUANT | backend/routes/auth.js | ✅ RÉSOLU |
-| DEF-03 | KO BLOQUANT | RegisterPage.jsx, store/index.js, routes/auth.js, db.js, i18n.js | ✅ RÉSOLU |
-| DEF-04 | KO BLOQUANT | — | Hors périmètre marché DZ — session juridique dédiée |
-| DEF-05 | KO BLOQUANT | GlucoseTrackingPage.jsx, i18n.js | ✅ RÉSOLU |
-| DEF-16 | MINEUR | i18n.js | ✅ RÉSOLU |
-| COR-08 | Régression CORS | backend/server.js, docs/sl-api.md | ✅ RÉSOLU |
+## Corrections P1.5-A/B appliquées (rappel)
 
-## Tâches de restyling terminées (Tasks 1–16)
+| DEF | Statut |
+|-----|--------|
+| DEF-01/02/03/05/06/07/08/09/12/13/16 | ✅ RÉSOLU |
+| DEF-04 | Hors périmètre marché DZ |
 
-| Task | Description | Commit | Statut |
-|------|-------------|--------|--------|
-| 1 | DES-01 — tokens dark mode | e9a4243 | ✅ |
-| 2 | DES-02 — classes CSS utilitaires | 93d4a9f | ✅ |
-| 3 | DES-03 + REG-11a — GradientHeader | d8dddd2 | ✅ |
-| 4 | DES-03 + REG-11b — MacroPillCard | fd9249d | ✅ |
-| 5 | DES-03 + REG-11c — MetricCard | 19b400a | ✅ |
-| 6 | setupTests + renderWithProviders | 3762eac | ✅ |
-| 7a | Baseline pré-restructuring (GREEN) | 0845dab | ✅ |
-| 7b | BilanPage embedded + activeTabOverride | b854861 | ✅ |
-| 7c | HistoryPage embedded prop | 565a599 | ✅ |
-| 7d | StatsPage + REG-06/07 | 980bbb6 | ✅ |
-| 7e | App.jsx routes 9→5 | 0c41d5e | ✅ |
-| 7f | Layout.jsx 5-tab nav (DES-04) | 3ee0c3d | ✅ |
-| 7g | Navigation REG-02 + full suite green gate | 7b13eca | ✅ |
-| 8 | REG-01, REG-10 baseline | da8894d | ✅ |
-| 9 | JournalPage + REG-03/04/05 | 7283a24 | ✅ |
-| 10 | DishesPage + REG-06b | 243efa9 | ✅ |
-| 11 | DishDetailPage | 4f93048 | ✅ |
-| 12 | GlucoseTrackingPage | 752f58a | ✅ |
-| 13 | ProfilePage + REG-08/09 | 96bb317 | ✅ |
-| 14 | Landing + Login + Register + Onboarding | d02b317 | ✅ |
-| 15 | BilanPage shared MetricCard | fa3de20 | ✅ |
-| 16 | Suite complète (42/42) + build ✅ | — | ✅ |
+## Tâches de restyling terminées (Tasks 1–16) — toutes ✅
 
 ## Prochaine étape
-Phase P3 — Endpoints SL-API-02 à SL-API-06 :
-- SL-API-02 : GET /api/activity/bilan/:date (mis à jour avec cap 1000 kcal DEF-07)
-- SL-API-03 : GET /api/groceries/summary (AGS dynamique DEF-11 — agsUtils.js prêt)
-- SL-API-04 : GET /api/nutrition/micronutrients
-- SL-API-05 : Strava webhook STRAVA_VERIFY_TOKEN obligatoire (COR-05)
-- SL-API-06 : Scanned products upsert logic (COR-09)
+P3 terminée. La prochaine phase est P4 ou les tâches de restyling frontend restantes (selon roadmap Ahmed).
 
 ## Règle absolue — dépendances de test
-@testing-library/jest-dom, @testing-library/react et @testing-library/user-event (v13)
-sont embarqués par react-scripts 5.0.1. **Ne jamais les ajouter en devDependencies.
-Ne jamais créer ni modifier package.json ou package-lock.json.**
-user-event = v13 (API synchrone, pas d'await sur userEvent.click()).
+@testing-library/jest-dom, @testing-library/react, @testing-library/user-event (v13) embarqués
+par react-scripts 5.0.1. **Ne jamais ajouter en devDependencies. Ne jamais modifier package.json.**
+user-event = v13 (API synchrone, sans await sur userEvent.click()).

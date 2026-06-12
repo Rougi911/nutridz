@@ -75,6 +75,10 @@ app.use('/api/voice', require('./routes/voice'));
 app.use('/api/favorites', require('./routes/favorites'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/interpret', require('./routes/interpret'));
+app.use('/api/scan',    require('./routes/scan'));
+app.use('/api/groceries', require('./routes/scan'));
+app.use('/api/strava',  require('./routes/strava'));
+app.use('/api/stats',   require('./routes/deficiencies'));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', version: '1.0.0' }));

@@ -261,10 +261,32 @@ async function initDB() {
     'ALTER TABLE profiles ADD COLUMN consent_glucose_version TEXT',
     'ALTER TABLE profiles ADD COLUMN glucose_target_min_mg_dl INTEGER DEFAULT 70',
     'ALTER TABLE profiles ADD COLUMN glucose_target_max_mg_dl INTEGER DEFAULT 180',
+    // SL-API-04 — geographic factor for vitamin D (REG-03: approx lat, never precise)
+    'ALTER TABLE profiles ADD COLUMN country TEXT DEFAULT \'FR\'',
+    'ALTER TABLE profiles ADD COLUMN latitude_approx REAL DEFAULT 46.0',
   ];
   for (const sql of profileColumns) {
     try { await db.exec(sql); } catch (_) { /* column already exists */ }
   }
+
+  // SL-API-02/03 — scanned products with nutrient data (sugars, salt, sat_fat)
+  await db.exec(`CREATE TABLE IF NOT EXISTS scanned_products (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    barcode TEXT NOT NULL,
+    product_name TEXT NOT NULL,
+    score INTEGER NOT NULL,
+    verdict TEXT NOT NULL CHECK(verdict IN ('Excellent','Médiocre','Mauvais')),
+    additives_json TEXT DEFAULT '[]',
+    nutri_score TEXT,
+    nova INTEGER,
+    sugars_g REAL DEFAULT 0,
+    salt_g REAL DEFAULT 0,
+    sat_fat_g REAL DEFAULT 0,
+    times_this_month INTEGER DEFAULT 1,
+    scanned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await db.exec(`CREATE INDEX IF NOT EXISTS idx_scanned_user_date ON scanned_products(user_id, scanned_at)`);
 
   // DEF-13 — migrate weight_history (legacy) → weight_entries, then drop
   try {

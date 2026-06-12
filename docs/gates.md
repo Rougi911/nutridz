@@ -6,6 +6,7 @@
 | 2026-06-12 | SL-API v1 (P1.5-A) | GO | Double GO : reglementaire + revue-code. DEF-01/02/03/05/16 levés. DEF-04 hors périmètre marché FR. | — |
 | 2026-06-12 | SL-API v1 (P1.5-B) | GO | GO : critique-algo (5/5 formules CONFORME) + revue-code après correction auth.js. DEF-06/07/08/09/12/13/10/14/15 levés. DEF-11 spec corrigée (TDEE dynamique) — implémentation endpoint reportée en P2. | DEF-11 code (P2) |
 | 2026-06-12 | P2 Implémentation | GO | GO revue-code + reglementaire. Migration Clarifai→Gemini (foodvision.js). POST /api/interpret (SL-API-01) : mode photo/voice/text, cascade CIQUAL→USDA, confidence<0.6→needs_confirmation. AGS utility (DEF-11). Bugs 4a/4b/4c. 37/37 tests. | — |
+| 2026-06-12 | P3 Implémentation | GO | GO revue-code + reglementaire. SL-API-02 POST /api/scan (AL-08, COR-09 upsert applicatif). SL-API-03 GET /api/groceries/summary (AL-09, AGS dynamique DEF-11). SL-API-04 GET /api/stats/deficiencies (AL-07, REG-03/04/05, facteur géo vitD). SL-API-05 webhooks Strava GET+POST (COR-05 STRAVA_VERIFY_TOKEN obligatoire). getActivityById ajouté à strava.js. 79/79 tests. | — |
 
 ---
 

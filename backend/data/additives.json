@@ -1,0 +1,16 @@
+{
+  "high_risk": {
+    "E150c": { "name": "Caramel ammoniacal", "concern": "Précurseur 4-méthylimidazole (EFSA 2011)" },
+    "E150d": { "name": "Caramel au sulfite ammoniacal", "concern": "Précurseur 4-méthylimidazole (EFSA 2011)" },
+    "E249":  { "name": "Nitrite de potassium", "concern": "Précurseur nitrosamines cancérigènes (CIRC)" },
+    "E250":  { "name": "Nitrite de sodium", "concern": "Précurseur nitrosamines cancérigènes (CIRC)" },
+    "E251":  { "name": "Nitrate de sodium", "concern": "Conversion en nitrite in vivo" },
+    "E252":  { "name": "Nitrate de potassium", "concern": "Conversion en nitrite in vivo" },
+    "E621":  { "name": "Glutamate monosodique", "concern": "Hypersensibilité ; surconsommation sel caché" }
+  },
+  "moderate_risk": {
+    "E471": { "name": "Mono et diglycérides d'acides gras", "concern": "Impact potentiel microbiote (EFSA 2017)" },
+    "E955": { "name": "Sucralose", "concern": "Perturbation microbiote intestinal (étude 2023)" },
+    "E951": { "name": "Aspartame", "concern": "IARC 2B (2023) ; déconseillé PKU" }
+  }
+}
