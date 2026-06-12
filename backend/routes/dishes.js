@@ -97,9 +97,10 @@ router.post('/', auth, async (req, res) => {
         total_fibres    += (p.fibres      || 0) * r;
         total_g         += ing.grams;
       }
-    } else if (ing.kcal_per100 != null) {
-      // Inline nutritional data (from CIQUAL / USDA)
-      total_kcal      += (ing.kcal_per100  || 0) * r;
+    } else if (ing.kcal_per100 != null || ing.kcal != null) {
+      // Inline nutritional data (from CIQUAL / USDA) — accept both kcal_per100 and kcal (all per 100g)
+      const kcal100 = ing.kcal_per100 ?? ing.kcal ?? 0;
+      total_kcal      += kcal100 * r;
       total_glucides  += (ing.glucides     || 0) * r;
       total_proteines += (ing.proteines    || 0) * r;
       total_lipides   += (ing.lipides      || 0) * r;

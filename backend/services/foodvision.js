@@ -3,7 +3,8 @@ const ciqual = require('./ciqual');
 const usda   = require('./usda');
 const translations = require('../data/translations.json');
 
-const CLARIFAI_API_URL = 'https://api.clarifai.com/v2/models/general-image-recognition/outputs';
+const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+const GEMINI_MODEL    = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 
 // ─── Base nutritionnelle locale (pour 100g) ───────────────────────────────────
 // portion = taille de portion typique en g (utilisée pour l'estimation des quantités)
@@ -305,26 +306,33 @@ function calcEffort(kcal, met, weightKg) {
   return Math.round(kcal / (met * weightKg * 3.5 / 200));
 }
 
-// ─── Appel Clarifai ───────────────────────────────────────────────────────────
-async function callClarifai(base64Image) {
-  // Strip le préfixe data URI si présent (ex: "data:image/jpeg;base64,...")
+// ─── Appel Gemini Vision ──────────────────────────────────────────────────────
+async function callGemini(base64Image, mimeType = 'image/jpeg') {
   const clean = base64Image.includes(',') ? base64Image.split(',')[1] : base64Image;
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error('GEMINI_API_KEY non défini');
 
-  const res = await axios.post(
-    CLARIFAI_API_URL,
-    {
-      user_app_id: { user_id: 'clarifai', app_id: 'main' },
-      inputs: [{ data: { image: { base64: clean } } }],
-    },
-    {
-      headers: {
-        'Authorization': `Key ${process.env.CLARIFAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      timeout: 15000,
-    }
-  );
-  return res.data?.outputs?.[0]?.data?.concepts || [];
+  const url = `${GEMINI_API_BASE}/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+  const body = {
+    contents: [{
+      parts: [
+        {
+          text: 'Identify all food items visible in this image. Return ONLY a valid JSON array, no markdown fences, no explanations. Format: [{"name":"food name in English","value":confidence_0.0_to_1.0}]. Order by confidence descending. Maximum 10 items. Never provide medical advice, diagnoses or dietary prescriptions.',
+        },
+        { inline_data: { mime_type: mimeType, data: clean } },
+      ],
+    }],
+    generationConfig: { temperature: 0.1, maxOutputTokens: 512 },
+  };
+
+  const res = await axios.post(url, body, {
+    headers: { 'Content-Type': 'application/json' },
+    timeout: 20000,
+  });
+
+  const raw = res.data?.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
+  const jsonStr = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  return JSON.parse(jsonStr); // [{name, value}, ...]
 }
 
 async function conceptsToAliments(concepts, minConfidence = 0.5, maxItems = 6) {
@@ -378,7 +386,7 @@ async function conceptsToAliments(concepts, minConfidence = 0.5, maxItems = 6) {
 async function analyzeDishPhoto(base64Image, mediaType = 'image/jpeg', context = {}) {
   const { weight = 70, goal = 'maintien' } = context;
   try {
-    const concepts = await callClarifai(base64Image);
+    const concepts = await callGemini(base64Image, mediaType);
 
     if (!concepts.length || concepts[0].value < 0.4) {
       return { success: false, error: 'Aucun aliment détecté. Prenez la photo de plus près avec une bonne lumière.' };
@@ -411,10 +419,9 @@ async function analyzeDishPhoto(base64Image, mediaType = 'image/jpeg', context =
 
   } catch (err) {
     const status = err.response?.status;
-    console.error('[FoodVision/Clarifai] Erreur:', status, err.message);
-    console.error('Clarifai error response:', JSON.stringify(err.response?.data, null, 2));
-    if (status === 401) return { success: false, error: 'Clé API Clarifai invalide ou manquante.' };
-    if (status === 400) return { success: false, error: `Requête Clarifai invalide : ${err.message}` };
+    console.error('[FoodVision/Gemini] Erreur:', status, err.message);
+    if (status === 400) return { success: false, error: 'Image invalide ou non supportée.' };
+    if (status === 403) return { success: false, error: 'Clé API Gemini invalide ou quota dépassé.' };
     return { success: false, error: "Erreur lors de l'analyse du plat." };
   }
 }
@@ -424,8 +431,8 @@ async function analyzeMultiplePhotos(images, context = {}) {
   try {
     // Analyser chaque photo et fusionner en gardant la meilleure confiance par aliment
     const bestConcepts = new Map();
-    for (const { base64 } of images) {
-      const concepts = await callClarifai(base64);
+    for (const { base64, mimeType } of images) {
+      const concepts = await callGemini(base64, mimeType || 'image/jpeg');
       for (const c of concepts) {
         if (!bestConcepts.has(c.name) || bestConcepts.get(c.name) < c.value) {
           bestConcepts.set(c.name, c.value);
@@ -456,7 +463,7 @@ async function analyzeMultiplePhotos(images, context = {}) {
     return { success: true, data: enrichAnalysis(result, weight) };
 
   } catch (err) {
-    console.error('[FoodVision/Clarifai] Multi-photos erreur:', err.message);
+    console.error('[FoodVision/Gemini] Multi-photos erreur:', err.message);
     return { success: false, error: 'Analyse multi-photos impossible.' };
   }
 }
@@ -503,4 +510,4 @@ async function refineAnalysis(previousAnalysis, userCorrection) {
   }
 }
 
-module.exports = { analyzeDishPhoto, analyzeMultiplePhotos, refineAnalysis };
+module.exports = { analyzeDishPhoto, analyzeMultiplePhotos, refineAnalysis, callGemini };

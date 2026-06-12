@@ -5,6 +5,7 @@
 | 2026-06-12 | SL-API v1 | GO (spec) / NO-GO (code existant) | Spec corrigée sur 6 bloquants. Code existant contient 5 KO réglementaires différés. | Voir tableau ci-dessous |
 | 2026-06-12 | SL-API v1 (P1.5-A) | GO | Double GO : reglementaire + revue-code. DEF-01/02/03/05/16 levés. DEF-04 hors périmètre marché FR. | — |
 | 2026-06-12 | SL-API v1 (P1.5-B) | GO | GO : critique-algo (5/5 formules CONFORME) + revue-code après correction auth.js. DEF-06/07/08/09/12/13/10/14/15 levés. DEF-11 spec corrigée (TDEE dynamique) — implémentation endpoint reportée en P2. | DEF-11 code (P2) |
+| 2026-06-12 | P2 Implémentation | GO | GO revue-code + reglementaire. Migration Clarifai→Gemini (foodvision.js). POST /api/interpret (SL-API-01) : mode photo/voice/text, cascade CIQUAL→USDA, confidence<0.6→needs_confirmation. AGS utility (DEF-11). Bugs 4a/4b/4c. 37/37 tests. | — |
 
 ---
 
