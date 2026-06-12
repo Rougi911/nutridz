@@ -15,12 +15,8 @@ function getLang(req) {
   return SUPPORTED_LANGS.includes(al) ? al : 'fr';
 }
 
-// GET /api/journal?date=2025-01-15
-router.get('/', auth, async (req, res) => {
-  const date = req.query.date || new Date().toISOString().split('T')[0];
-  const lang = getLang(req);
-  const db = getDB();
-
+// Shared logic extracted for GET / and POST /query
+async function queryJournalByDate(db, userId, date, lang) {
   const entries = await db.prepare(`
     SELECT je.*, p.name, p.brand, p.emoji, p.score, p.kcal_per100,
            p.glucides as p_glucides, p.proteines as p_proteines, p.lipides as p_lipides, p.fibres as p_fibres, p.additifs
@@ -28,7 +24,7 @@ router.get('/', auth, async (req, res) => {
     JOIN products p ON je.product_id = p.id
     WHERE je.user_id = ? AND je.date = ?
     ORDER BY je.logged_at ASC
-  `).all(req.userId, date);
+  `).all(userId, date);
 
   const byMeal = { pdej: [], dej: [], coll: [], diner: [] };
   let totals = { kcal: 0, glucides: 0, proteines: 0, lipides: 0, fibres: 0 };
@@ -44,7 +40,27 @@ router.get('/', auth, async (req, res) => {
   });
 
   Object.keys(totals).forEach(k => totals[k] = Math.round(totals[k] * 10) / 10);
-  res.json({ date, meals: byMeal, totals });
+  return { date, meals: byMeal, totals };
+}
+
+// GET /api/journal?date=2025-01-15
+router.get('/', auth, async (req, res) => {
+  const date = req.query.date || new Date().toISOString().split('T')[0];
+  const lang = getLang(req);
+  const db = getDB();
+  res.json(await queryJournalByDate(db, req.userId, date, lang));
+});
+
+// POST /api/journal/query — même logique, date dans le body (contrat frontend P4)
+router.post('/query', auth, async (req, res) => {
+  try {
+    const date = req.body.date || new Date().toISOString().split('T')[0];
+    const lang = getLang(req);
+    const db = getDB();
+    res.json(await queryJournalByDate(db, req.userId, date, lang));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST /api/journal — ajouter une entrée
@@ -159,3 +175,4 @@ function formatEntry(e, lang = 'fr') {
 }
 
 module.exports = router;
+module.exports.queryJournalByDate = queryJournalByDate;

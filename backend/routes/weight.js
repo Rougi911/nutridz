@@ -42,6 +42,13 @@ router.post('/', auth, async (req, res) => {
   res.status(201).json(entry);
 });
 
+// Shared logic for GET / and POST /query
+async function queryWeightRange(db, userId, from, to) {
+  return db.prepare(
+    'SELECT * FROM weight_entries WHERE user_id = ? AND date >= ? AND date <= ? ORDER BY date ASC'
+  ).all(userId, from, to);
+}
+
 // GET /api/weight
 router.get('/', auth, async (req, res) => {
   const db = getDB();
@@ -49,12 +56,20 @@ router.get('/', auth, async (req, res) => {
   const from = req.query.from || (() => {
     const d = new Date(to); d.setDate(d.getDate() - 30); return d.toISOString().split('T')[0];
   })();
+  res.json(await queryWeightRange(db, req.userId, from, to));
+});
 
-  const rows = await db.prepare(
-    'SELECT * FROM weight_entries WHERE user_id = ? AND date >= ? AND date <= ? ORDER BY date ASC'
-  ).all(req.userId, from, to);
-
-  res.json(rows);
+// POST /api/weight/query — même logique, days dans le body (contrat frontend P4)
+router.post('/query', auth, async (req, res) => {
+  try {
+    const db = getDB();
+    const days = Math.min(365, parseInt(req.body.days) || 30);
+    const to   = new Date().toISOString().split('T')[0];
+    const from = (() => { const d = new Date(); d.setDate(d.getDate() - days); return d.toISOString().split('T')[0]; })();
+    res.json(await queryWeightRange(db, req.userId, from, to));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // GET /api/weight/latest
@@ -170,3 +185,4 @@ router.delete('/all', auth, async (req, res) => {
 });
 
 module.exports = router;
+module.exports.queryWeightRange = queryWeightRange;

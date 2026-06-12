@@ -60,6 +60,13 @@ router.post('/import-csv', auth, async (req, res) => {
   res.json({ imported_count, skipped_count });
 });
 
+// Shared logic for GET / and POST /query
+async function queryGlucoseRange(db, userId, from, to) {
+  return db.prepare(
+    'SELECT * FROM glucose_readings WHERE user_id = ? AND timestamp >= ? AND timestamp <= ? ORDER BY timestamp DESC'
+  ).all(userId, from, to);
+}
+
 // GET /api/glucose — range query
 router.get('/', auth, async (req, res) => {
   const db = getDB();
@@ -67,11 +74,20 @@ router.get('/', auth, async (req, res) => {
   const from = req.query.from || (() => {
     const d = new Date(to); d.setDate(d.getDate() - 30); return d.toISOString();
   })();
+  res.json(await queryGlucoseRange(db, req.userId, from, to));
+});
 
-  const rows = await db.prepare(
-    'SELECT * FROM glucose_readings WHERE user_id = ? AND timestamp >= ? AND timestamp <= ? ORDER BY timestamp DESC'
-  ).all(req.userId, from, to);
-  res.json(rows);
+// POST /api/glucose/query — même logique, days dans le body (contrat frontend P4)
+router.post('/query', auth, async (req, res) => {
+  try {
+    const db = getDB();
+    const days = Math.min(365, parseInt(req.body.days) || 30);
+    const to   = new Date().toISOString();
+    const from = (() => { const d = new Date(); d.setDate(d.getDate() - days); return d.toISOString(); })();
+    res.json(await queryGlucoseRange(db, req.userId, from, to));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // GET /api/glucose/latest
@@ -126,3 +142,4 @@ router.delete('/all', auth, async (req, res) => {
 });
 
 module.exports = router;
+module.exports.queryGlucoseRange = queryGlucoseRange;

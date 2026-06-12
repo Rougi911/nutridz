@@ -107,6 +107,24 @@ router.get('/strava/today', auth, async (req, res) => {
   }
 });
 
+// ─── POST /query — liste plate d'activités par date (contrat frontend P4) ─────
+
+async function queryActivitiesByDate(db, userId, date) {
+  return db.prepare(
+    'SELECT * FROM activities WHERE user_id = ? AND date = ? ORDER BY created_at DESC'
+  ).all(userId, date);
+}
+
+router.post('/query', auth, async (req, res) => {
+  try {
+    const date = req.body.date || new Date().toISOString().split('T')[0];
+    const db = getDB();
+    res.json(await queryActivitiesByDate(db, req.userId, date));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── Saisie manuelle ──────────────────────────────────────────────────────────
 
 router.post('/manual', auth, async (req, res) => {
@@ -350,3 +368,4 @@ router.get('/stats/monthly', auth, async (req, res) => {
 });
 
 module.exports = router;
+module.exports.queryActivitiesByDate = queryActivitiesByDate;

@@ -64,6 +64,7 @@ const visionRoutes = require('./routes/vision');
 app.use('/api/vision', visionRoutes);
 const activityRoutes = require('./routes/activity');
 app.use('/api/activity', activityRoutes);
+app.use('/api/activities', activityRoutes); // alias pluriel — contrat frontend P4
 const dishesRoutes = require('./routes/dishes');
 app.use('/api/dishes', dishesRoutes);
 const nutritionRoutes = require('./routes/nutrition');
