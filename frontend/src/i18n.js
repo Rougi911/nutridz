@@ -168,8 +168,11 @@ const T = {
       cgm: 'CGM',
       importCSV: 'Importer données LibreView',
       importHelp: 'Exportez vos données depuis LibreView, puis sélectionnez le fichier CSV ci-dessous',
+      disclaimer: 'Ces indicateurs sont des estimations à but informatif. Ils ne remplacent pas un avis médical. En cas d\'hypoglycémie, suivez le protocole de votre médecin.',
       gmi: 'GMI',
+      gmiLabel: 'GMI (estimation indicative)',
       gmiSubtitle: 'HbA1c estimé',
+      gmiDisclaimer: 'Le GMI est une estimation calculée à partir de vos mesures, ce n\'est pas un résultat d\'analyse sanguine.',
       tir: 'TIR',
       tirSubtitle: '70-180 mg/dL',
       cv: 'CV',
@@ -231,7 +234,7 @@ const T = {
     },
     auth: {
       login: { title: 'NutriVita', subtitle: 'Nutrition personnalisée pour le marché algérien', email: 'Email', password: 'Mot de passe', submit: 'Se connecter', loading: 'Connexion...', noAccount: 'Pas encore de compte ?', register: "S'inscrire", error: 'Identifiants incorrects' },
-      register: { title: 'NutriVita', subtitle: 'Créer un compte', name: 'Prénom & Nom', namePlaceholder: 'Ex: Ahmed Benali', email: 'Email', emailPlaceholder: 'exemple@gmail.com', password: 'Mot de passe', passwordPlaceholder: '6 caractères minimum', submit: 'Créer mon compte', loading: 'Création...', hasAccount: 'Déjà un compte ?', login: 'Se connecter', shortPassword: 'Mot de passe trop court (6 caractères min)', success: 'Compte créé ! Bienvenue 🎉', error: "Erreur lors de l'inscription" },
+      register: { title: 'NutriVita', subtitle: 'Créer un compte', name: 'Prénom & Nom', namePlaceholder: 'Ex: Ahmed Benali', email: 'Email', emailPlaceholder: 'exemple@gmail.com', password: 'Mot de passe', passwordPlaceholder: '6 caractères minimum', submit: 'Créer mon compte', loading: 'Création...', hasAccount: 'Déjà un compte ?', login: 'Se connecter', shortPassword: 'Mot de passe trop court (6 caractères min)', success: 'Compte créé ! Bienvenue 🎉', error: "Erreur lors de l'inscription", consentGlucose: "J'accepte que mes données de glycémie, qui sont des données de santé, soient traitées pour assurer le suivi glycémique de l'application." },
     },
     onboarding: {
       complete: 'Profil enregistré !', error: 'Erreur lors de la sauvegarde',
@@ -415,8 +418,11 @@ const T = {
       cgm: 'CGM',
       importCSV: 'استيراد LibreView',
       importHelp: 'استخرج بياناتك من LibreView',
+      disclaimer: 'هذه المؤشرات تقديرات إعلامية فقط. لا تغني عن استشارة طبيب. في حال انخفاض السكر، اتبع بروتوكول طبيبك.',
       gmi: 'GMI',
+      gmiLabel: 'GMI (تقدير استرشادي)',
       gmiSubtitle: 'HbA1c المقدر',
+      gmiDisclaimer: 'مؤشر GMI تقدير محسوب من قراءاتك، وليس نتيجة تحليل دم.',
       tir: 'TIR',
       tirSubtitle: '70-180 mg/dL',
       cv: 'CV',
@@ -453,7 +459,7 @@ const T = {
       leanMass: 'الكتلة العضلية',
       fatMass: 'الكتلة الدهنية',
       summary: 'ملخص الفترة',
-      disclaimer: '⚠️ تقدير مبني على معادلة Forbes',
+      disclaimer: '⚠️ تقدير مبني على معادلة Forbes — لأغراض إعلامية فقط',
       error: 'خطأ في تحميل البيانات',
     },
     voice: {
@@ -478,7 +484,7 @@ const T = {
     },
     auth: {
       login: { title: 'NutriVita', subtitle: 'تغذية شخصية للسوق الجزائرية', email: 'البريد الإلكتروني', password: 'كلمة المرور', submit: 'تسجيل الدخول', loading: 'جارٍ الدخول...', noAccount: 'ليس لديك حساب؟', register: 'إنشاء حساب', error: 'بيانات الدخول غير صحيحة' },
-      register: { title: 'NutriVita', subtitle: 'إنشاء حساب', name: 'الاسم الكامل', namePlaceholder: 'مثال: أحمد بن علي', email: 'البريد الإلكتروني', emailPlaceholder: 'example@gmail.com', password: 'كلمة المرور', passwordPlaceholder: '6 أحرف على الأقل', submit: 'إنشاء حسابي', loading: 'جارٍ الإنشاء...', hasAccount: 'لديك حساب بالفعل؟', login: 'تسجيل الدخول', shortPassword: 'كلمة المرور قصيرة جداً (6 أحرف على الأقل)', success: 'تم إنشاء الحساب ! مرحباً 🎉', error: 'خطأ في إنشاء الحساب' },
+      register: { title: 'NutriVita', subtitle: 'إنشاء حساب', name: 'الاسم الكامل', namePlaceholder: 'مثال: أحمد بن علي', email: 'البريد الإلكتروني', emailPlaceholder: 'example@gmail.com', password: 'كلمة المرور', passwordPlaceholder: '6 أحرف على الأقل', submit: 'إنشاء حسابي', loading: 'جارٍ الإنشاء...', hasAccount: 'لديك حساب بالفعل؟', login: 'تسجيل الدخول', shortPassword: 'كلمة المرور قصيرة جداً (6 أحرف على الأقل)', success: 'تم إنشاء الحساب ! مرحباً 🎉', error: 'خطأ في إنشاء الحساب', consentGlucose: 'أوافق على معالجة بيانات سكر الدم كبيانات صحية لمتابعة السكر في التطبيق.' },
     },
     onboarding: {
       complete: 'تم حفظ الملف الشخصي !', error: 'خطأ في الحفظ',
@@ -662,8 +668,11 @@ const T = {
       cgm: 'CGM',
       importCSV: 'Import LibreView data',
       importHelp: 'Export your data from LibreView, then select the CSV file below',
+      disclaimer: 'These indicators are informational estimates only. They do not replace medical advice. In case of hypoglycemia, follow your doctor\'s protocol.',
       gmi: 'GMI',
+      gmiLabel: 'GMI (indicative estimate)',
       gmiSubtitle: 'Estimated HbA1c',
+      gmiDisclaimer: 'GMI is a calculated estimate from your readings, not a blood test result.',
       tir: 'TIR',
       tirSubtitle: '70-180 mg/dL',
       cv: 'CV',
@@ -725,7 +734,7 @@ const T = {
     },
     auth: {
       login: { title: 'NutriVita', subtitle: 'Personalized nutrition for the Algerian market', email: 'Email', password: 'Password', submit: 'Log in', loading: 'Logging in...', noAccount: 'No account yet?', register: 'Sign up', error: 'Invalid credentials' },
-      register: { title: 'NutriVita', subtitle: 'Create account', name: 'Full Name', namePlaceholder: 'Ex: Ahmed Benali', email: 'Email', emailPlaceholder: 'example@gmail.com', password: 'Password', passwordPlaceholder: '6 characters minimum', submit: 'Create my account', loading: 'Creating...', hasAccount: 'Already have an account?', login: 'Log in', shortPassword: 'Password too short (6 chars min)', success: 'Account created! Welcome 🎉', error: 'Error creating account' },
+      register: { title: 'NutriVita', subtitle: 'Create account', name: 'Full Name', namePlaceholder: 'Ex: Ahmed Benali', email: 'Email', emailPlaceholder: 'example@gmail.com', password: 'Password', passwordPlaceholder: '6 characters minimum', submit: 'Create my account', loading: 'Creating...', hasAccount: 'Already have an account?', login: 'Log in', shortPassword: 'Password too short (6 chars min)', success: 'Account created! Welcome 🎉', error: 'Error creating account', consentGlucose: 'I agree that my glucose data, as health data, may be processed to provide glucose monitoring in the app.' },
     },
     onboarding: {
       complete: 'Profile saved!', error: 'Error saving profile',

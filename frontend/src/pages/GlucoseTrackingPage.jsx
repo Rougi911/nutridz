@@ -155,12 +155,19 @@ export default function GlucoseTrackingPage() {
         </div>
       ) : (
         <>
+          {/* REG-04/05 — Disclaimer non masquable */}
+          <div style={{ margin: '0 1rem 1rem', padding: '0.75rem 1rem', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', borderLeft: '3px solid var(--accent-teal)' }}>
+            <p style={{ margin: 0, fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              {t('glucose.disclaimer')}
+            </p>
+          </div>
+
           {/* MetricCards 2×2 */}
           {metrics && metrics.total_readings > 0 && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', padding: '0 16px', marginBottom: '16px' }}>
-              <MetricCard label={t('glucose.gmi')} value={metrics.gmi} unit="%"
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', padding: '0 16px', marginBottom: '8px' }}>
+              <MetricCard label={t('glucose.gmiLabel')} value={metrics.gmi} unit="%"
                 status={metrics.gmi < 7 ? 'good' : metrics.gmi < 8 ? 'warning' : 'danger'}
-                statusText="HbA1c estimé" />
+                statusText={t('glucose.gmiSubtitle')} />
               <MetricCard label={t('glucose.tir')} value={metrics.tir} unit="%"
                 status={metrics.tir > 70 ? 'good' : metrics.tir > 50 ? 'warning' : 'danger'}
                 statusText="70-180 mg/dL" />
@@ -173,6 +180,13 @@ export default function GlucoseTrackingPage() {
                 unit={glucoseUnit}
                 status="neutral" />
             </div>
+          )}
+
+          {/* REG-05 — Note GMI non diagnostique */}
+          {metrics && metrics.total_readings > 0 && (
+            <p style={{ margin: '0 1rem 1rem', fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+              {t('glucose.gmiDisclaimer')}
+            </p>
           )}
 
           {/* Distribution 5 zones */}

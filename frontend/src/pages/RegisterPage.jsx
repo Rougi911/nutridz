@@ -11,6 +11,7 @@ export default function RegisterPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [consentTerms, setConsentTerms] = useState(false);
   const [consentHealth, setConsentHealth] = useState(false);
+  const [consentGlucose, setConsentGlucose] = useState(false);
   const [loading, setLoading] = useState(false);
   const { t } = useTranslation();
 
@@ -19,7 +20,7 @@ export default function RegisterPage() {
     if (form.password.length < 6) { toast.error(t('auth.register.shortPassword')); return; }
     setLoading(true);
     try {
-      await register(form.name, form.email, form.password);
+      await register(form.name, form.email, form.password, consentGlucose);
       toast.success(t('auth.register.success'));
       navigate('/profile');
     } catch (err) {
@@ -67,6 +68,14 @@ export default function RegisterPage() {
               style={{ marginTop: '2px', accentColor: 'var(--accent-green)', flexShrink: 0 }} />
             <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
               J'accepte que NutriVita traite mes données de santé (poids, calories, activités) pour me fournir le service
+            </span>
+          </label>
+          {/* REG-01 Art.9 RGPD — consentement glycémie séparé, opt-in, décoché par défaut */}
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', borderTop: '1px solid var(--border-color)', paddingTop: '10px' }}>
+            <input type="checkbox" checked={consentGlucose} onChange={e => setConsentGlucose(e.target.checked)}
+              style={{ marginTop: '2px', accentColor: 'var(--accent-teal)', flexShrink: 0 }} />
+            <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              {t('auth.register.consentGlucose')}
             </span>
           </label>
         </div>

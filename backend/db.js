@@ -262,6 +262,15 @@ async function initDB() {
     try { await db.exec(sql); } catch (_) { /* column already exists */ }
   }
 
+  // REG-01 Art.9 RGPD — explicit glucose consent proof (date + version)
+  const consentColumns = [
+    'ALTER TABLE profiles ADD COLUMN consent_glucose_date TEXT',
+    'ALTER TABLE profiles ADD COLUMN consent_glucose_version TEXT',
+  ];
+  for (const sql of consentColumns) {
+    try { await db.exec(sql); } catch (_) { /* column already exists */ }
+  }
+
   // One-time cleanup: remove hardcoded seed products (barcodes 619110000000*)
   try {
     const deleted = await db.prepare(

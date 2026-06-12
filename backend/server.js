@@ -20,6 +20,7 @@ app.set('trust proxy', 1); // Render/Heroku proxy — needed for express-rate-li
 
 const allowedOrigins = [
   'https://nutridz-web.onrender.com',
+  'https://nutrivita-v0.onrender.com', // production frontend (Phase 4)
   'http://localhost:3000',
   'http://localhost:19006',
 ];

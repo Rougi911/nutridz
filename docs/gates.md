@@ -3,6 +3,7 @@
 | Date | Gate | Verdict | Détail | Ecarts différés |
 |------|------|---------|--------|-----------------|
 | 2026-06-12 | SL-API v1 | GO (spec) / NO-GO (code existant) | Spec corrigée sur 6 bloquants. Code existant contient 5 KO réglementaires différés. | Voir tableau ci-dessous |
+| 2026-06-12 | SL-API v1 (P1.5-A) | GO | Double GO : reglementaire + revue-code. DEF-01/02/03/05/16 levés. DEF-04 hors périmètre marché FR. | — |
 
 ---
 
@@ -29,11 +30,11 @@
 
 | ID | Gravité | Source | Description | Action requise |
 |---|---|---|---|---|
-| DEF-01 | KO BLOQUANT (code) | reglementaire KO-1 | Absence de disclaimer glycémie dans GlucoseTrackingPage.jsx — REG-04/REG-05 | Ajouter bloc disclaimer non masquable avant gate Implémentation |
-| DEF-02 | KO BLOQUANT (code) | reglementaire KO-3 | GET /export et DELETE /account ne couvrent pas `glucose_readings`, `weight_entries`, `favorites`, `push_subscriptions` — REG-02 | Corriger routes/auth.js avant gate Implémentation |
-| DEF-03 | KO BLOQUANT (code) | reglementaire KO-4 | Consentement glycémie absent à l'inscription (données Art. 9 RGPD) — REG-01 | Ajouter case consentement séparée dans RegisterPage.jsx |
-| DEF-04 | KO BLOQUANT (code) | reglementaire KO-5 | PrivacyPage.jsx ne mentionne ni loi 18-07 ni ANPDP — marché algérien | Ahmed décide si marché DZ est actif ; si oui, corriger avant toute ouverture DZ |
-| DEF-05 | KO BLOQUANT (code) | reglementaire KO-2 (note) | "HbA1c estimé" sans disclaimer sur GlucoseTrackingPage.jsx — frontière REG-05 | Encadrer le label ou ajouter note explicative visible |
+| DEF-01 | ~~KO BLOQUANT~~ RÉSOLU 2026-06-12 | reglementaire KO-1 | Disclaimer glycémie non masquable ajouté dans GlucoseTrackingPage.jsx via t('glucose.disclaimer') | ✅ |
+| DEF-02 | ~~KO BLOQUANT~~ RÉSOLU 2026-06-12 | reglementaire KO-3 | Export et delete couvrent glucose_readings, weight_entries, favorites, push_subscriptions | ✅ |
+| DEF-03 | ~~KO BLOQUANT~~ RÉSOLU 2026-06-12 | reglementaire KO-4 | Case consentGlucose séparée, opt-in, stockée en DB (consent_glucose_date + version) | ✅ |
+| DEF-04 | KO BLOQUANT (code) | reglementaire KO-5 | PrivacyPage.jsx ne mentionne ni loi 18-07 ni ANPDP — marché algérien | Prérequis bloquant de l'ouverture marché DZ — session juridique dédiée, hors périmètre actuel (marché France) |
+| DEF-05 | ~~KO BLOQUANT~~ RÉSOLU 2026-06-12 | reglementaire KO-2 (note) | Label renommé GMI (estimation indicative) + note gmiDisclaimer — aucun texte diagnostique | ✅ |
 | DEF-06 | MAJEUR (code) | critique-algo #4 | `calculatePeriodMetrics()` calcule GMI/TIR pour n=1 mesure — garde < 12 absente | Corriger services/glucoseMetrics.js avant gate Implémentation |
 | DEF-07 | MAJEUR (code) | critique-algo #3 | Plafond 1000 kcal/j AL-03 absent de GET /activity/bilan/:date | Corriger routes/activity.js |
 | DEF-08 | MAJEUR (code) | critique-algo #5 | CV calculé avec variance population (÷ n) au lieu de variance échantillon (÷ n-1) | Corriger services/glucoseMetrics.js |
@@ -44,4 +45,4 @@
 | DEF-13 | MINEUR (code) | critique-spec #11 | Table `weight_history` dupliquée — dépréciation/suppression à planifier | Planifier migration en phase Implémentation |
 | DEF-14 | MINEUR (spec) | critique-spec #4 | EB-11 sans AL assigné (i18n) — AL manquant | Créer AL-11 ou référencer AL existant |
 | DEF-15 | MINEUR (spec) | critique-spec #9 | EB-13/EB-14 sans AL dans la matrice | Marquer EB-13 hors périmètre ; créer AL pour EB-14 diabetic_mode |
-| DEF-16 | MINEUR (spec) | reglementaire note | Disclaimer Forbes arabe tronqué (sans "à titre indicatif") | Corriger i18n.js |
+| DEF-16 | ~~MINEUR~~ RÉSOLU 2026-06-12 | reglementaire note | Disclaimer Forbes arabe complété : "لأغراض إعلامية فقط" — équivalent "à titre indicatif uniquement" | ✅ |

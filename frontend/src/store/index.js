@@ -17,8 +17,8 @@ export const useAuthStore = create(
         return data;
       },
 
-      register: async (name, email, password) => {
-        const { data } = await api.post('/auth/register', { name, email, password });
+      register: async (name, email, password, consentGlucose = false) => {
+        const { data } = await api.post('/auth/register', { name, email, password, consent_glucose: consentGlucose });
         set({ token: data.token, user: data.user, isAuthenticated: true });
         api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
         return data;

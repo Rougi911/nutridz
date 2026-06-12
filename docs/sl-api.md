@@ -635,5 +635,5 @@ Toutes sont fournies par Ahmed directement sur Render. **Aucune ne doit être co
 - Champs snake_case : `weight_kg`, `glucose_mg_dl`, `calories_burned`, `sat_fat_g`
 - Arabe dans le code : échappements `\uXXXX` uniquement
 - SQLite async : `await db.prepare(sql).get/all/run(params)` — jamais `better-sqlite3`
-- CORS whitelist : `nutridz-web.onrender.com`, `localhost:3000` (nutrivita-v0.onrender.com est lecture seule — ne pas ajouter en production)
+- CORS whitelist : `nutridz-web.onrender.com`, `nutrivita-v0.onrender.com` (frontend de production Phase 4), `localhost:3000` — correction COR-08 rétabli 2026-06-12
 - OPTIONS preflight : `app.options('*', cors(corsOptions))` déjà en place ✅
