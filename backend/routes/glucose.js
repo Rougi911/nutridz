@@ -36,7 +36,8 @@ router.post('/import-csv', auth, async (req, res) => {
   try {
     parsed = parseLibreViewCSV(csv_text);
   } catch (err) {
-    return res.status(400).json({ error: err.message });
+    console.error('[glucose/import-csv] parse error:', err.message);
+    return res.status(400).json({ error: 'Format CSV invalide' });
   }
 
   if (parsed.length === 0) return res.json({ imported_count: 0, skipped_count: 0 });
@@ -86,7 +87,8 @@ router.post('/query', auth, async (req, res) => {
     const from = (() => { const d = new Date(); d.setDate(d.getDate() - days); return d.toISOString(); })();
     res.json(await queryGlucoseRange(db, req.userId, from, to));
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[glucose/query] error:', err.message);
+    res.status(500).json({ error: 'Erreur interne' });
   }
 });
 
@@ -137,7 +139,8 @@ router.delete('/all', auth, async (req, res) => {
     const result = await db.prepare('DELETE FROM glucose_readings WHERE user_id = ?').run(req.userId);
     res.json({ deleted: result.changes });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[glucose/delete-all] error:', err.message);
+    res.status(500).json({ error: 'Erreur interne' });
   }
 });
 

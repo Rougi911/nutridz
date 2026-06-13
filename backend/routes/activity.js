@@ -45,7 +45,8 @@ router.get('/strava/callback', async (req, res) => {
     const athleteName = [tokens.athlete?.firstname, tokens.athlete?.lastname]
       .filter(Boolean).join(' ') || 'Athlète Strava';
 
-    console.log(`[Strava callback] userId=${state} athlete="${athleteName}" expires_at=${tokens.expires_at}`);
+    const uid = `${String(state).substring(0, 4)}…`;
+    console.log(`[Strava callback] uid=${uid} athlete="${athleteName}" expires_at=${tokens.expires_at}`);
 
     await db.prepare(`
       UPDATE profiles SET
@@ -64,7 +65,7 @@ router.get('/strava/callback', async (req, res) => {
       state   // state was set to userId in getAuthUrl
     );
 
-    console.log(`[Strava callback] Token saved successfully for userId=${state}`);
+    console.log(`[Strava callback] Token saved successfully for uid=${uid}`);
     res.redirect(`${frontendUrl}/bilan?strava=ok&athlete=${encodeURIComponent(athleteName)}`);
   } catch (err) {
     console.error('[Strava callback] Error:', err.message);
@@ -76,13 +77,14 @@ router.get('/strava/callback', async (req, res) => {
 
 router.get('/strava/today', auth, async (req, res) => {
   try {
-    console.log(`[Strava today] Fetching activities for userId=${req.userId}`);
+    const uid = `${String(req.userId).substring(0, 4)}…`;
+    console.log(`[Strava today] Fetching activities for uid=${uid}`);
     const result = await getTodayActivities(req.userId);
     if (!result.connected) {
-      console.log(`[Strava today] userId=${req.userId} — not connected (no token)`);
+      console.log(`[Strava today] uid=${uid} — not connected (no token)`);
       return res.json({ connected: false, activities: [] });
     }
-    console.log(`[Strava today] userId=${req.userId} — ${result.activities.length} activitie(s) from Strava`);
+    console.log(`[Strava today] uid=${uid} — ${result.activities.length} activitie(s) from Strava`);
 
     const db = getDB();
     const today = new Date().toISOString().split('T')[0];
@@ -121,7 +123,8 @@ router.post('/query', auth, async (req, res) => {
     const db = getDB();
     res.json(await queryActivitiesByDate(db, req.userId, date));
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[activity/query] error:', err.message);
+    res.status(500).json({ error: 'Erreur interne' });
   }
 });
 

@@ -68,7 +68,8 @@ router.post('/query', auth, async (req, res) => {
     const from = (() => { const d = new Date(); d.setDate(d.getDate() - days); return d.toISOString().split('T')[0]; })();
     res.json(await queryWeightRange(db, req.userId, from, to));
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[weight/query] error:', err.message);
+    res.status(500).json({ error: 'Erreur interne' });
   }
 });
 
@@ -180,7 +181,8 @@ router.delete('/all', auth, async (req, res) => {
     const result = await db.prepare('DELETE FROM weight_entries WHERE user_id = ?').run(req.userId);
     res.json({ deleted: result.changes });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[weight/delete-all] error:', err.message);
+    res.status(500).json({ error: 'Erreur interne' });
   }
 });
 

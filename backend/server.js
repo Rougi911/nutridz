@@ -47,11 +47,18 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
-app.use(express.json());
 
-// Rate limiting
+// Rate limiting — mounted BEFORE body parsers so the counter runs before large payloads
+// are buffered in memory (prevents memory-based DoS on unauthenticated requests).
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
 app.use('/api/', limiter);
+
+// Route-specific large body limit for /api/interpret (base64 image in JSON payload).
+// Must be mounted BEFORE the global express.json() so body-parser picks up this limit first.
+// /api/vision uses multer (multipart) — unaffected by express.json limits.
+// Global limit stays at 1 MB to limit DoS surface on all other routes (login, search, etc.).
+app.use('/api/interpret', express.json({ limit: '15mb' }));
+app.use(express.json({ limit: '1mb' }));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -84,10 +91,26 @@ app.use('/api/stats',   require('./routes/deficiencies'));
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', version: '1.0.0' }));
 
-// Gestion d'erreurs globale
+// Global error handler — MUST remain after all routes.
+// Re-applies CORS headers so error responses (413, 400, 500) are readable by the browser.
+// Without this, body-parser errors escape CORS middleware and become opaque network errors.
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Erreur interne du serveur' });
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.set('Access-Control-Allow-Origin', origin);
+    res.set('Vary', 'Origin');
+    res.set('Access-Control-Allow-Credentials', 'true');
+  }
+
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'Image trop volumineuse (limite 15 Mo)' });
+  }
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Corps JSON invalide' });
+  }
+
+  console.error('[server] unhandled error:', err.stack || err.message);
+  res.status(err.status || 500).json({ error: 'Erreur interne du serveur' });
 });
 
 // Init DB puis démarrage

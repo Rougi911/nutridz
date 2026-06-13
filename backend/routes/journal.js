@@ -59,7 +59,8 @@ router.post('/query', auth, async (req, res) => {
     const db = getDB();
     res.json(await queryJournalByDate(db, req.userId, date, lang));
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[journal/query] error:', err.message);
+    res.status(500).json({ error: 'Erreur interne' });
   }
 });
 
@@ -122,7 +123,8 @@ router.delete('/all', auth, async (req, res) => {
     const result = await db.prepare('DELETE FROM journal_entries WHERE user_id = ?').run(req.userId);
     res.json({ deleted: result.changes });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[journal/delete-all] error:', err.message);
+    res.status(500).json({ error: 'Erreur interne' });
   }
 });
 
