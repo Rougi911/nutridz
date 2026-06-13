@@ -307,17 +307,18 @@ function calcEffort(kcal, met, weightKg) {
 }
 
 // ─── Appel Gemini Vision ──────────────────────────────────────────────────────
-async function callGemini(base64Image, mimeType = 'image/jpeg') {
+async function callGemini(base64Image, mimeType = 'image/jpeg', lang = 'en') {
   const clean = base64Image.includes(',') ? base64Image.split(',')[1] : base64Image;
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY non défini');
 
+  const langLabel = lang === 'fr' ? 'French' : lang === 'ar' ? 'Arabic' : 'English';
   const url = `${GEMINI_API_BASE}/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
   const body = {
     contents: [{
       parts: [
         {
-          text: 'Identify all food items visible in this image. Return ONLY a valid JSON array, no markdown fences, no explanations. Format: [{"name":"food name in English","value":confidence_0.0_to_1.0}]. Order by confidence descending. Maximum 10 items. Never provide medical advice, diagnoses or dietary prescriptions.',
+          text: `Identify all food items visible in this image. Return ONLY a valid JSON array, no markdown fences, no explanations. Format: [{"name":"food name in ${langLabel}","value":confidence_0.0_to_1.0}]. Order by confidence descending. Maximum 10 items. Never provide medical advice, diagnoses or dietary prescriptions.`,
         },
         { inline_data: { mime_type: mimeType, data: clean } },
       ],

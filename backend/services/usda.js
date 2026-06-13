@@ -35,26 +35,39 @@ function parseNutrients(foodNutrients) {
   };
 }
 
-async function searchFood(query, pageSize = 5) {
+// Re-rank USDA results: Foundation (1) > SR Legacy (2) > Survey FNDDS (3) > unknown (10) > Branded (99)
+// Prevents branded candy from appearing first for generic queries like "apple"
+const DATA_TYPE_PRIORITY = { 'Foundation': 1, 'SR Legacy': 2, 'Survey (FNDDS)': 3 };
+function rankByDataType(foods) {
+  return [...foods].sort((a, b) => {
+    const pa = DATA_TYPE_PRIORITY[a.dataType] ?? (a.dataType === 'Branded' ? 99 : 10);
+    const pb = DATA_TYPE_PRIORITY[b.dataType] ?? (b.dataType === 'Branded' ? 99 : 10);
+    return pa - pb;
+  });
+}
+
+async function searchFood(query, pageSize = 10) {
   if (!query) return [];
   const url = `${BASE_URL}/foods/search`;
   console.log(`[USDA] searchFood("${query}", pageSize=${pageSize}) key=${API_KEY === 'DEMO_KEY' ? 'DEMO_KEY' : API_KEY.slice(0,4)+'...'}`);
   try {
     const res = await axios.get(url, {
-      params: { api_key: API_KEY, query, pageSize, dataType: 'SR Legacy,Foundation,Branded' },
+      params: { api_key: API_KEY, query, pageSize, dataType: 'Foundation,SR Legacy,Survey (FNDDS),Branded' },
       timeout: 10000,
     });
     const foods = res.data?.foods || [];
     console.log(`[USDA] → ${res.data?.totalHits ?? '?'} hits, returning ${foods.length} results`);
-    return foods.map(f => ({
+    const mapped = foods.map(f => ({
       source:    'usda',
       fdcId:     f.fdcId,
+      dataType:  f.dataType,
       nom_fr:    f.description,
       nom_en:    f.description,
       brand:     f.brandOwner || f.brandName || null,
       group:     f.foodCategory || null,
       ...parseNutrients(f.foodNutrients),
     }));
+    return rankByDataType(mapped);
   } catch (err) {
     const status = err.response?.status;
     const body   = JSON.stringify(err.response?.data || {}).slice(0, 200);
@@ -115,4 +128,4 @@ async function getStats() {
   } catch (_) { return { count: 0, source: 'usda' }; }
 }
 
-module.exports = { searchFood, getFood, cacheInProducts, getStats };
+module.exports = { searchFood, getFood, cacheInProducts, getStats, rankByDataType };

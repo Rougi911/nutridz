@@ -69,8 +69,10 @@ function parseGeminiJSON(raw) {
 }
 
 // ─── Photo → intents ──────────────────────────────────────────────────────────
-async function parsePhotoToIntents(base64Image, mimeType = 'image/jpeg') {
-  const concepts = await callGemini(base64Image, mimeType);
+async function parsePhotoToIntents(base64Image, mimeType = 'image/jpeg', lang = 'fr') {
+  // CIQUAL searches alim_nom_fr / alim_nom_en — Arabic names won't match; use fr instead
+  const visionLang = lang === 'ar' ? 'fr' : lang;
+  const concepts = await callGemini(base64Image, mimeType, visionLang);
   return concepts
     .filter(c => c.value >= 0.3)
     .map(c => ({
@@ -97,23 +99,37 @@ async function parseTextToIntents(text, lang = 'fr') {
   }));
 }
 
-// ─── Nutrition cascade CIQUAL → USDA (jamais LLM) ────────────────────────────
-async function resolveNutrition(foodName) {
+// ─── Nutrition cascade CIQUAL → USDA avec mise à l'échelle portion ───────────
+async function resolveNutrition(foodName, quantity_g) {
   if (!foodName) return null;
+  const portion = (Number.isFinite(quantity_g) && quantity_g > 0) ? quantity_g : 100;
+  const estimated_portion = !(Number.isFinite(quantity_g) && quantity_g > 0);
+
+  function scale(per100) {
+    const s = portion / 100;
+    return {
+      kcal:      Math.round(per100.kcal      * s),
+      glucides:  Math.round(per100.glucides  * s * 10) / 10,
+      proteines: Math.round(per100.proteines * s * 10) / 10,
+      lipides:   Math.round(per100.lipides   * s * 10) / 10,
+      fibres:    Math.round(per100.fibres    * s * 10) / 10,
+      sel:       Math.round((per100.sel || 0) * s * 100) / 100,
+    };
+  }
 
   // 1. CIQUAL
   const ciqualResults = searchByName(foodName, 1);
   if (ciqualResults.length) {
     const r = ciqualResults[0];
-    return { kcal: r.kcal, glucides: r.glucides, proteines: r.proteines, lipides: r.lipides, fibres: r.fibres, source: 'ciqual' };
+    return { ...scale(r), source: 'ciqual', quantity_g: portion, estimated_portion };
   }
 
-  // 2. USDA
+  // 2. USDA — ranked Foundation/SR Legacy first (BUG-1 fix)
   try {
-    const usdaResults = await usdaSearch(foodName, 1);
+    const usdaResults = await usdaSearch(foodName, 10);
     if (usdaResults.length) {
       const r = usdaResults[0];
-      return { kcal: r.kcal, glucides: r.glucides, proteines: r.proteines, lipides: r.lipides, fibres: r.fibres, source: 'usda' };
+      return { ...scale(r), source: 'usda', quantity_g: portion, estimated_portion };
     }
   } catch (_) {}
 
@@ -135,7 +151,7 @@ router.post('/', auth, async (req, res) => {
   let rawIntents;
   try {
     if (mode === 'photo') {
-      rawIntents = await parsePhotoToIntents(payload, mimeType || 'image/jpeg');
+      rawIntents = await parsePhotoToIntents(payload, mimeType || 'image/jpeg', validLang);
     } else {
       rawIntents = await parseTextToIntents(payload, validLang);
     }
@@ -145,7 +161,7 @@ router.post('/', auth, async (req, res) => {
     if (!status || status >= 500 || err.code === 'ECONNABORTED' || err.code === 'ECONNREFUSED') {
       return res.status(502).json({ error: 'Service IA temporairement indisponible' });
     }
-    return res.status(422).json({ error: `Impossible de parser le contenu : ${err.message}` });
+    return res.status(422).json({ error: 'Impossible de parser le contenu fourni' });
   }
 
   // Resolve nutrition for food intents (cascade CIQUAL → USDA, never LLM)
@@ -156,7 +172,7 @@ router.post('/', auth, async (req, res) => {
     };
     if (intent.type !== 'food') return base;
 
-    const nutrition = await resolveNutrition(intent.name).catch(() => null);
+    const nutrition = await resolveNutrition(intent.name, intent.quantity_g).catch(() => null);
     return {
       ...base,
       nutrition: nutrition || null,
@@ -168,3 +184,4 @@ router.post('/', auth, async (req, res) => {
 });
 
 module.exports = router;
+module.exports.resolveNutrition = resolveNutrition;
