@@ -34,23 +34,80 @@ function normalize(str) {
     .trim();
 }
 
+// Bonus : forme brute/crue (non transformée) — préférer "Tomate, crue" sur tout
+const RAW_MARKERS = [
+  /\bcru\b/, /\bcrue\b/, /\bcrus\b/, /\bcrues\b/,
+  /\bnature\b/,
+  /\bfrais\b/, /\bfraiche\b/, /\bfraiches\b/,
+  /\bbrut\b/, /\bbrute\b/,
+  /\bentier\b/, /\bentiere\b/,
+];
+
+// Malus : formes transformées/industrielles — pénaliser "Tomate séchée à l'huile"
+const TRANSFORM_MARKERS = [
+  /\bseche\b/, /\bsechee\b/, /\bseches\b/, /\bsechees\b/,
+  /a l huile/,
+  /\bconfit\b/, /\bconfite\b/, /\bconfits\b/, /\bconfites\b/,
+  /en conserve/,
+  /\bappertise\b/, /\bappertisee\b/,
+  /\bsauce\b/,
+  /\bconcentre\b/, /\bconcentree\b/,
+  /\bfrit\b/, /\bfrite\b/, /\bfrits\b/, /\bfrites\b/,
+  /\broti\b/, /\brotie\b/, /\brotis\b/, /\broties\b/,
+  /\bsucre\b/, /\bsucree\b/,
+  /\bsirop\b/,
+  /\bdeshydrate\b/, /\bdeshydratee\b/,
+  /\bpoche\b/,
+  /\bsurgele\b/, /\bsurgelee\b/,
+];
+
+function rawBonus(normalizedName) {
+  return RAW_MARKERS.some(re => re.test(normalizedName)) ? 20 : 0;
+}
+
+function transformMalus(normalizedEntry, normalizedQuery) {
+  let malus = 0;
+  const qWords = normalizedQuery.split(/\s+/).filter(Boolean);
+  // If the user's query already contains a transform marker, that marker is intentional —
+  // don't penalize the entry for it (e.g. "poulet roti" → no malus for "roti").
+  const queryHasTransform = TRANSFORM_MARKERS.some(re => qWords.some(w => re.test(w)));
+
+  for (const re of TRANSFORM_MARKERS) {
+    if (re.test(normalizedEntry)) {
+      const queryContainsThisMarker = qWords.some(w => re.test(w));
+      if (!queryContainsThisMarker) malus += 25;
+    }
+  }
+  // "cuit" : additional malus only if query has no cooking/transform marker AND no "cuit"
+  if (/\bcuit/.test(normalizedEntry) && !/\bcuit/.test(normalizedQuery) && !queryHasTransform) {
+    malus += 25;
+  }
+  return malus;
+}
+
 function score(query, entry) {
   const q = normalize(query);
   const fr = normalize(entry.alim_nom_fr || '');
   const en = normalize(entry.alim_nom_en || '');
 
-  if (fr === q || en === q) return 100;
-  if (fr.startsWith(q) || en.startsWith(q)) return 80;
-  if (fr.includes(q) || en.includes(q)) return 60;
+  let base = 0;
+  if (fr === q || en === q) base = 100;
+  else if (fr.startsWith(q) || en.startsWith(q)) base = 80;
+  else if (fr.includes(q) || en.includes(q)) base = 60;
+  else {
+    const words = q.split(' ').filter(w => w.length > 2);
+    const frWords = fr.split(' ');
+    const enWords = en.split(' ');
+    const matchCount = words.filter(w => frWords.includes(w) || enWords.includes(w)).length;
+    if (matchCount > 0) {
+      // Boost when ALL query words match: multi-word intent is more specific (e.g. "poulet roti")
+      const allMatch = words.every(w => frWords.includes(w) || enWords.includes(w));
+      base = allMatch ? 40 + matchCount * 15 : 30 + matchCount * 10;
+    }
+  }
+  if (base === 0) return 0;
 
-  // partial word match
-  const words = q.split(' ').filter(w => w.length > 2);
-  const frWords = fr.split(' ');
-  const enWords = en.split(' ');
-  const matchCount = words.filter(w => frWords.includes(w) || enWords.includes(w)).length;
-  if (matchCount > 0) return 30 + matchCount * 10;
-
-  return 0;
+  return Math.max(0, base + rawBonus(fr) - transformMalus(fr, q));
 }
 
 function searchByName(query, limit = 5) {
@@ -58,9 +115,15 @@ function searchByName(query, limit = 5) {
   if (!query || !ciqualData.length) return [];
 
   return ciqualData
-    .map(entry => ({ entry, score: score(query, entry) }))
-    .filter(r => r.score > 0)
-    .sort((a, b) => b.score - a.score)
+    .map(entry => ({ entry, s: score(query, entry) }))
+    .filter(r => r.s > 0)
+    .sort((a, b) => {
+      if (b.s !== a.s) return b.s - a.s;
+      // tiebreaker : nom plus court = plus générique (préféré)
+      const la = normalize(a.entry.alim_nom_fr || '').length;
+      const lb = normalize(b.entry.alim_nom_fr || '').length;
+      return la - lb;
+    })
     .slice(0, limit)
     .map(r => formatEntry(r.entry));
 }
@@ -87,4 +150,4 @@ function getStats() {
 
 loadCiqual();
 
-module.exports = { loadCiqual, searchByName, getStats };
+module.exports = { loadCiqual, searchByName, getStats, normalize, score, rawBonus, transformMalus };

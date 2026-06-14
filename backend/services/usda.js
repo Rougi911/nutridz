@@ -49,7 +49,7 @@ function rankByDataType(foods) {
 async function searchFood(query, pageSize = 10) {
   if (!query) return [];
   const url = `${BASE_URL}/foods/search`;
-  console.log(`[USDA] searchFood("${query}", pageSize=${pageSize}) key=${API_KEY === 'DEMO_KEY' ? 'DEMO_KEY' : API_KEY.slice(0,4)+'...'}`);
+  // Query not logged (RGPD minimisation — can contain user health-context terms);
   try {
     const res = await axios.get(url, {
       params: { api_key: API_KEY, query, pageSize, dataType: 'Foundation,SR Legacy,Survey (FNDDS),Branded' },

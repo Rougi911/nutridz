@@ -8,7 +8,10 @@
  * TU-P411-4 : resolveNutrition → fallback USDA quand CIQUAL vide, source='usda'
  */
 
-jest.mock('../services/ciqual',     () => ({ searchByName: jest.fn() }));
+jest.mock('../services/ciqual', () => ({
+  searchByName: jest.fn(),
+  normalize: jest.requireActual('../services/ciqual').normalize,
+}));
 jest.mock('../services/usda',       () => ({
   searchFood:      jest.fn(),
   rankByDataType:  jest.requireActual('../services/usda').rankByDataType,
@@ -58,9 +61,9 @@ describe('TU-P411-1 — rankByDataType', () => {
 
 // ─── TU-P411-2 ───────────────────────────────────────────────────────────────
 describe('TU-P411-2 — resolveNutrition avec quantity_g', () => {
-  test('met à l\'échelle kcal et macros pour 200 g', async () => {
+  test('met à l\'échelle kcal et macros pour 200 g (explicit)', async () => {
     searchByName.mockReturnValue([POMME_100G]);
-    const result = await resolveNutrition('Pomme', 200);
+    const result = await resolveNutrition('Pomme', 200, true); // quantity_explicit=true (P4.12)
     expect(result).not.toBeNull();
     expect(result.kcal).toBe(104);           // 52 * 2
     expect(result.glucides).toBe(28.0);      // 14 * 2
@@ -73,9 +76,9 @@ describe('TU-P411-2 — resolveNutrition avec quantity_g', () => {
     expect(result.sel).toBe(0.02);           // 0.01 * 2
   });
 
-  test('portion de 50 g correctement mise à l\'échelle', async () => {
+  test('portion de 50 g correctement mise à l\'échelle (explicit)', async () => {
     searchByName.mockReturnValue([POMME_100G]);
-    const result = await resolveNutrition('Pomme', 50);
+    const result = await resolveNutrition('Pomme', 50, true); // quantity_explicit=true (P4.12)
     expect(result.kcal).toBe(26);            // Math.round(52 * 0.5)
     expect(result.glucides).toBe(7.0);
     expect(result.quantity_g).toBe(50);
@@ -85,25 +88,27 @@ describe('TU-P411-2 — resolveNutrition avec quantity_g', () => {
 
 // ─── TU-P411-3 ───────────────────────────────────────────────────────────────
 describe('TU-P411-3 — resolveNutrition sans quantity_g', () => {
-  test('null → portion estimée 100 g', async () => {
+  // P4.12 : defaultPortion('Pomme') → 150g (règle fruit ~150g)
+  test('null → portion estimée (defaultPortion pomme=150g)', async () => {
     searchByName.mockReturnValue([POMME_100G]);
     const result = await resolveNutrition('Pomme', null);
-    expect(result.kcal).toBe(52);
-    expect(result.quantity_g).toBe(100);
+    expect(result.kcal).toBe(78);            // Math.round(52 * 1.5)
+    expect(result.quantity_g).toBe(150);
     expect(result.estimated_portion).toBe(true);
+    expect(result.portion_source).toBe('default');
   });
 
-  test('undefined → portion estimée 100 g', async () => {
+  test('undefined → portion estimée (defaultPortion pomme=150g)', async () => {
     searchByName.mockReturnValue([POMME_100G]);
     const result = await resolveNutrition('Pomme', undefined);
-    expect(result.quantity_g).toBe(100);
+    expect(result.quantity_g).toBe(150);
     expect(result.estimated_portion).toBe(true);
   });
 
-  test('0 → portion estimée 100 g (0 est invalide)', async () => {
+  test('0 → portion estimée (0 invalide → defaultPortion pomme=150g)', async () => {
     searchByName.mockReturnValue([POMME_100G]);
     const result = await resolveNutrition('Pomme', 0);
-    expect(result.quantity_g).toBe(100);
+    expect(result.quantity_g).toBe(150);
     expect(result.estimated_portion).toBe(true);
   });
 });
@@ -112,10 +117,10 @@ describe('TU-P411-3 — resolveNutrition sans quantity_g', () => {
 describe('TU-P411-4 — resolveNutrition fallback USDA', () => {
   const USDA_RESULT = { dataType: 'Foundation', kcal: 52, glucides: 14.0, proteines: 0.3, lipides: 0.2, fibres: 2.4 };
 
-  test('utilise USDA si CIQUAL ne trouve rien', async () => {
+  test('utilise USDA si CIQUAL ne trouve rien (explicit)', async () => {
     searchByName.mockReturnValue([]);
     usdaSpy.mockResolvedValue([USDA_RESULT]);
-    const result = await resolveNutrition('Apple', 150);
+    const result = await resolveNutrition('Apple', 150, true); // quantity_explicit=true (P4.12)
     expect(result).not.toBeNull();
     expect(result.source).toBe('usda');
     expect(result.kcal).toBe(78);            // Math.round(52 * 1.5)
@@ -168,21 +173,22 @@ describe('TU-P411-6 — resolveNutrition valeurs quantity_g limites', () => {
     searchByName.mockReturnValue([POMME_100G]);
   });
 
-  test('quantity_g = Infinity → estimated_portion=true, quantity_g=100', async () => {
+  // P4.12 : defaultPortion('Pomme') → 150g (règle fruit ~150g)
+  test('quantity_g = Infinity → estimated_portion=true, defaultPortion(pomme)=150g', async () => {
     const result = await resolveNutrition('Pomme', Infinity);
     expect(result.estimated_portion).toBe(true);
-    expect(result.quantity_g).toBe(100);
+    expect(result.quantity_g).toBe(150);
   });
 
-  test('quantity_g = -50 (négatif) → estimated_portion=true, quantity_g=100', async () => {
+  test('quantity_g = -50 (négatif) → estimated_portion=true, defaultPortion(pomme)=150g', async () => {
     const result = await resolveNutrition('Pomme', -50);
     expect(result.estimated_portion).toBe(true);
-    expect(result.quantity_g).toBe(100);
+    expect(result.quantity_g).toBe(150);
   });
 
-  test('quantity_g = NaN → estimated_portion=true, quantity_g=100', async () => {
+  test('quantity_g = NaN → estimated_portion=true, defaultPortion(pomme)=150g', async () => {
     const result = await resolveNutrition('Pomme', NaN);
     expect(result.estimated_portion).toBe(true);
-    expect(result.quantity_g).toBe(100);
+    expect(result.quantity_g).toBe(150);
   });
 });

@@ -250,13 +250,13 @@ function nutritionScore(totaux) {
 }
 
 function generateConseil(totaux, goal) {
+  // REG-04/REG-05 : information nutritionnelle indicative uniquement, sans recommandation therapeutique
+  const note = 'Consultez un professionnel de sante pour tout conseil alimentaire personnalise.';
   if (!goal || goal === 'maintien') {
-    if (totaux.fibres >= 10) return `Excellent équilibre ! Repas riche en fibres (${totaux.fibres}g) — idéal pour le maintien.`;
-    if (totaux.proteines < 10) return `Repas pauvre en protéines (${totaux.proteines}g). Ajoutez une source protéinée (viande, légumineuses, œufs).`;
+    if (totaux.fibres >= 10) return `Repas riche en fibres (${totaux.fibres}g). ${note}`;
+    if (totaux.proteines < 10) return `Repas apportant ${totaux.proteines}g de proteines. ${note}`;
   }
-  if (goal === 'perte' && totaux.kcal > 600) return `Ce repas apporte ${totaux.kcal} kcal. Pour votre objectif perte de poids, réduisez les portions ou évitez les féculents.`;
-  if (goal === 'prise' && totaux.kcal < 500) return `Repas trop léger pour la prise de masse (${totaux.kcal} kcal). Ajoutez des glucides complexes ou des protéines.`;
-  return `Repas de ${totaux.kcal} kcal — ${totaux.proteines}g de protéines, ${totaux.glucides}g de glucides, ${totaux.lipides}g de lipides.`;
+  return `Repas de ${totaux.kcal} kcal — ${totaux.proteines}g de proteines, ${totaux.glucides}g de glucides, ${totaux.lipides}g de lipides. ${note}`;
 }
 
 function generateTags(aliments, totaux) {
@@ -318,7 +318,7 @@ async function callGemini(base64Image, mimeType = 'image/jpeg', lang = 'en') {
     contents: [{
       parts: [
         {
-          text: `Identify all food items visible in this image. Return ONLY a valid JSON array, no markdown fences, no explanations. Format: [{"name":"food name in ${langLabel}","value":confidence_0.0_to_1.0}]. Order by confidence descending. Maximum 10 items. Never provide medical advice, diagnoses or dietary prescriptions.`,
+          text: `Identify all food items visible in this image. Be SPECIFIC (e.g. "Pomme" not "fruit"). Return ONLY a valid JSON array, no markdown, no explanations. Format: [{"name":"specific food name in ${langLabel}","value":confidence_0.0_to_1.0,"quantity_g":estimated_visible_grams_or_null}]. For quantity_g: estimate the visible portion (one whole apple~150g, a plate of couscous~300g, a glass~250ml, a slice of bread~25g, null if unclear). Order by confidence descending. Maximum 10 items. STRICTLY FORBIDDEN: Do not provide medical advice, diagnoses, prognoses, treatment recommendations, or drug interactions.`,
         },
         { inline_data: { mime_type: mimeType, data: clean } },
       ],
