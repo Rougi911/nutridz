@@ -57,7 +57,8 @@ app.use('/api/', limiter);
 // Must be mounted BEFORE the global express.json() so body-parser picks up this limit first.
 // /api/vision uses multer (multipart) — unaffected by express.json limits.
 // Global limit stays at 1 MB to limit DoS surface on all other routes (login, search, etc.).
-app.use('/api/interpret', express.json({ limit: '15mb' }));
+app.use('/api/interpret',   express.json({ limit: '15mb' }));
+app.use('/api/scan/label',  express.json({ limit: '15mb' })); // B-1: base64 image payload
 app.use(express.json({ limit: '1mb' }));
 
 // Routes

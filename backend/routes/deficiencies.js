@@ -7,9 +7,12 @@ const { calcDeficiencies } = require('../services/micronutrientsService');
 
 const router = express.Router();
 
-// REG-04 — disclaimer non vide obligatoire dans chaque réponse
-const DISCLAIMER = 'Estimation indicative basée sur votre journal alimentaire des 14 derniers jours. '
-  + 'Ces informations ne constituent pas un diagnostic médical et ne remplacent pas l\'avis d\'un professionnel de santé.';
+// REG-04/05 — disclaimer tri-lingue obligatoire dans chaque réponse (fr/ar/en)
+const DISCLAIMER = {
+  fr: 'Estimation indicative basée sur votre journal alimentaire des 14 derniers jours. Ces informations ne constituent pas un diagnostic médical et ne remplacent pas l\'avis d\'un professionnel de santé.',
+  ar: '\u062a\u0642\u062f\u064a\u0631 \u0627\u0633\u062a\u0631\u0634\u0627\u062f\u064a \u0645\u0633\u062a\u0646\u062f \u0625\u0644\u0649 \u0633\u062c\u0644 \u0627\u0644\u062a\u063a\u0630\u064a\u0629 \u0644\u0622\u062e\u0631 14 \u064a\u0648\u0645\u0627\u064b. \u0644\u0627 \u064a\u0634\u0643\u0644 \u062a\u0634\u062e\u064a\u0635\u0627\u064b \u0637\u0628\u064a\u0627\u064b \u0648\u0644\u0627 \u064a\u063a\u0646\u064a \u0639\u0646 \u0627\u0633\u062a\u0634\u0627\u0631\u0629 \u0645\u062a\u062e\u0635\u0635.',
+  en: 'Indicative estimate based on your food journal for the last 14 days. Does not constitute a medical diagnosis and does not replace the advice of a healthcare professional.',
+};
 
 // GET /api/stats/deficiencies (mounted at /api/stats)
 router.get('/deficiencies', auth, async (req, res) => {

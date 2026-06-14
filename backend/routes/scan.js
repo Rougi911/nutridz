@@ -1,6 +1,7 @@
 'use strict';
-// SL-API-02 : POST /api/scan  — product scan + AL-08 score
+// SL-API-02 : POST /api/scan         — product scan + AL-08 score
 // SL-API-03 : GET  /api/groceries/summary — AL-09 monthly/weekly grocery check
+// P4.13 A3 : POST /api/scan/label    — photo étiquette → valeurs nutritionnelles
 const express = require('express');
 const axios   = require('axios');
 const { getDB } = require('../db');
@@ -9,7 +10,9 @@ const { calcMonthlyAGSTarget } = require('../services/agsUtils');
 const ADDITIVES = require('../data/additives.json');
 
 const router = express.Router();
-const OFF_BASE = 'https://world.openfoodfacts.org/api/v0/product';
+const OFF_BASE         = 'https://world.openfoodfacts.org/api/v0/product';
+const GEMINI_API_BASE  = 'https://generativelanguage.googleapis.com/v1beta/models';
+const GEMINI_MODEL     = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 
 // ─── AL-08 helpers ──────────────────────────────────────────────────────────
 
@@ -49,7 +52,7 @@ function calcTDEE(profile) {
   const bmr = sexe === 'f'
     ? 10 * weight + 6.25 * height - 5 * age - 161
     : 10 * weight + 6.25 * height - 5 * age + 5;
-  const mult = { sédentaire: 1.2, light: 1.375, modéré: 1.55, intense: 1.725 };
+  const mult = { sedentaire: 1.2, light: 1.375, modere: 1.55, intense: 1.725 };
   return Math.round(bmr * (mult[level] || 1.375));
 }
 
@@ -120,11 +123,12 @@ router.post('/', auth, async (req, res) => {
   try {
     const { data } = await axios.get(`${OFF_BASE}/${barcode}.json`, { timeout: 10000 });
     if (!data.status || !data.product) {
-      return res.status(404).json({ error: 'Produit non trouvé dans OpenFoodFacts' });
+      return res.status(404).json({ error: 'Produit non trouvé dans OpenFoodFacts', status: 'not_found' });
     }
     product = data.product;
   } catch (err) {
-    return res.status(502).json({ error: 'OpenFoodFacts indisponible', details: err.message });
+    console.error('[scan] OFF error:', err.response?.status, err.code);
+    return res.status(502).json({ error: 'OpenFoodFacts indisponible' });
   }
 
   const name        = product.product_name || product.product_name_fr || 'Produit inconnu';
@@ -190,7 +194,108 @@ router.get('/summary', auth, async (req, res) => {
   res.json({ period, year, month, products_scanned: rows.length, ...summary });
 });
 
+// ─── REG-05 : disclaimer tri-lingue pour sorties IA (scan/label) ─────────────
+const DISCLAIMER_LABEL = {
+  fr: 'Valeurs nutritionnelles extraites par IA à titre indicatif. Vérifiez l’étiquette du produit. Ces informations ne constituent pas un conseil médical.',
+  ar: '\u0642\u064a\u0645 \u063a\u0630\u0627\u0626\u064a\u0629 \u0645\u0633\u062a\u062e\u0644\u0635\u0629 \u0628\u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a \u0628\u0635\u0641\u0629 \u0627\u0633\u062a\u0631\u0634\u0627\u062f\u064a\u0629. \u0627\u0644\u0631\u062c\u0627\u0621 \u0627\u0644\u062a\u062d\u0642\u0642 \u0645\u0646 \u0628\u0637\u0627\u0642\u0629 \u0627\u0644\u0645\u0646\u062a\u062c. \u0644\u0627 \u062a\u0645\u062b\u0644 \u0646\u0635\u064a\u062d\u0629 \u0637\u0628\u064a\u0629.',
+  en: 'Nutritional values extracted by AI for indicative purposes. Please verify on the product label. This does not constitute medical advice.',
+};
+
+// ─── POST /api/scan/label — photo étiquette → valeurs pour 100 g (A3) ────────
+
+async function callGeminiLabel(base64Image, mimeType) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error('GEMINI_API_KEY non défini');
+
+  const prompt = `You are a nutritional label parser.
+STRICTLY FORBIDDEN: Do not provide medical advice, diagnoses, prognoses, treatment recommendations, or drug interactions.
+The image shows a product nutrition label. Extract the nutritional values per 100g (or per 100ml for liquids).
+Return ONLY valid JSON — no markdown fences, no explanations:
+{"product_name":string_or_null,"per_100g":{"kcal":number,"glucides":number,"dont_sucres":number,"proteines":number,"lipides":number,"dont_satures":number,"fibres":number,"sel":number},"serving_g":number_or_null,"confidence":0.0_to_1.0}
+If a value is not visible, use null. All numbers in grams unless noted (kcal in kcal). "sel" in grams.`;
+
+  const url = `${GEMINI_API_BASE}/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+  const body = {
+    contents: [{
+      parts: [
+        { inlineData: { mimeType, data: base64Image } },
+        { text: prompt },
+      ],
+    }],
+    generationConfig: { temperature: 0.1, maxOutputTokens: 512 },
+  };
+
+  const res = await axios.post(url, body, {
+    headers: { 'Content-Type': 'application/json' },
+    timeout: 20000,
+  });
+
+  const raw = res.data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+  const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    if (match) {
+      try { return JSON.parse(match[0]); } catch { /**/ }
+    }
+    throw new Error('JSON invalide dans la réponse Gemini Vision');
+  }
+}
+
+router.post('/label', auth, async (req, res) => {
+  const { image, mimeType = 'image/jpeg' } = req.body;
+
+  // B-2: validate image field type + size
+  if (typeof image !== 'string' || image.length === 0) {
+    return res.status(422).json({ error: 'Champ image (base64) requis' });
+  }
+  if (image.length > 20 * 1024 * 1024) {
+    return res.status(413).json({ error: 'Image trop volumineuse (limite 15 Mo)' });
+  }
+
+  // M-3: validate mimeType is a string before Set lookup
+  const SUPPORTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+  if (typeof mimeType !== 'string' || !SUPPORTED_TYPES.includes(mimeType)) {
+    return res.status(422).json({ error: 'mimeType non supporté (jpeg|png|webp)' });
+  }
+
+  let result;
+  try {
+    result = await callGeminiLabel(image, mimeType);
+  } catch (err) {
+    const status = err.response?.status;
+    console.error('[scan/label] Gemini error:', status, err.message);
+    if (!status || status >= 500 || err.code === 'ECONNABORTED' || err.code === 'ECONNREFUSED') {
+      return res.status(502).json({ error: 'Service IA temporairement indisponible' });
+    }
+    return res.status(422).json({ error: 'Impossible de lire l\'étiquette nutritionnelle' });
+  }
+
+  const per100      = result.per_100g || {};
+  const confidence  = result.confidence ?? null;
+  res.json({
+    source:              'gemini_label',
+    product_name:        result.product_name || null,
+    per_100g: {
+      kcal:           per100.kcal          ?? null,
+      glucides:       per100.glucides      ?? null,
+      dont_sucres:    per100.dont_sucres   ?? null,
+      proteines:      per100.proteines     ?? null,
+      lipides:        per100.lipides       ?? null,
+      dont_satures:   per100.dont_satures  ?? null,
+      fibres:         per100.fibres        ?? null,
+      sel:            per100.sel           ?? null,
+    },
+    serving_g:           result.serving_g  || null,
+    confidence,
+    needs_confirmation:  confidence !== null && confidence < 0.7,
+    disclaimer:          DISCLAIMER_LABEL,
+  });
+});
+
 module.exports = router;
-module.exports.calcProductScore  = calcProductScore;
+module.exports.calcProductScore   = calcProductScore;
 module.exports.calcGrocerySummary = calcGrocerySummary;
 module.exports.normalizeAdditive  = normalizeAdditive;
+module.exports.callGeminiLabel    = callGeminiLabel;

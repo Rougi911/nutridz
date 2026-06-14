@@ -81,7 +81,8 @@ router.delete('/reset-data', auth, async (req, res) => {
     await db.prepare('DELETE FROM favorites WHERE user_id = ?').run(req.userId);
     res.json({ success: true, message: 'All user data deleted' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[profile] reset-data error:', err.message);
+    res.status(500).json({ error: 'Erreur interne lors de la suppression des données' });
   }
 });
 
