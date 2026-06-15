@@ -15,6 +15,10 @@ function getLang(req) {
   return SUPPORTED_LANGS.includes(al) ? al : 'fr';
 }
 
+// Mapping interne ↔ contrat frontend (P4.16 — SL-API)
+const MEAL_TYPE_TO_API   = { pdej: 'breakfast', dej: 'lunch', coll: 'snack', diner: 'dinner' };
+const MEAL_TYPE_FROM_API = { breakfast: 'pdej', lunch: 'dej', snack: 'coll', dinner: 'diner' };
+
 // Shared logic extracted for GET / and POST /query
 async function queryJournalByDate(db, userId, date, lang) {
   const entries = await db.prepare(`
@@ -29,18 +33,42 @@ async function queryJournalByDate(db, userId, date, lang) {
   const byMeal = { pdej: [], dej: [], coll: [], diner: [] };
   let totals = { kcal: 0, glucides: 0, proteines: 0, lipides: 0, fibres: 0 };
 
+  // Tableau plat ApiMealEntry pour le frontend (P4.16)
+  const flatEntries = [];
+
   entries.forEach(e => {
     const entry = formatEntry(e, lang);
     if (byMeal[e.meal_type]) byMeal[e.meal_type].push(entry);
-    totals.kcal += e.kcal;
-    totals.glucides += e.glucides;
+    totals.kcal      += e.kcal;
+    totals.glucides  += e.glucides;
     totals.proteines += e.proteines;
-    totals.lipides += e.lipides;
-    totals.fibres += e.fibres;
+    totals.lipides   += e.lipides;
+    totals.fibres    += e.fibres;
+
+    // Format ApiMealEntry : food.calories = kcal_per100 (par 100g, pas par portion)
+    flatEntries.push({
+      id: e.id,
+      food_id: String(e.product_id),
+      food: {
+        id: String(e.product_id),
+        name: e.name,
+        calories: e.kcal_per100,
+        protein:  e.p_proteines ?? 0,
+        carbs:    e.p_glucides  ?? 0,
+        fat:      e.p_lipides   ?? 0,
+        fiber:    e.p_fibres    ?? 0,
+        source:   'nutrivita',
+      },
+      amount: e.grams,
+      meal_type: MEAL_TYPE_TO_API[e.meal_type] || e.meal_type,
+      date: e.date,
+      created_at: e.logged_at || e.date,
+    });
   });
 
   Object.keys(totals).forEach(k => totals[k] = Math.round(totals[k] * 10) / 10);
-  return { date, meals: byMeal, totals };
+  // entries : tableau plat (contrat P4.16 frontend) ; meals : regroupement legacy
+  return { date, entries: flatEntries, meals: byMeal, totals };
 }
 
 // GET /api/journal?date=2025-01-15
@@ -65,9 +93,22 @@ router.post('/query', auth, async (req, res) => {
 });
 
 // POST /api/journal — ajouter une entrée
+// Accepte product_id|food_id et grams|amount (contrat P4.16 — SL-API)
 router.post('/', auth, async (req, res) => {
-  const { product_id, grams, meal_type, date, modifiers = [] } = req.body;
-  if (!product_id || !grams || !meal_type) return res.status(400).json({ error: 'Champs manquants' });
+  // Aliases : food_id ← product_id, amount ← grams, meal_type anglais ← interne
+  const product_id_raw = req.body.product_id ?? req.body.food_id;
+  const grams          = req.body.grams ?? req.body.amount;
+  const meal_type_raw  = req.body.meal_type;
+  const date           = req.body.date;
+  const modifiers      = req.body.modifiers || [];
+
+  const meal_type = MEAL_TYPE_FROM_API[meal_type_raw] || meal_type_raw;
+
+  if (!product_id_raw || !grams || !meal_type) return res.status(400).json({ error: 'Champs manquants' });
+
+  // Convertir en entier (products.id est INTEGER AUTOINCREMENT)
+  const product_id = parseInt(product_id_raw, 10);
+  if (isNaN(product_id)) return res.status(400).json({ error: 'food_id invalide' });
 
   const db = getDB();
   const product = await db.prepare('SELECT * FROM products WHERE id = ?').get(product_id);

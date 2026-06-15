@@ -77,6 +77,8 @@ const dishesRoutes = require('./routes/dishes');
 app.use('/api/dishes', dishesRoutes);
 const nutritionRoutes = require('./routes/nutrition');
 app.use('/api/nutrition', nutritionRoutes);
+// /api/foods/search — alias contrat frontend (P4.16 — SL-API)
+app.use('/api/foods', require('./routes/foods'));
 app.use('/api/modifiers', require('./routes/modifiers'));
 app.use('/api/weight', require('./routes/weight'));
 app.use('/api/glucose', require('./routes/glucose'));
