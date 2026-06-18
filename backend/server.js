@@ -90,6 +90,7 @@ app.use('/api/scan',    require('./routes/scan'));
 app.use('/api/groceries', require('./routes/scan'));
 app.use('/api/strava',  require('./routes/strava'));
 app.use('/api/stats',   require('./routes/deficiencies'));
+app.use('/api/stats',   require('./routes/stats-additives'));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', version: '1.0.0' }));
