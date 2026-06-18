@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const { getDB } = require('../db');
 const auth = require('../middleware/auth');
 const { findById, localizeModifier } = require('../data/dishModifiers');
+const { searchByName: ciqualSearch } = require('../services/ciqual');
 
 const router = express.Router();
 
@@ -45,6 +46,25 @@ async function queryJournalByDate(db, userId, date, lang) {
     totals.lipides   += e.lipides;
     totals.fibres    += e.fibres;
 
+    // Micronutriments CIQUAL si disponible (lookup par nom de produit)
+    let micronutrients = null;
+    if (e.name) {
+      const ciqualHits = ciqualSearch(e.name, 1);
+      if (ciqualHits.length > 0) {
+        const c = ciqualHits[0];
+        micronutrients = {
+          vitaminC:   c.vitaminC,
+          vitaminD:   c.vitaminD,
+          vitaminB9:  c.vitaminB9,
+          vitaminB12: c.vitaminB12,
+          iron:       c.iron,
+          calcium:    c.calcium,
+          magnesium:  c.magnesium,
+          zinc:       c.zinc,
+        };
+      }
+    }
+
     // Format ApiMealEntry : food.calories = kcal_per100 (par 100g, pas par portion)
     flatEntries.push({
       id: e.id,
@@ -58,6 +78,7 @@ async function queryJournalByDate(db, userId, date, lang) {
         fat:      e.p_lipides   ?? 0,
         fiber:    e.p_fibres    ?? 0,
         source:   'nutrivita',
+        ...(micronutrients && { micronutrients }),
       },
       amount: e.grams,
       meal_type: MEAL_TYPE_TO_API[e.meal_type] || e.meal_type,

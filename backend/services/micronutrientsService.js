@@ -113,4 +113,41 @@ function calcDeficiencies(entries, dayCount, profile, month) {
   return results;
 }
 
-module.exports = { lookupMicro, calcDeficiencies, ANSES_REF };
+/**
+ * calcMicronutrientsIntake(entries)
+ * Calcule les apports réels en 8 micronutriments à partir des données CIQUAL enrichies.
+ * entries : tableau d'objets { quantity_g, vitaminC, vitaminD, vitaminB9, vitaminB12,
+ *                               iron, calcium, magnesium, zinc }
+ * Les champs micronutriments sont en mg ou µg pour 100g (unités CIQUAL).
+ * Retourne les totaux pour la quantité réelle consommée.
+ */
+function calcMicronutrientsIntake(entries) {
+  const totals = {
+    vitaminC:   0,   // mg
+    vitaminD:   0,   // µg
+    vitaminB9:  0,   // µg
+    vitaminB12: 0,   // µg
+    iron:       0,   // mg
+    calcium:    0,   // mg
+    magnesium:  0,   // mg
+    zinc:       0,   // mg
+  };
+
+  for (const entry of entries) {
+    const ratio = (entry.quantity_g || 0) / 100;
+    for (const key of Object.keys(totals)) {
+      if (entry[key] != null) {
+        totals[key] += entry[key] * ratio;
+      }
+    }
+  }
+
+  // Round to 2 decimal places
+  for (const key of Object.keys(totals)) {
+    totals[key] = Math.round(totals[key] * 100) / 100;
+  }
+
+  return totals;
+}
+
+module.exports = { lookupMicro, calcDeficiencies, calcMicronutrientsIntake, ANSES_REF };

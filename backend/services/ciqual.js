@@ -140,6 +140,15 @@ function formatEntry(entry) {
     lipides:   entry.lipides   || 0,
     fibres:    entry.fibres    || 0,
     sel:       entry.sel       || 0,
+    // Micronutriments ANSES (null = donnée non disponible)
+    vitaminC:   entry.vitaminC   ?? null,
+    vitaminD:   entry.vitaminD   ?? null,
+    vitaminB9:  entry.vitaminB9  ?? null,
+    vitaminB12: entry.vitaminB12 ?? null,
+    iron:       entry.iron       ?? null,
+    calcium:    entry.calcium    ?? null,
+    magnesium:  entry.magnesium  ?? null,
+    zinc:       entry.zinc       ?? null,
   };
 }
 
