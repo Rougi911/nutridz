@@ -163,7 +163,16 @@ router.post('/', auth, async (req, res) => {
     `).run(req.userId, String(barcode), name, score, verdict, JSON.stringify(additiveTags), nutriScore, nova, sugars, salt, satFat);
   }
 
-  res.json({ barcode, name, score, verdict, nutri_score: nutriScore, nova, additives_count: additiveTags.length });
+  const additives = additiveTags.map(tag => {
+    const codeDisplay = tag.replace(/^[a-z]{2}:/, '').toUpperCase(); // "en:e150d" → "E150D"
+    const codeNorm    = normalizeAdditive(tag);                       // → "E150d" for dict key
+    const entry       = codeNorm
+      ? (ADDITIVES.high_risk[codeNorm] || ADDITIVES.moderate_risk[codeNorm])
+      : null;
+    return { code: codeDisplay, name: entry?.name || codeDisplay };
+  });
+
+  res.json({ barcode, name, score, verdict, nutri_score: nutriScore, nova, additives_count: additiveTags.length, additives });
 });
 
 // ─── GET /api/groceries/summary ─────────────────────────────────────────────
