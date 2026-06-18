@@ -7,7 +7,7 @@ const axios   = require('axios');
 const { getDB } = require('../db');
 const auth = require('../middleware/auth');
 const { calcMonthlyAGSTarget } = require('../services/agsUtils');
-const ADDITIVES = require('../data/additives.json');
+const ADDITIVES = require('../data/additives.js');
 
 const router = express.Router();
 const OFF_BASE         = 'https://world.openfoodfacts.org/api/v0/product';
