@@ -5,7 +5,8 @@
  * TU-S9-1 : POST /api/scan → chaque additif inclut le champ `risk` (high|moderate|low|null)
  * TU-S9-2 : calcAdditivesStats accepte les entrées scanned (additifs_json aliasé en additifs)
  *           → counts correctement cumulés avec entrées journal
- * TU-S9-3 : GET /api/scanned → retourne liste paginée avec total
+ * TU-S9-3 : GET /api/scanned → retourne liste paginée avec additifs {code,name,risk}
+ * TU-S9-3b: GET /api/scanned → additives[].risk correctement renseigné depuis ADDITIVES_CLASSIFICATION
  * TU-S9-4 : DELETE /api/scanned/:id → supprime un scan précis ; 404 si inconnu
  * TU-S9-5 : DELETE /api/scanned → supprime tout l'historique, retourne deleted_count
  */
@@ -122,24 +123,24 @@ describe('TU-S9-3 — GET /api/scanned', () => {
     return app;
   }
 
-  test('retourne total, limit, offset et products[]', async () => {
-    mockDb = {
+  function makeDbWithRow(row) {
+    return {
       prepare: jest.fn().mockImplementation((sql) => {
         if (sql.includes('COUNT')) {
           return { get: jest.fn().mockResolvedValue({ n: 1 }), all: jest.fn(), run: jest.fn() };
         }
-        return {
-          all: jest.fn().mockResolvedValue([{
-            id: 1, barcode: '123', product_name: 'Coca-Cola', score: 30, verdict: 'Mauvais',
-            nutri_score: 'e', nova: 4, sugars_g: 10.5, salt_g: 0, sat_fat_g: 0,
-            times_this_month: 3, scanned_at: '2026-06-15T10:00:00Z',
-            additives_json: JSON.stringify(['en:e150d']),
-          }]),
-          get: jest.fn(),
-          run: jest.fn(),
-        };
+        return { all: jest.fn().mockResolvedValue([row]), get: jest.fn(), run: jest.fn() };
       }),
     };
+  }
+
+  test('retourne total, limit, offset et products[]', async () => {
+    mockDb = makeDbWithRow({
+      id: 1, barcode: '123', product_name: 'Coca-Cola', score: 30, verdict: 'Mauvais',
+      nutri_score: 'e', nova: 4, sugars_g: 10.5, salt_g: 0, sat_fat_g: 0,
+      times_this_month: 3, scanned_at: '2026-06-15T10:00:00Z',
+      additives_json: JSON.stringify(['en:e150d']),
+    });
 
     const res = await request(makeApp()).get('/api/scanned');
     expect(res.status).toBe(200);
@@ -147,6 +148,29 @@ describe('TU-S9-3 — GET /api/scanned', () => {
     expect(Array.isArray(res.body.products)).toBe(true);
     expect(res.body.products[0].name).toBe('Coca-Cola');
     expect(Array.isArray(res.body.products[0].additives)).toBe(true);
+  });
+
+  test('TU-S9-3b : additives[].risk renseigné depuis la classification', async () => {
+    mockDb = makeDbWithRow({
+      id: 2, barcode: '456', product_name: 'Produit test', score: 40, verdict: 'Médiocre',
+      nutri_score: 'c', nova: 3, sugars_g: 5, salt_g: 0.3, sat_fat_g: 1,
+      times_this_month: 1, scanned_at: '2026-06-20T08:00:00Z',
+      additives_json: JSON.stringify(['en:e150d', 'en:e338', 'en:e999']),
+    });
+
+    const res = await request(makeApp()).get('/api/scanned');
+    expect(res.status).toBe(200);
+    const adds = res.body.products[0].additives;
+
+    const high = adds.find(a => a.code === 'E150D');
+    expect(high?.risk).toBe('high');
+    expect(typeof high?.name).toBe('string');
+
+    const mod = adds.find(a => a.code === 'E338');
+    expect(mod?.risk).toBe('moderate');
+
+    const unknown = adds.find(a => a.code === 'E999');
+    expect(unknown?.risk).toBeNull();
   });
 });
 

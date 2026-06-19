@@ -5,6 +5,27 @@
 const express = require('express');
 const { getDB } = require('../db');
 const auth = require('../middleware/auth');
+const { ADDITIVES_CLASSIFICATION } = require('../data/additives');
+
+function normalizeCode(tag) {
+  const m = String(tag).match(/[eE](\d{3,4}[a-zA-Z]?)$/);
+  return m ? `E${m[1].toLowerCase()}` : null;
+}
+
+function mapAdditives(jsonStr) {
+  let tags;
+  try { tags = JSON.parse(jsonStr || '[]'); } catch { return []; }
+  if (!Array.isArray(tags)) return [];
+  return tags.map(tag => {
+    const code = normalizeCode(tag);
+    const classif = code ? ADDITIVES_CLASSIFICATION[code] : null;
+    return {
+      code: tag.replace(/^[a-z]{2}:/, '').toUpperCase(),
+      name: classif?.name || tag.replace(/^[a-z]{2}:/, '').toUpperCase(),
+      risk: classif?.risk ?? null,
+    };
+  });
+}
 
 const router = express.Router();
 
@@ -41,7 +62,7 @@ router.get('/', auth, async (req, res) => {
     sat_fat_g:        r.sat_fat_g,
     times_this_month: r.times_this_month,
     scanned_at:       r.scanned_at,
-    additives:        (() => { try { return JSON.parse(r.additives_json || '[]'); } catch { return []; } })(),
+    additives:        mapAdditives(r.additives_json),
   }));
 
   res.json({ total, limit, offset, products });
