@@ -130,3 +130,39 @@ describe('resolveAdditiveName', () => {
     expect(resolveAdditiveName('E433', 'en')).toBe('Polysorbate 80');
   });
 });
+
+// ─── TU-S10b — suffixe romain (E500ii) capté par la regex élargie ─────────────
+
+describe('TU-S10b — codes à suffixe multi-lettres (E500ii, E500iii)', () => {
+  test('tag "en:e500ii" → présent dans items avec risk:unknown', () => {
+    const entries = [
+      { id: 'e1', additifs: JSON.stringify(['en:e500ii']) },
+    ];
+    const r = calcAdditivesStats(entries);
+    // E500ii non classifié → groupe unknown, jamais ignoré
+    expect(r.items).toHaveLength(1);
+    expect(r.items[0].risk).toBe('unknown');
+    // Le code d'affichage : code normalisé en majuscules
+    expect(r.items[0].code).toBe('E500II');
+    expect(r.counts.unknown).toBe(1);
+  });
+
+  test('tag "E500II" (MAJUSCULES) → même résultat', () => {
+    const entries = [
+      { id: 'e1', additifs: JSON.stringify(['E500II']) },
+    ];
+    const r = calcAdditivesStats(entries);
+    expect(r.items).toHaveLength(1);
+    expect(r.items[0].risk).toBe('unknown');
+    expect(r.counts.unknown).toBe(1);
+  });
+
+  test('tag "en:e500iii" (3 lettres) → capté, risk:unknown', () => {
+    const entries = [
+      { id: 'e1', additifs: JSON.stringify(['en:e500iii']) },
+    ];
+    const r = calcAdditivesStats(entries);
+    expect(r.items).toHaveLength(1);
+    expect(r.items[0].risk).toBe('unknown');
+  });
+});

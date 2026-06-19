@@ -81,10 +81,9 @@ describe('TU-S4-3 — entrées sans additifs', () => {
 });
 
 // ─── TU-S4-4 ─────────────────────────────────────────────────────────────────
-// S10 : les codes E-number non classifiés vont dans le groupe "unknown" (plus jamais écartés)
-// Les tags sans format E-number (ex. "XINVALID") restent ignorés (normalizeCode → null).
-describe('TU-S4-4 — code E-number non classifié → groupe unknown', () => {
-  test('E999 non classifié → counts.unknown=1, items=[{risk:unknown}] ; XINVALID ignoré', () => {
+// S10b : aucun tag n'est jamais écarté — les non-Exxx vont aussi en 'unknown' via displayCode
+describe('TU-S4-4 — aucun tag jamais écarté (S10b)', () => {
+  test('E999 + XINVALID → counts.unknown=2, items.length=2', () => {
     const entries = [
       { id: 'e1', additifs: JSON.stringify(['E999', 'XINVALID']) },
     ];
@@ -92,10 +91,9 @@ describe('TU-S4-4 — code E-number non classifié → groupe unknown', () => {
     expect(r.counts.high).toBe(0);
     expect(r.counts.moderate).toBe(0);
     expect(r.counts.low).toBe(0);
-    expect(r.counts.unknown).toBe(1);
-    expect(r.items).toHaveLength(1);
-    expect(r.items[0].risk).toBe('unknown');
-    expect(r.items[0].code).toBe('E999');
+    expect(r.counts.unknown).toBe(2);
+    expect(r.items).toHaveLength(2);
+    expect(r.items.every(i => i.risk === 'unknown')).toBe(true);
   });
 });
 

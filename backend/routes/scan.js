@@ -17,8 +17,9 @@ const GEMINI_MODEL     = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 
 // ─── AL-08 helpers ──────────────────────────────────────────────────────────
 
+// S10b : regex élargie à 0-3 lettres pour couvrir E500ii, E500iii, etc.
 function normalizeAdditive(tag) {
-  const m = String(tag).match(/[eE](\d{3,4}[a-zA-Z]?)$/);
+  const m = String(tag).match(/[eE](\d{3,4}[a-z]{0,3})$/i);
   return m ? `E${m[1].toLowerCase()}` : null;
 }
 
@@ -168,7 +169,7 @@ router.post('/', auth, async (req, res) => {
     const codeDisplay = tag.replace(/^[a-z]{2}:/, '').toUpperCase(); // "en:e150d" → "E150D"
     const codeNorm    = normalizeAdditive(tag);                       // → "E150d" for dict key
     const classif     = codeNorm ? ADDITIVES.ADDITIVES_CLASSIFICATION[codeNorm] : null;
-    const risk        = classif ? classif.risk : (codeNorm ? 'unknown' : null);
+    const risk        = classif ? classif.risk : 'unknown'; // S10b : toujours 'unknown', jamais null
     const name        = codeNorm ? resolveAdditiveName(codeNorm) : codeDisplay;
     return { code: codeDisplay, name, risk };
   });

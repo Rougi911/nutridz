@@ -8,8 +8,9 @@ const auth = require('../middleware/auth');
 const { ADDITIVES_CLASSIFICATION } = require('../data/additives');
 const { resolveAdditiveName } = require('../services/additiveResolver');
 
+// S10b : regex élargie à 0-3 lettres pour couvrir E500ii, E500iii, etc.
 function normalizeCode(tag) {
-  const m = String(tag).match(/[eE](\d{3,4}[a-zA-Z]?)$/);
+  const m = String(tag).match(/[eE](\d{3,4}[a-z]{0,3})$/i);
   return m ? `E${m[1].toLowerCase()}` : null;
 }
 
@@ -18,15 +19,12 @@ function mapAdditives(jsonStr) {
   try { tags = JSON.parse(jsonStr || '[]'); } catch { return []; }
   if (!Array.isArray(tags)) return [];
   return tags.map(tag => {
+    const displayCode = tag.replace(/^[a-z]{2}:/, '').toUpperCase();
     const code    = normalizeCode(tag);
     const classif = code ? ADDITIVES_CLASSIFICATION[code] : null;
-    const risk    = classif ? classif.risk : (code ? 'unknown' : null);
-    const name    = code ? resolveAdditiveName(code) : tag.replace(/^[a-z]{2}:/, '').toUpperCase();
-    return {
-      code: tag.replace(/^[a-z]{2}:/, '').toUpperCase(),
-      name,
-      risk,
-    };
+    const risk    = classif ? classif.risk : 'unknown'; // S10b : toujours 'unknown'
+    const name    = code ? resolveAdditiveName(code) : displayCode;
+    return { code: displayCode, name, risk };
   });
 }
 

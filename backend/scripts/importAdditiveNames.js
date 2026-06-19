@@ -20,9 +20,9 @@ const OUT_PATH = path.join(__dirname, '../data/additive-names.json');
 const TIMEOUT  = 30_000;
 
 function normalizeKey(id) {
-  // "en:e150d" → "E150d"
-  const m = String(id).match(/[eE](\d{3,4}[a-zA-Z]?)$/);
-  return m ? `E${m[1]}` : null;
+  // "en:e150d" → "E150d", "en:e500ii" → "E500ii"
+  const m = String(id).match(/[eE](\d{3,4}[a-z]{0,3})$/i);
+  return m ? `E${m[1].toLowerCase()}` : null;
 }
 
 /** OFF names are strings like "E433 - Monooléate de polyoxyéthylène de sorbitane". Strip prefix. */

@@ -19,8 +19,9 @@ const VALID_DAYS = new Set([1, 7, 30, 365]);
 
 // Normalise un tag additif vers la clé de ADDITIVES_CLASSIFICATION.
 // Gère les formats : OFF "en:e150d", display "E150D", clé directe "E150d".
+// S10b : regex élargie à 0-3 lettres pour couvrir E500ii, E500iii, etc.
 function normalizeCode(tag) {
-  const m = String(tag).match(/[eE](\d{3,4}[a-zA-Z]?)$/);
+  const m = String(tag).match(/[eE](\d{3,4}[a-z]{0,3})$/i);
   return m ? `E${m[1].toLowerCase()}` : null;
 }
 
@@ -39,23 +40,21 @@ function calcAdditivesStats(entries) {
 
     for (const tag of tags) {
       const code = normalizeCode(tag);
-      if (!code) continue;
+      // S10b : ne jamais écarter — si la regex échoue, utiliser le code d'affichage comme fallback
+      const displayCode = String(tag).replace(/^[a-z]{2}:/, '').toUpperCase();
+      const mapKey = code || displayCode; // clé de dédup (normalisée)
+      const itemCode = code ? code.toUpperCase() : displayCode; // affichage toujours majuscules
 
-      const classif = ADDITIVES_CLASSIFICATION[code];
+      const classif = code ? ADDITIVES_CLASSIFICATION[code] : null;
       const risk = classif ? classif.risk : 'unknown';
-      const name = resolveAdditiveName(code);
+      const name = code ? resolveAdditiveName(code) : displayCode;
 
       counts[risk]++;
 
-      if (!itemMap[code]) {
-        itemMap[code] = {
-          code: code.toUpperCase(), // "E150d" → "E150D" pour affichage
-          name,
-          risk,
-          count: 0,
-        };
+      if (!itemMap[mapKey]) {
+        itemMap[mapKey] = { code: itemCode, name, risk, count: 0 };
       }
-      itemMap[code].count++;
+      itemMap[mapKey].count++;
     }
   }
 
