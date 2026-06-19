@@ -71,6 +71,7 @@ function calcAdditivesStats(entries) {
 }
 
 // GET /api/stats/additives?days=N (N ∈ {1, 7, 30, 365}, défaut 7)
+// Cumule les additifs du journal alimentaire + des produits scannés sur la même fenêtre.
 router.get('/additives', auth, async (req, res) => {
   const rawDays = parseInt(req.query.days, 10);
   const days = VALID_DAYS.has(rawDays) ? rawDays : 7;
@@ -81,13 +82,24 @@ router.get('/additives', auth, async (req, res) => {
   const sinceStr = since.toISOString().slice(0, 10); // YYYY-MM-DD
 
   const db = getDB();
-  const entries = await db.prepare(`
+
+  // 1) Additifs du journal (via produits enregistrés)
+  const journalEntries = await db.prepare(`
     SELECT je.id, p.additifs
     FROM journal_entries je
     JOIN products p ON je.product_id = p.id
     WHERE je.user_id = ? AND je.date >= ?
   `).all(req.userId, sinceStr);
 
+  // 2) Additifs des produits scannés (scanned_products.additives_json)
+  //    Chaque rangée = 1 scan ; times_this_month non utilisé ici (on compte par exposition).
+  const scannedRows = await db.prepare(`
+    SELECT additives_json AS additifs
+    FROM scanned_products
+    WHERE user_id = ? AND date(scanned_at) >= ?
+  `).all(req.userId, sinceStr);
+
+  const entries = [...journalEntries, ...scannedRows];
   const stats = calcAdditivesStats(entries);
 
   res.json({
