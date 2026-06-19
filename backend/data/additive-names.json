@@ -1,0 +1,2549 @@
+{
+  "E433": {
+    "fr": "Monooléate de polyoxyéthylène de sorbitane",
+    "en": "Polyoxyethylene sorbitan monooleate"
+  },
+  "E577": {
+    "fr": "Gluconate de potassium",
+    "en": "Potassium gluconate"
+  },
+  "E352i": {
+    "fr": "Malate de calcium",
+    "en": "Calcium malate"
+  },
+  "E315": {
+    "fr": "Acide érythorbique",
+    "en": "Erythorbic acid"
+  },
+  "E339i": {
+    "fr": "Phosphate monosodique",
+    "en": "Monosodium phosphate",
+    "ar": "مونوسودیوم فوسفات"
+  },
+  "E942": {
+    "fr": "Protoxyde d'azote",
+    "en": "Nitrous oxide",
+    "ar": "أكسيد النيتروس"
+  },
+  "E924b": {
+    "fr": "Bromate de calcium",
+    "en": "Calcium bromate",
+    "ar": "برومات الكالسيوم"
+  },
+  "E233": {
+    "fr": "Thiabendazole",
+    "en": "Thiabendazole"
+  },
+  "E451i": {
+    "fr": "TPP",
+    "en": "Pentasodium triphosphate"
+  },
+  "E638": {
+    "fr": "Aspartame de sodium",
+    "en": "E638",
+    "ar": "أسبارتام الصوديوم"
+  },
+  "E907": {
+    "fr": "Poly-1-décène hydrogéné",
+    "en": "Hydrogenated poly-1-decene"
+  },
+  "E623": {
+    "fr": "Diglutamate de calcium",
+    "en": "Calcium diglutamate",
+    "ar": "جلوتامات الكالسيوم"
+  },
+  "E502": {
+    "fr": "Carbonates",
+    "en": "Carbonates"
+  },
+  "E513": {
+    "fr": "Acide sulfurique",
+    "en": "Sulphuric acid"
+  },
+  "E300": {
+    "fr": "Acide ascorbique",
+    "en": "Ascorbic acid"
+  },
+  "E1001": {
+    "fr": "Sels et esters de choline",
+    "en": "Choline salt",
+    "ar": "ملح الكولين"
+  },
+  "E228": {
+    "fr": "Sulfite acide de potassium",
+    "en": "Potassium bisulphite"
+  },
+  "E309": {
+    "fr": "Delta-tocophérol de synthèse",
+    "en": "Delta-tocopherol",
+    "ar": "إي 309، دلتا توكوفيرول"
+  },
+  "E428": {
+    "fr": "Gélatine",
+    "en": "Gelatine",
+    "ar": "جيلاتين"
+  },
+  "E368": {
+    "fr": "Fumarate d'ammonium",
+    "en": "ammonium fumarate"
+  },
+  "E174": {
+    "fr": "Argent",
+    "en": "Silver"
+  },
+  "E960b": {
+    "fr": "Rebaudioside from multiple gene donors expressed in Yarrowia lipolityca",
+    "en": "Rebaudioside from multiple gene donors expressed in Yarrowia lipolityca"
+  },
+  "E472a": {
+    "fr": "Ester diacétyl-acétique d'acides gras",
+    "en": "Acetic acid esters of mono- and diglycerides of fatty acids"
+  },
+  "E1400": {
+    "fr": "Dextrines",
+    "en": "Dextrin",
+    "ar": "دكسترين"
+  },
+  "E999": {
+    "fr": "Extraits de quillaia",
+    "en": "Quillaia extract"
+  },
+  "E641": {
+    "fr": "l-leucine",
+    "en": "Leucine",
+    "ar": "ليوسين"
+  },
+  "E125": {
+    "fr": "Ponceau SX",
+    "en": "Scarlet GN"
+  },
+  "E963": {
+    "fr": "Tagatose",
+    "en": "Tagatose",
+    "ar": "تاجتوز"
+  },
+  "E404": {
+    "fr": "Alginate de calcium",
+    "en": "Calcium alginate"
+  },
+  "E514i": {
+    "fr": "Sulfate de sodium",
+    "en": "Sodium sulphate"
+  },
+  "E407a": {
+    "fr": "Algues euchema transformées",
+    "en": "Processed eucheuma seaweed"
+  },
+  "E161b": {
+    "fr": "Lutéine",
+    "en": "Lutein",
+    "ar": "لوتين"
+  },
+  "E964": {
+    "fr": "Sirop de polyglycitol",
+    "en": "Polyglycitol syrup",
+    "ar": "شراب بولي جليسيتول"
+  },
+  "E403": {
+    "fr": "Alginate d'ammonium",
+    "en": "Ammonium alginate"
+  },
+  "E203": {
+    "fr": "Sorbate de calcium",
+    "en": "Calcium sorbate",
+    "ar": "سوربات الكالسيوم"
+  },
+  "E143": {
+    "fr": "Vert solide FCF",
+    "en": "Fast Green FCF"
+  },
+  "E316": {
+    "fr": "érythorbate de sodium",
+    "en": "sodium erythorbate",
+    "ar": "إيريثوربات صوديوم"
+  },
+  "E960d": {
+    "fr": "Glycosides de stéviol glucosylés",
+    "en": "Glucosylated steviol glycosides",
+    "ar": "جليكوسيدات ستيفيول جلوكوزيل"
+  },
+  "E212": {
+    "fr": "Benzoate de potassium",
+    "en": "Potassium benzoate"
+  },
+  "E311": {
+    "fr": "Gallate d'octyle",
+    "en": "Octyl gallate"
+  },
+  "E412": {
+    "fr": "Gomme de guar",
+    "en": "Guar gum"
+  },
+  "E553b": {
+    "fr": "Talc",
+    "en": "Talc",
+    "ar": "تالك"
+  },
+  "E550": {
+    "fr": "Silicate de sodium",
+    "en": "Sodium silicate",
+    "ar": "سيليكات الصوديوم"
+  },
+  "E905g": {
+    "fr": "Huile minérale de viscosité moyenne et faible classe III",
+    "en": "Mineral oil medium and low viscosity class III"
+  },
+  "E161d": {
+    "fr": "Rubixanthine",
+    "en": "Rubixanthin"
+  },
+  "E559": {
+    "fr": "Silicate d'aluminium",
+    "en": "Aluminium silicate"
+  },
+  "E330": {
+    "fr": "Acide citrique",
+    "en": "Citric acid",
+    "ar": "حمض الليمون"
+  },
+  "E451": {
+    "fr": "Triphosphates",
+    "en": "Triphosphates",
+    "ar": "ثلاثي الفوسفات"
+  },
+  "E352": {
+    "fr": "Malates de calcium",
+    "en": "Calcium malates"
+  },
+  "E251": {
+    "fr": "Nitrate de sodium",
+    "en": "Sodium nitrate",
+    "ar": "نترات الصوديوم"
+  },
+  "E1521": {
+    "fr": "Polyéthylène glycol",
+    "en": "Polyethylene glycol"
+  },
+  "E173": {
+    "fr": "Aluminium",
+    "en": "Aluminium"
+  },
+  "E339": {
+    "fr": "phosphates de sodium",
+    "en": "Sodium phosphates",
+    "ar": "فوسفات الصوديوم"
+  },
+  "E163c": {
+    "fr": "Malvidine",
+    "en": "Malvidin"
+  },
+  "E180": {
+    "fr": "Lithol-rubine BK",
+    "en": "Litholrubine bk"
+  },
+  "E514": {
+    "fr": "Sulfates de sodium",
+    "en": "Sodium sulphates",
+    "ar": "كبريتات الصوديوم"
+  },
+  "E1443": {
+    "fr": "Glycérol de diamidon hydroxypropyle",
+    "en": "Hydroxy propyl distarch glycerol"
+  },
+  "E920": {
+    "fr": "L-Cystéine et ses chlorhydrates",
+    "en": "l-cysteine"
+  },
+  "E929": {
+    "fr": "Peroxyde d'acétone",
+    "en": "acetone peroxide"
+  },
+  "E624": {
+    "fr": "Glutamate d'ammonium",
+    "en": "Monoammonium glutamate"
+  },
+  "E267": {
+    "fr": "Vinaigre tamponné",
+    "en": "Buffered vinegar"
+  },
+  "E150a": {
+    "fr": "Caramel E150a",
+    "en": "Plain caramel",
+    "ar": "لون الكراميل"
+  },
+  "E327": {
+    "fr": "lactate de calcium",
+    "en": "calcium lactate",
+    "ar": "لاكتات الكالسيوم"
+  },
+  "E467": {
+    "fr": "Ethyl-hydroxyéthyl-cellulose",
+    "en": "Ethulose",
+    "ar": "إيثولوز"
+  },
+  "E126": {
+    "fr": "Ponceau GR",
+    "en": "Ponceau 6R"
+  },
+  "E434": {
+    "fr": "Monopalmitate de polyoxyéthylène sorbitane",
+    "en": "Polyoxyethylene sorbitan monopalmitate"
+  },
+  "E121": {
+    "fr": "Rouge citrus no.2",
+    "en": "Citrus Red 2"
+  },
+  "E162": {
+    "fr": "Rouge de betterave",
+    "en": "Beetroot red",
+    "ar": "بيتانين"
+  },
+  "E234": {
+    "fr": "Nisine",
+    "en": "Nisin",
+    "ar": "نيسين"
+  },
+  "E407": {
+    "fr": "Carraghénanes",
+    "en": "Carrageenan"
+  },
+  "E442": {
+    "fr": "Phosphatides d'ammonium",
+    "en": "Ammonium phosphatides"
+  },
+  "E341": {
+    "fr": "Phosphates de calcium",
+    "en": "Calcium phosphates"
+  },
+  "E472e": {
+    "fr": "Ester Monoacéthyltartrique de mono- et diglycérides d'acides gras",
+    "en": "Mono- and diacetyltartaric acid esters of mono- and diglycerides of fatty acids"
+  },
+  "E1411": {
+    "fr": "Glycérol de diamidon",
+    "en": "Distarch glycerol"
+  },
+  "E242": {
+    "fr": "Dicarbonate de diméthyle",
+    "en": "Dimethyl dicarbonate",
+    "ar": "ثنائي ميثيل ثنائي الكربونات"
+  },
+  "E102": {
+    "fr": "Tartrazine",
+    "en": "Tartrazine"
+  },
+  "E472": {
+    "fr": "Esters d'acides gras alimentaires",
+    "en": "acid esters of mono- and diglycerides of fatty acids",
+    "ar": "استرات الأحماض الدهنية الأحادية وثنائية الجليسريد"
+  },
+  "E928": {
+    "fr": "peroxyde de benzoyle",
+    "en": "Benzole peroxide",
+    "ar": "بيروكسيد البنزويل"
+  },
+  "E1503": {
+    "fr": "Huile de ricin",
+    "en": "Castor oil",
+    "ar": "زيت الخروع"
+  },
+  "E955": {
+    "fr": "Sucralose",
+    "en": "Sucralose"
+  },
+  "E490": {
+    "fr": "Glycole de propylène",
+    "en": "Propylene glycol",
+    "ar": "بروبيلين غليكول"
+  },
+  "E558": {
+    "fr": "Bentonite",
+    "en": "Bentonite",
+    "ar": "بنتونيت"
+  },
+  "E544": {
+    "fr": "Polyphosphate de calcium",
+    "en": "Calcium polyphosphate",
+    "ar": "بولي فوسفات الكالسيوم"
+  },
+  "E290": {
+    "fr": "Dioxyde de carbone",
+    "en": "Carbon dioxide",
+    "ar": "ثنائي أكسيد الكربون"
+  },
+  "E1442": {
+    "fr": "Phosphate de diamidon hydroxypropyle",
+    "en": "Hydroxypropyl distarch phosphate"
+  },
+  "E525": {
+    "fr": "Hydroxyde de potassium",
+    "en": "Potassium hydroxide",
+    "ar": "هيدروكسيد البوتاسيوم"
+  },
+  "E338": {
+    "fr": "Acide orthophosphorique",
+    "en": "Phosphoric acid"
+  },
+  "E323": {
+    "fr": "Anoxomère",
+    "en": "Anoxomer",
+    "ar": "أنوكسومير"
+  },
+  "E904": {
+    "fr": "Gomme-laque",
+    "en": "Shellac",
+    "ar": "شيلاك"
+  },
+  "E463": {
+    "fr": "Hydroxypropylcellulose",
+    "en": "Hydroxypropyl cellulose"
+  },
+  "E420i": {
+    "fr": "D-glucitol",
+    "en": "D-sorbitol"
+  },
+  "E263": {
+    "fr": "Acétate de calcium",
+    "en": "Calcium acetate",
+    "ar": "أسيتات الكالسيوم"
+  },
+  "E927b": {
+    "fr": "Carbamide",
+    "en": "Carbamide",
+    "ar": "يوريا"
+  },
+  "E485": {
+    "fr": "Fumarate de stéaroyle sodique",
+    "en": "Sodium stearoyl fumarate",
+    "ar": "ستيرويل فومارات الصوديوم"
+  },
+  "E285": {
+    "fr": "Tétraborate de sodium",
+    "en": "Sodium tetraborate (borax)"
+  },
+  "E574": {
+    "fr": "Acide gluconique",
+    "en": "Gluconic acid"
+  },
+  "E307b": {
+    "fr": "tocophérol concentré",
+    "en": "concentrated tocopherol"
+  },
+  "E237": {
+    "fr": "Formiate de sodium",
+    "en": "Sodium formiate",
+    "ar": "فورمات الصوديوم"
+  },
+  "E573": {
+    "fr": "Stéarate d'aluminium",
+    "en": "Aluminium stearate",
+    "ar": "ستيرات الألومنيوم"
+  },
+  "E1451": {
+    "fr": "Amidon oxydé acétylé",
+    "en": "Acetylated oxidised starch"
+  },
+  "E345": {
+    "fr": "Citrate de magnésium",
+    "en": "Magnesium citrate"
+  },
+  "E912": {
+    "fr": "Ester de l'acide montanique",
+    "en": "Montanic acid esters"
+  },
+  "E324": {
+    "fr": "Étoxyquine",
+    "en": "Ethoxyquin"
+  },
+  "E903": {
+    "fr": "Cire de carnauba",
+    "en": "Carnauba wax",
+    "ar": "شمع الخارنوبا"
+  },
+  "E150": {
+    "fr": "Caramel",
+    "en": "Caramel",
+    "ar": "كراميل"
+  },
+  "E464": {
+    "fr": "Hydroxypropylméthylcellulose",
+    "en": "Hydroxypropyl methyl cellulose",
+    "ar": "هيدروكسي بروبيل ميثيل سيللوز"
+  },
+  "E264": {
+    "fr": "Acétate d'ammonium",
+    "en": "Ammonium acetate",
+    "ar": "أسيتات الأمونيوم"
+  },
+  "E132": {
+    "fr": "Indigotine carmin d'indigo",
+    "en": "Indigotine"
+  },
+  "E163f": {
+    "fr": "Pétunidine",
+    "en": "Petunidin"
+  },
+  "E951": {
+    "fr": "Aspartame",
+    "en": "Aspartame",
+    "ar": "أسبرتام"
+  },
+  "E341i": {
+    "fr": "Phosphate monocalcique",
+    "en": "Monocalcium phosphate",
+    "ar": "فوسفات أحادي الكالسيوم"
+  },
+  "E627": {
+    "fr": "Guanylate disodique",
+    "en": "Disodium guanylate",
+    "ar": "غوانيلات ثنائية الصوديوم"
+  },
+  "E900b": {
+    "fr": "Méthylphénylpolysiloxane",
+    "en": "Methylphenylpolysiloxane",
+    "ar": "ميثيل فينيل بولي سيلوكسان"
+  },
+  "E517": {
+    "fr": "Sulfate d'ammonium",
+    "en": "Ammonium sulphate"
+  },
+  "E956": {
+    "fr": "Alitame",
+    "en": "Alitame",
+    "ar": "أليتام"
+  },
+  "E543": {
+    "fr": "E543 food additive",
+    "en": "E543 food additive"
+  },
+  "E375": {
+    "fr": "Acide nicotinique",
+    "en": "Nicotinic acid"
+  },
+  "E521": {
+    "fr": "Sulfate d'aluminium sodique",
+    "en": "Aluminium sodium sulphate"
+  },
+  "E420": {
+    "fr": "Sorbitol",
+    "en": "Sorbitol"
+  },
+  "E369": {
+    "fr": "Alanine",
+    "en": "Alanin",
+    "ar": "ألانين"
+  },
+  "E526": {
+    "fr": "Hydroxyde de calcium",
+    "en": "Calcium hydroxide"
+  },
+  "E429": {
+    "fr": "Peptones",
+    "en": "peptone"
+  },
+  "E308": {
+    "fr": "Gamma-tocophérol de synthèse",
+    "en": "Gamme-tocopherol",
+    "ar": "إي 308، غاما توكوفيرول"
+  },
+  "E220": {
+    "fr": "Anhydride sulfureux",
+    "en": "Sulphur dioxide",
+    "ar": "ثنائي أكسيد الكبريت"
+  },
+  "E1100": {
+    "fr": "Amylases",
+    "en": "Alpha-Amylase",
+    "ar": "أميلاز"
+  },
+  "E481": {
+    "fr": "Stéaroyl-2-lactylate de sodium",
+    "en": "Sodium stearoyl-2-lactylate"
+  },
+  "E281": {
+    "fr": "Propionate de sodium",
+    "en": "Sodium propionate",
+    "ar": "بروبيونات الصوديوم"
+  },
+  "E630": {
+    "fr": "Acide inosinique",
+    "en": "Inosinic acid"
+  },
+  "E580": {
+    "fr": "Gluconate de magnésium",
+    "en": "Magnesium Gluconate",
+    "ar": "غلوكونات المغنيسيوم"
+  },
+  "E967": {
+    "fr": "Xylitol",
+    "en": "Xylitol",
+    "ar": "زيليتول"
+  },
+  "E1414": {
+    "fr": "Phosphate de diamidon acétylé",
+    "en": "Acetylated distarch phosphate"
+  },
+  "E486": {
+    "fr": "Stearoylfumarate de calcium",
+    "en": "Calcium stearoyl fumarate",
+    "ar": "ستيرويل فومارات الكالسيوم"
+  },
+  "E262": {
+    "fr": "Acétates de sodium",
+    "en": "Sodium acetates"
+  },
+  "E495": {
+    "fr": "Monopalmitate de sorbitane",
+    "en": "Sorbitan monopalmitate"
+  },
+  "E421": {
+    "fr": "Mannitol",
+    "en": "Mannitol",
+    "ar": "مانيتول"
+  },
+  "E322": {
+    "fr": "Lécithines",
+    "en": "Lecithins",
+    "ar": "ليسيثين"
+  },
+  "E472c": {
+    "fr": "Ester citrique des mono et diglycérides d'acides gras alimentaires",
+    "en": "Citric acid esters of mono- and diglycerides of fatty acids"
+  },
+  "E221": {
+    "fr": "Sulfite de sodium",
+    "en": "Sodium sulphite",
+    "ar": "كبريتيت الصوديوم"
+  },
+  "E462": {
+    "fr": "Éthylcellulose",
+    "en": "Ethyl cellulose"
+  },
+  "E226": {
+    "fr": "Sulfite de calcium",
+    "en": "Calcium sulphite"
+  },
+  "E520": {
+    "fr": "Sulfate d'aluminium",
+    "en": "Aluminium sulphate"
+  },
+  "E914": {
+    "fr": "Cire de polyéthylène oxydée",
+    "en": "Oxidised polyethylene wax",
+    "ar": "شمع البولي إيثيلين المؤكسد"
+  },
+  "E1202": {
+    "fr": "Polyvinylpolypyrrolidone",
+    "en": "Polyvinylpolypyrrolidone"
+  },
+  "E366": {
+    "fr": "Fumarate de potassium",
+    "en": "Potassium fumarate"
+  },
+  "E943a": {
+    "fr": "Butane",
+    "en": "Butane"
+  },
+  "E426": {
+    "fr": "Hémicellulose de soja",
+    "en": "Soybean hemicellulose"
+  },
+  "E529": {
+    "fr": "Oxyde de calcium",
+    "en": "Calcium oxide",
+    "ar": "أكسيد الكالسيوم"
+  },
+  "E631": {
+    "fr": "Inosinate disodique",
+    "en": "Disodium inosinate",
+    "ar": "إينوسينات ثنائية الصوديوم"
+  },
+  "E1520": {
+    "fr": "Propylène glycol",
+    "en": "Propylene Glycol"
+  },
+  "E425i": {
+    "fr": "Gomme de konjac",
+    "en": "Konjac gum"
+  },
+  "E1404": {
+    "fr": "Amidon oxydé",
+    "en": "Oxidised starch"
+  },
+  "E905d": {
+    "fr": "Paraffine liquide",
+    "en": "Mineral oil high viscosity"
+  },
+  "E161g": {
+    "fr": "Canthaxanthine",
+    "en": "Canthaxanthin"
+  },
+  "E280": {
+    "fr": "Acide propionique",
+    "en": "Propionic acid"
+  },
+  "E489": {
+    "fr": "Ester de méthylglycoside d'huile de coco",
+    "en": "Methyl glucoside-coconut oil ester",
+    "ar": "استر زيت جوز الهند ميثيل جلوكوزيد"
+  },
+  "E636": {
+    "fr": "Maltol",
+    "en": "Maltol",
+    "ar": "مالتول"
+  },
+  "E586": {
+    "fr": "Héxylresorcinol",
+    "en": "4-hexylresorcinol"
+  },
+  "E440b": {
+    "fr": "Pectine amidée",
+    "en": "pectin amide",
+    "ar": "بكتين أميد"
+  },
+  "E151": {
+    "fr": "Noir brillant BN",
+    "en": "Brilliant black bn"
+  },
+  "E473": {
+    "fr": "Sucroester",
+    "en": "Sucrose esters of fatty acids"
+  },
+  "E537": {
+    "fr": "hexacyanomanganate ferreux",
+    "en": "ferrous hexacyanomanganate"
+  },
+  "E1105": {
+    "fr": "Lysozyme",
+    "en": "Lysozyme",
+    "ar": "ليزوزيم"
+  },
+  "E357": {
+    "fr": "Adipate de potassium",
+    "en": "Potassium adipate"
+  },
+  "E384": {
+    "fr": "Citrates d'isopropyle",
+    "en": "Isopropyl citrates"
+  },
+  "E414a": {
+    "fr": "Acide octénylsuccinique",
+    "en": "E414a food additive"
+  },
+  "E340i": {
+    "fr": "Phosphate monopotassique",
+    "en": "Monopotassium phosphate"
+  },
+  "E217": {
+    "fr": "Dérivé sodique du 4-hydroxybenzoate de propyle",
+    "en": "Sodium propyl para-hydroxybenzoate"
+  },
+  "E103": {
+    "fr": "Jaune chrysoïne",
+    "en": "Alkannin"
+  },
+  "E950": {
+    "fr": "Acésulfame K",
+    "en": "Acesulfame k",
+    "ar": "أسيسلفام البوتاسيوم"
+  },
+  "E470b": {
+    "fr": "Sels de magnésium d'acides gras",
+    "en": "Magnesium salts of fatty acids"
+  },
+  "E243": {
+    "fr": "Arginate d'éthyle laurique",
+    "en": "Ethyl lauroyl arginate",
+    "ar": "إيثيل لورويل أرجينات"
+  },
+  "E417": {
+    "fr": "Gomme tara",
+    "en": "Tara gum"
+  },
+  "E479b": {
+    "fr": "Huile de soja oxydée par chauffage ayant réagi avec des mono- et diglycérides d'acides gras",
+    "en": "Thermally oxidised soya bean oil interacted with mono- and diglycerides of fatty acids"
+  },
+  "E959": {
+    "fr": "Néohespéridine dihydrochalcone",
+    "en": "Neohesperidine dihydrochalcone"
+  },
+  "E443": {
+    "fr": "Huile végétale bromée",
+    "en": "Brominated vegetable oil",
+    "ar": "زيت نباتي مبروم"
+  },
+  "E932": {
+    "fr": "Oxyde d'azote",
+    "en": "Nitrogen oxide",
+    "ar": "أكسيد النيتروجين"
+  },
+  "E383": {
+    "fr": "glycérophosphate de calcium",
+    "en": "calcium glycerophosphate",
+    "ar": "فوسفات غليسيريل الكالسيوم"
+  },
+  "E296": {
+    "fr": "Acide malique",
+    "en": "Malic acid",
+    "ar": "حمض التفاح"
+  },
+  "E104": {
+    "fr": "Jaune de quinoléine",
+    "en": "Quinoline yellow"
+  },
+  "E458": {
+    "fr": "Gamma-Cyclodextrine",
+    "en": "Gamma-Cyclodextrine",
+    "ar": "غاما سيكلودكسترين"
+  },
+  "E496": {
+    "fr": "Trioléate de sorbitane",
+    "en": "Sorbitan trioleate",
+    "ar": "ثلاثي الأوليات سوربيتان"
+  },
+  "E444": {
+    "fr": "Acétate isobutyrate de saccharose",
+    "en": "Sucrose acetate isobutyrate"
+  },
+  "E365": {
+    "fr": "Fumarate de sodium",
+    "en": "Sodium fumarate"
+  },
+  "E491": {
+    "fr": "Monostéarate de sorbitane",
+    "en": "Sorbitan monostearate"
+  },
+  "E425": {
+    "fr": "extrait de racine de Konjac",
+    "en": "Konjac"
+  },
+  "E225": {
+    "fr": "Disulfite de calcium",
+    "en": "Calcium Disulphite"
+  },
+  "E392": {
+    "fr": "Extrait de romarin",
+    "en": "Extracts of rosemary"
+  },
+  "E318": {
+    "fr": "Isoascorbate de calcium",
+    "en": "Calcium erythorbin"
+  },
+  "E1207": {
+    "fr": "Copolymère de méthacrylate anionique",
+    "en": "Anionic methacrylate copolymer"
+  },
+  "E1000": {
+    "fr": "Acide cholique",
+    "en": "Cholic acid",
+    "ar": "حمض الكوليك"
+  },
+  "E322i": {
+    "fr": "Lécithine",
+    "en": "Lecithin"
+  },
+  "E635": {
+    "fr": "5'-ribonucléotide disodique",
+    "en": "Disodium 5'-ribonucleotide"
+  },
+  "E585": {
+    "fr": "Lactate ferreux",
+    "en": "Ferrous lactate"
+  },
+  "E474": {
+    "fr": "Sucroglycérides",
+    "en": "Sucroglycerides"
+  },
+  "E387": {
+    "fr": "Oxystearin",
+    "en": "Oxystearin"
+  },
+  "E262i": {
+    "fr": "Acétate de sodium",
+    "en": "Sodium acetate",
+    "ar": "أسيتات الصوديوم"
+  },
+  "E150c": {
+    "fr": "Caramel ammoniacal",
+    "en": "Ammonia caramel"
+  },
+  "E349": {
+    "fr": "Malate d'ammonium",
+    "en": "ammonium malate",
+    "ar": "مالات الأمونيوم"
+  },
+  "E1401": {
+    "fr": "Amidon traité aux acides",
+    "en": "Acid-treated modified starch",
+    "ar": "نشا معالج بالحمض"
+  },
+  "E340": {
+    "fr": "Orthophosphates de potassium",
+    "en": "Potassium phosphates"
+  },
+  "E128": {
+    "fr": "Rouge 2G",
+    "en": "Red 2G"
+  },
+  "E507": {
+    "fr": "Acide chlorhydrique",
+    "en": "Hydrochloric acid"
+  },
+  "E542": {
+    "fr": "Phosphate d'os comestible",
+    "en": "Bone phosphate",
+    "ar": "فوسفات العظام"
+  },
+  "E1422": {
+    "fr": "Adipate de diamidon acétylé",
+    "en": "Acetylated distarch adipate"
+  },
+  "E155": {
+    "fr": "Brun chocolat HT",
+    "en": "Brown ht"
+  },
+  "E572": {
+    "fr": "Stéarate de magnésium",
+    "en": "Magnesium stearate",
+    "ar": "ستيرات المغنسيوم"
+  },
+  "E163a": {
+    "fr": "Cyanidine",
+    "en": "Cyanidin",
+    "ar": "سيانيدين"
+  },
+  "E913": {
+    "fr": "Lanoline",
+    "en": "Lanolin",
+    "ar": "اللانولين"
+  },
+  "E905b": {
+    "fr": "Petrolatum",
+    "en": "petroleum jelly",
+    "ar": "هلام النفط"
+  },
+  "E133": {
+    "fr": "Bleu brillant FCF",
+    "en": "Brilliant blue FCF"
+  },
+  "E902": {
+    "fr": "Cire de Candelilla",
+    "en": "Candelilla wax"
+  },
+  "E370": {
+    "fr": "4-Heptonolactone",
+    "en": "1‚4-Heptonolactone",
+    "ar": "1‚4-هبتونولاكتون"
+  },
+  "E414": {
+    "fr": "Gomme d'acacia",
+    "en": "Acacia gum",
+    "ar": "صمغ عربي"
+  },
+  "E926": {
+    "fr": "Dioxyde de chlore",
+    "en": "Chlorine dioxide",
+    "ar": "ثاني أكسيد الكلور"
+  },
+  "E214": {
+    "fr": "4-hydroxybenzoate d'éthyle",
+    "en": "Ethyl p-hydroxybenzoate"
+  },
+  "E504i": {
+    "fr": "Carbonate de magnésium",
+    "en": "Magnesium carbonate",
+    "ar": "كربونات المغنسيوم"
+  },
+  "E921": {
+    "fr": "Cystine",
+    "en": "L-cysteine hydrochloride monohydrate",
+    "ar": "مونوهيدرات هيدروكلوريد L-سيستين"
+  },
+  "E1450": {
+    "fr": "Octényle succinate d'amidon sodique",
+    "en": "Starch sodium octenyl succinate"
+  },
+  "E181": {
+    "fr": "Tannin",
+    "en": "Tannin",
+    "ar": "تانين"
+  },
+  "E962": {
+    "fr": "Sel d'aspartame-acésulfame",
+    "en": "Salt of aspartame-acesulfame"
+  },
+  "E120": {
+    "fr": "Acide carminique",
+    "en": "Cochineal"
+  },
+  "E354": {
+    "fr": "Tartrate de calcium",
+    "en": "Calcium tartrate"
+  },
+  "E472f": {
+    "fr": "Esters mixtes acétiques et tartriques des mono- et diglycérides d'acides gras",
+    "en": "Mixed acetic and tartaric acid esters of mono- and diglycerides of fatty acids"
+  },
+  "E129": {
+    "fr": "Rouge allura AC",
+    "en": "Allura red"
+  },
+  "E640i": {
+    "fr": "Glycine",
+    "en": "Glycine"
+  },
+  "E473a": {
+    "fr": "Oligoesters de saccharose de type I",
+    "en": "Oligoesters of sucrose type I"
+  },
+  "E310": {
+    "fr": "Gallate de propyle",
+    "en": "Propyl gallate"
+  },
+  "E1101": {
+    "fr": "Protéases",
+    "en": "Protease",
+    "ar": "ببتيداز"
+  },
+  "E503": {
+    "fr": "Carbonates d'ammonium",
+    "en": "Ammonium carbonates"
+  },
+  "E622": {
+    "fr": "Glutamate monopotassique",
+    "en": "Monopotassium glutamate"
+  },
+  "E319": {
+    "fr": "Butylhydroquinone tertiaire",
+    "en": "Tertiary-butylhydroquinone (tbhq)"
+  },
+  "E335i": {
+    "fr": "Tartrate monosodique",
+    "en": "Monosodium tartrate"
+  },
+  "E512": {
+    "fr": "Chlorure stanneux",
+    "en": "Stannous chloride"
+  },
+  "E1423": {
+    "fr": "Glycérol de diamidon acétylé",
+    "en": "Acetylated distarch glycerol"
+  },
+  "E450": {
+    "fr": "Diphosphates",
+    "en": "Diphosphates",
+    "ar": "ثنائي الفوسفات"
+  },
+  "E331": {
+    "fr": "Citrates de sodium",
+    "en": "Sodium citrates"
+  },
+  "E164": {
+    "fr": "safran",
+    "en": "saffron",
+    "ar": "زعفران"
+  },
+  "E232": {
+    "fr": "Orthophénylphénate de sodium",
+    "en": "Sodium orthophenyl phenol",
+    "ar": "أورثو فينيل فينول الصوديوم"
+  },
+  "E432": {
+    "fr": "Monolaurate de polyoxyéthylène sorbitane",
+    "en": "Polyoxyethylene sorbitan monolaurate"
+  },
+  "E172i": {
+    "fr": "Oxyde de fer noir",
+    "en": "Black iron oxide"
+  },
+  "E250": {
+    "fr": "Nitrite de sodium",
+    "en": "Sodium nitrite",
+    "ar": "نتريت الصوديوم"
+  },
+  "E459": {
+    "fr": "Béta-cyclodextrine",
+    "en": "Beta-cyclodextrine",
+    "ar": "بيتا سيكلودكسترين"
+  },
+  "E917": {
+    "fr": "Iodate de potassium",
+    "en": "potassium iodate",
+    "ar": "يودات البوتاسيوم"
+  },
+  "E556": {
+    "fr": "Silicate alumino-calcique",
+    "en": "Calcium aluminium silicate"
+  },
+  "E551": {
+    "fr": "Dioxyde de silicium",
+    "en": "Silicon dioxide",
+    "ar": "ثنائي أكسيد السيليكون"
+  },
+  "E160d": {
+    "fr": "Lycopène",
+    "en": "Lycopene"
+  },
+  "E322a": {
+    "fr": "Lécithine d'avoine",
+    "en": "Oat lecithin",
+    "ar": "ليسيثين الشوفان"
+  },
+  "E336": {
+    "fr": "Tartrates de potassium",
+    "en": "Potassium tartrates"
+  },
+  "E925": {
+    "fr": "Chlore",
+    "en": "Chlorine"
+  },
+  "E1410": {
+    "fr": "Phosphate d'amidon",
+    "en": "Monostarch phosphate"
+  },
+  "E640": {
+    "fr": "Glycines et son sel de sodium",
+    "en": "Glycine and its sodium salt"
+  },
+  "E163": {
+    "fr": "Anthocyanes",
+    "en": "Anthocyanins",
+    "ar": "أنثوسيان"
+  },
+  "E944": {
+    "fr": "Propane",
+    "en": "Propane"
+  },
+  "E1203": {
+    "fr": "Alcool polyvinylique",
+    "en": "Polyvinyl alcohol"
+  },
+  "E958": {
+    "fr": "Acide glycyrrhizique et sels",
+    "en": "Glycyrrhizin",
+    "ar": "غليسيريزين"
+  },
+  "E1104": {
+    "fr": "Lipases",
+    "en": "lipase",
+    "ar": "ليباز"
+  },
+  "E161j": {
+    "fr": "Astaxanthine",
+    "en": "Astaxanthin",
+    "ar": "أستازانتين"
+  },
+  "E163e": {
+    "fr": "Péonidine",
+    "en": "Peonidin",
+    "ar": "بيونيدين"
+  },
+  "E160b": {
+    "fr": "Rocou",
+    "en": "Annatto",
+    "ar": "أناتو"
+  },
+  "E504": {
+    "fr": "Carbonates de magnésium",
+    "en": "Magnesium carbonates"
+  },
+  "E713": {
+    "fr": "Tylosine Antibiotique",
+    "en": "Tylosin",
+    "ar": "تايلوزين"
+  },
+  "E477": {
+    "fr": "Esters du propylène-glycol d'acide gras",
+    "en": "Propane-1‚2-diol esters of fatty acids"
+  },
+  "E336i": {
+    "fr": "Tartrate monopotassique",
+    "en": "Monopotassium tartrate"
+  },
+  "E1405": {
+    "fr": "Amidon traité aux enzymes",
+    "en": "Enzyme treated starch",
+    "ar": "نشا معالج بالإنزيمات"
+  },
+  "E452v": {
+    "fr": "Polyphosphate d'ammonium",
+    "en": "Ammonium polyphosphate",
+    "ar": "بولي فوسفات الأمونيوم"
+  },
+  "E1517": {
+    "fr": "Diacétine",
+    "en": "Glyceryl diacetate"
+  },
+  "E172": {
+    "fr": "Oxyde et hydroxyde de fer",
+    "en": "Iron oxides and iron hydroxides"
+  },
+  "E353": {
+    "fr": "Acide métatartrique",
+    "en": "Metatartaric acid"
+  },
+  "E488": {
+    "fr": "Mono- et diglycérides éthoxylés",
+    "en": "Ethoxylated Mono- and Di-Glycerides",
+    "ar": "مونو و دي جليسريدات إيثوكسيلية"
+  },
+  "E450i": {
+    "fr": "Pyrophosphate de sodium acide",
+    "en": "Disodium diphosphate",
+    "ar": "بيروفوسفات ثنائي الصوديوم"
+  },
+  "E331i": {
+    "fr": "Citrate monosodique",
+    "en": "Monosodium citrate"
+  },
+  "E301": {
+    "fr": "Ascorbate de sodium",
+    "en": "Sodium ascorbate"
+  },
+  "E202": {
+    "fr": "Sorbate de potassium",
+    "en": "Potassium sorbate"
+  },
+  "E142": {
+    "fr": "Vert acide brillant BS",
+    "en": "Green s"
+  },
+  "E555": {
+    "fr": "Silicate alumino-potassique",
+    "en": "Potassium aluminium silicate"
+  },
+  "E402": {
+    "fr": "Alginate de potassium",
+    "en": "Potassium alginate"
+  },
+  "E413": {
+    "fr": "Gomme de dragon",
+    "en": "Tragacanth",
+    "ar": "صمغ الكثيراء"
+  },
+  "E335": {
+    "fr": "Tartrates de sodium",
+    "en": "Sodium tartrates"
+  },
+  "E306": {
+    "fr": "Extrait riche en tocophérols",
+    "en": "Tocopherol-rich extract"
+  },
+  "E528": {
+    "fr": "Hydroxyde de magnésium",
+    "en": "Magnesium hydroxide"
+  },
+  "E107": {
+    "fr": "Jaune 2G",
+    "en": "Yellow 2G"
+  },
+  "E213": {
+    "fr": "Benzoate de calcium",
+    "en": "Calcium benzoate"
+  },
+  "E503i": {
+    "fr": "Carbonate d'ammonium",
+    "en": "Ammonium carbonate",
+    "ar": "كربونات الأمونيوم"
+  },
+  "E1204": {
+    "fr": "Pullulane",
+    "en": "Pullulan"
+  },
+  "E476": {
+    "fr": "Polyricinoléate de polyglycérol",
+    "en": "Polyglycerol polyricinoleate",
+    "ar": "بولي غليسيرول بولي ريسينوليات"
+  },
+  "E579": {
+    "fr": "gluconate de fer",
+    "en": "iron gluconate",
+    "ar": "غلوكونات الحديد الثنائي"
+  },
+  "E570": {
+    "fr": "Acide stéarique",
+    "en": "Fatty acids"
+  },
+  "E900": {
+    "fr": "Diméthylpolysiloxane et Méthylphénylpolysiloxane",
+    "en": "Dimethylpolysiloxane and Methylphenylpolysiloxane",
+    "ar": "ثنائي ميثيل بولي سيلوكسان وميثيل فينيل بولي سيلوكسان"
+  },
+  "E153": {
+    "fr": "Charbon végétal médicinal",
+    "en": "Vegetable carbon"
+  },
+  "E909": {
+    "fr": "Cire de blanc de baleine",
+    "en": "Spermaceti",
+    "ar": "إسبرماسيتي"
+  },
+  "E160f": {
+    "fr": "Ester éthylique de l'acide -apocaroténique-8'",
+    "en": "Ethyl ester of beta-apo-8'-carotenic acid (C 30)"
+  },
+  "E471": {
+    "fr": "Mono- et diglycérides d'acides gras",
+    "en": "Mono- and diglycerides of fatty acids",
+    "ar": "أحادي وثنائي الجليسريدات للأحماض الدهنية"
+  },
+  "E968": {
+    "fr": "Érythritol",
+    "en": "Erythritol",
+    "ar": "إريثريتول"
+  },
+  "E1421": {
+    "fr": "Amidon acétylé à acétate de vinyle",
+    "en": "Acetylated starch"
+  },
+  "E101": {
+    "fr": "Riboflavine",
+    "en": "Riboflavin"
+  },
+  "E241": {
+    "fr": "Gomme gaïac",
+    "en": "Gum Guaicum"
+  },
+  "E342": {
+    "fr": "Phosphates d'ammonium",
+    "en": "Ammonium phosphate"
+  },
+  "E915": {
+    "fr": "Esters de colophane",
+    "en": "Esters of Colophane"
+  },
+  "E441": {
+    "fr": "Huile de colza superglycérinée hydrogénée",
+    "en": "Superglycerinated hydrogenated rapeseed oil"
+  },
+  "E150b": {
+    "fr": "Caramel de sulfite caustique",
+    "en": "Caustic sulphite caramel"
+  },
+  "E494": {
+    "fr": "Monoléate de sorbitane",
+    "en": "Sorbitan monooleate"
+  },
+  "E446": {
+    "fr": "Succistéarine",
+    "en": "Succistearin",
+    "ar": "سكسيستيرين"
+  },
+  "E1402": {
+    "fr": "Amidon traité aux alcalis",
+    "en": "Alkaline modified starch"
+  },
+  "E1103": {
+    "fr": "Invertase",
+    "en": "Invertase",
+    "ar": "أنزيمة الانفرتاز"
+  },
+  "E307": {
+    "fr": "Alphatocophérol",
+    "en": "Alpha-tocopherol"
+  },
+  "E540": {
+    "fr": "Phosphate acide de calcium",
+    "en": "Dicalcium diphosphate",
+    "ar": "ثنائي فوسفات الكالسيوم"
+  },
+  "E246": {
+    "fr": "Glycolipides",
+    "en": "Glycolipids",
+    "ar": "غليكوليبيد"
+  },
+  "E106": {
+    "fr": "flavine mononucléotide",
+    "en": "flavin mononucleotide"
+  },
+  "E385": {
+    "fr": "Éthylène diamine tétra-acétate de calcium disodium",
+    "en": "Calcium disodium ethylenediaminetetraacetate",
+    "ar": "ثنائي صوديوم كالسيوم الإيديتات"
+  },
+  "E472d": {
+    "fr": "Ester tartrique de mono- et diglycérides d'acides gras",
+    "en": "Tartaric acid esters of mono- and diglycerides of fatty acids"
+  },
+  "E628": {
+    "fr": "Guanylate dipotassique",
+    "en": "Dipotassium guanylate"
+  },
+  "E363": {
+    "fr": "Acide succinique",
+    "en": "Succinic acid"
+  },
+  "E553a": {
+    "fr": "silicates de magnésium synthétiques",
+    "en": "synthetic magnesium silicates",
+    "ar": "مجموعة سيليكات المغنيسيوم الاصطناعية"
+  },
+  "E223": {
+    "fr": "Disulfite de sodium",
+    "en": "Sodium metabisulphite",
+    "ar": "بيروكبريتيت الصوديوم"
+  },
+  "E460i": {
+    "fr": "Cellulose microcristalline",
+    "en": "Microcrystalline cellulose"
+  },
+  "E518": {
+    "fr": "Sulfate de magnésium",
+    "en": "Magnesium sulphate"
+  },
+  "E238": {
+    "fr": "Formiate de calcium",
+    "en": "Calcium formiate",
+    "ar": "فورمات الكالسيوم"
+  },
+  "E633": {
+    "fr": "Inosinate de calcium",
+    "en": "Calcium inosinate"
+  },
+  "E905c": {
+    "fr": "Cire de pétrole",
+    "en": "Petroleum wax",
+    "ar": "شمع البترول"
+  },
+  "E399": {
+    "fr": "Lactobionate de calcium",
+    "en": "Calcium lactobionate"
+  },
+  "E960a": {
+    "fr": "Glycosides de stéviol issus de Stevia",
+    "en": "Steviol glycosides from Stevia",
+    "ar": "جليكوسيدات ستيفيول من ستيفيا"
+  },
+  "E110": {
+    "fr": "Jaune orangé S",
+    "en": "Sunset yellow FCF"
+  },
+  "E634": {
+    "fr": "5'-ribonucléotide calcique",
+    "en": "Calcium 5'-ribonucleotide"
+  },
+  "E475": {
+    "fr": "Esters polyglycériques d'acides gras",
+    "en": "Polyglycerol esters of fatty acids"
+  },
+  "E930": {
+    "fr": "Peroxyde de Calcium",
+    "en": "calcium peroxide",
+    "ar": "بيروكسيد الكالسيوم"
+  },
+  "E952": {
+    "fr": "Acide cyclamique et ses sels",
+    "en": "Cyclamic acid and its Na and Ca salts"
+  },
+  "E472b": {
+    "fr": "Ester diacétyl-lactique de mono- et diglycérides d'acides gras",
+    "en": "Lactic acid esters of mono- and diglycerides of fatty acids"
+  },
+  "E939": {
+    "fr": "Hélium",
+    "en": "Helium"
+  },
+  "E101i": {
+    "fr": "Riboflavine",
+    "en": "Riboflavin"
+  },
+  "E131": {
+    "fr": "Bleu patenté V",
+    "en": "Patent blue v"
+  },
+  "E424": {
+    "fr": "Curdlan",
+    "en": "Curdlan",
+    "ar": "كوردلان"
+  },
+  "E224": {
+    "fr": "Disulfite de potassium",
+    "en": "Potassium metabisulphite",
+    "ar": "ميتابيسلفيت البوتاسيوم"
+  },
+  "E916": {
+    "fr": "Iodate de calcium",
+    "en": "Calcium iodate"
+  },
+  "E557": {
+    "fr": "Silicate de zinc",
+    "en": "hemimorphite"
+  },
+  "E105": {
+    "fr": "Jaune solide",
+    "en": "Fast Yellow AB"
+  },
+  "E161a": {
+    "fr": "Flavoxanthine",
+    "en": "Flavoxanthin"
+  },
+  "E911": {
+    "fr": "Esters méthyliques d'acides gras",
+    "en": "Fatty acid methyl ester"
+  },
+  "E445": {
+    "fr": "Esters glycériques de résine de bois",
+    "en": "Glycerol esters of wood rosin"
+  },
+  "E337": {
+    "fr": "Tartrate double de sodium et de potassium",
+    "en": "Potassium sodium tartrate"
+  },
+  "E493": {
+    "fr": "Monolaurate de sorbitane",
+    "en": "Sorbitan monolaurate"
+  },
+  "E924a": {
+    "fr": "Bromate de potassium",
+    "en": "Potassium bromate",
+    "ar": "برومات البوتاسيوم"
+  },
+  "E927": {
+    "fr": "Azoformamide et Carbamide",
+    "en": "Azodicarbonamide and Carbamide",
+    "ar": "أزوديكاربوناميد وكارباميد"
+  },
+  "E282": {
+    "fr": "propionate de calcium",
+    "en": "calcium propionate",
+    "ar": "بروبيونات الكالسيوم"
+  },
+  "E381": {
+    "fr": "citrate ferrique d'ammonium",
+    "en": "ferric ammonium citrate"
+  },
+  "E482": {
+    "fr": "Stéaroyl-2-lactylate de calcium",
+    "en": "Calcium stearoyl-2-lactylate"
+  },
+  "E460": {
+    "fr": "cellulose",
+    "en": "Cellulose",
+    "ar": "سليولوز"
+  },
+  "E154": {
+    "fr": "Brun FK",
+    "en": "Brown FK"
+  },
+  "E320": {
+    "fr": "Butylhydroxyanisol",
+    "en": "Butylated hydroxyanisole (bha)"
+  },
+  "E1201": {
+    "fr": "Poly vinyl pyrrolidone",
+    "en": "Polyvinylpyrrolidone"
+  },
+  "E408": {
+    "fr": "Glycane de levure de boulanger",
+    "en": "Bakers yeast glycan"
+  },
+  "E329": {
+    "fr": "Lactate de magnésium",
+    "en": "Magnesium lactate"
+  },
+  "E469": {
+    "fr": "Carboxyméthylcellulose hydrolysée de manière enzymatique",
+    "en": "Enzymatically hydrolysed carboxymethylcellulose"
+  },
+  "E260": {
+    "fr": "Acide acétique",
+    "en": "Acetic acid",
+    "ar": "حمض الخليك"
+  },
+  "E150d": {
+    "fr": "Caramel au sulfite d'ammonium",
+    "en": "Sulphite ammonia caramel"
+  },
+  "E522": {
+    "fr": "Sulfate d'aluminium potassique",
+    "en": "Aluminium potassium sulphate"
+  },
+  "E535": {
+    "fr": "Ferrocyanure de sodium",
+    "en": "Sodium ferrocyanide"
+  },
+  "E400": {
+    "fr": "Acide alginique",
+    "en": "Alginic acid"
+  },
+  "E209": {
+    "fr": "Hydroxybenzoate d'hépthyle",
+    "en": "Heptylparaben"
+  },
+  "E468": {
+    "fr": "Carboxyméthylcellulose de sodium réticulée",
+    "en": "Cross-linked sodium carboxymethylcellulose"
+  },
+  "E409": {
+    "fr": "Arabinogalactane",
+    "en": "Arabinogalactan"
+  },
+  "E200": {
+    "fr": "Acide sorbique",
+    "en": "Sorbic acid",
+    "ar": "حمض السوربيك"
+  },
+  "E140": {
+    "fr": "Chlorophylles et Chlorophyllines",
+    "en": "Chlorophylls and Chlorophyllins"
+  },
+  "E328": {
+    "fr": "Lactate d'ammonium",
+    "en": "ammonium lactate"
+  },
+  "E355": {
+    "fr": "Acide adipique",
+    "en": "Adipic acid"
+  },
+  "E364": {
+    "fr": "Succinates de sodium",
+    "en": "Succinates de sodium",
+    "ar": "سكسينات الصوديوم"
+  },
+  "E501": {
+    "fr": "Carbonates de potassium",
+    "en": "Potassium carbonates"
+  },
+  "E1440": {
+    "fr": "Amidon hydroxypropyle",
+    "en": "Hydroxypropyl starch"
+  },
+  "E450v": {
+    "fr": "Diphosphate tétrapotassique",
+    "en": "Tetrapotassium diphosphate"
+  },
+  "E946": {
+    "fr": "Octafluorocyclobutane",
+    "en": "octafluorocyclobutane",
+    "ar": "أوكتافلوروسيكلوبوتان"
+  },
+  "E553": {
+    "fr": "Silicate de magnésium",
+    "en": "Magnesium silicates"
+  },
+  "E415": {
+    "fr": "Gomme xanthane",
+    "en": "Xanthan gum",
+    "ar": "صمغ الكزانتان"
+  },
+  "E333": {
+    "fr": "Citrates de calcium",
+    "en": "Calcium citrates"
+  },
+  "E452i": {
+    "fr": "Polyphosphate de sodium",
+    "en": "Sodium polyphosphate"
+  },
+  "E160c": {
+    "fr": "Extrait de paprika",
+    "en": "Paprika extract"
+  },
+  "E170": {
+    "fr": "Carbonates de calcium",
+    "en": "Calcium carbonates",
+    "ar": "مجموعة كربونات الكالسيوم"
+  },
+  "E215": {
+    "fr": "Dérivé sodique du 4-hydroxybenzoate d'éthyle",
+    "en": "Sodium ethyl p-hydroxybenzoate"
+  },
+  "E941": {
+    "fr": "Azote",
+    "en": "Nitrogen",
+    "ar": "نيتروجين"
+  },
+  "E304": {
+    "fr": "Acide palmityle-6-L-ascorbique - esters d'acides gras de l'acide ascorbique",
+    "en": "Fatty acid esters of ascorbic acid",
+    "ar": "إسترات الأحماض الدهنية لحمض الأسكوربيك"
+  },
+  "E923": {
+    "fr": "Persulfate d'ammonium",
+    "en": "ammonium persulfate",
+    "ar": "بيرسلفات الأمونيوم"
+  },
+  "E1206": {
+    "fr": "Copolymère de méthacrylate neutre",
+    "en": "Neutral methacrylate copolymer"
+  },
+  "E297": {
+    "fr": "Acide fumarique",
+    "en": "Fumaric acid"
+  },
+  "E307a": {
+    "fr": "D-alpha-tocophérol",
+    "en": "D-Alpha-tocopherol"
+  },
+  "E101a": {
+    "fr": "5'-phosphate sodique de riboflavine",
+    "en": "E101a food additive"
+  },
+  "E165": {
+    "fr": "Bleu de gardénia",
+    "en": "Gardenia Blue"
+  },
+  "E905f": {
+    "fr": "Huile minérale de viscosité moyenne et faible classe II",
+    "en": "Mineral oil medium and low viscosity class II"
+  },
+  "E642": {
+    "fr": "Hydrochlorure de lysine",
+    "en": "E642",
+    "ar": "هيدروكلوريد ليسين"
+  },
+  "E900a": {
+    "fr": "Polydiméthylsiloxane",
+    "en": "Dimethyl polysiloxane"
+  },
+  "E386": {
+    "fr": "EDTA disodique",
+    "en": "EDTA disodique",
+    "ar": "إي دي تي إيه ثنائي الصوديوم"
+  },
+  "E938": {
+    "fr": "Argon",
+    "en": "Argon"
+  },
+  "E161i": {
+    "fr": "Citranaxanthine",
+    "en": "Citranaxanthin",
+    "ar": "سيتراناكسانثين"
+  },
+  "E252": {
+    "fr": "Nitrate de potassium",
+    "en": "Potassium nitrate",
+    "ar": "نترات البوتاسيوم"
+  },
+  "E351": {
+    "fr": "Malate de potassium",
+    "en": "Potassium malate"
+  },
+  "E430": {
+    "fr": "Stéarate de polyoxyéthylène (8)",
+    "en": "Polyoxyethylene (8) stearate"
+  },
+  "E239": {
+    "fr": "Hexaméthylènetétramine",
+    "en": "Hexamethylene tetramine"
+  },
+  "E505": {
+    "fr": "Carbonate de fer",
+    "en": "Ferrous carbonate"
+  },
+  "E170i": {
+    "fr": "Carbonate de calcium",
+    "en": "Calcium carbonate",
+    "ar": "كربونات الكالسيوم"
+  },
+  "E230": {
+    "fr": "Biphényle",
+    "en": "Biphenyl",
+    "ar": "ثنائي الفينيل، ثنائي الفينيل، (C6H5)2"
+  },
+  "E536": {
+    "fr": "Ferrocyanure de potassium",
+    "en": "Potassium ferrocyanide"
+  },
+  "E333i": {
+    "fr": "Citrate monocalcique",
+    "en": "Monocalcium citrate"
+  },
+  "E452": {
+    "fr": "Polyphosphates",
+    "en": "Polyphosphates",
+    "ar": "متعدد الفوسفات"
+  },
+  "E356": {
+    "fr": "Adipate de sodium",
+    "en": "Sodium adipate"
+  },
+  "E411": {
+    "fr": "Gomme d'avoine",
+    "en": "E411 food additive"
+  },
+  "E620": {
+    "fr": "Acide glutamique",
+    "en": "Glutamic acid"
+  },
+  "E629": {
+    "fr": "Guanylate de calcium",
+    "en": "Calcium guanylate"
+  },
+  "E501i": {
+    "fr": "Carbonate de potassium",
+    "en": "Potassium carbonate",
+    "ar": "كربونات البوتاسيوم"
+  },
+  "E211": {
+    "fr": "Benzoate de sodium",
+    "en": "Sodium benzoate",
+    "ar": "بنزوات الصوديوم"
+  },
+  "E312": {
+    "fr": "Gallate dodécyle",
+    "en": "Dodecyl gallate"
+  },
+  "E1210": {
+    "fr": "Carbomère",
+    "en": "Carbomer",
+    "ar": "كاربومير"
+  },
+  "E945": {
+    "fr": "Chloropentafluoroéthane",
+    "en": "chloropentafluoroethane",
+    "ar": "كلورو خماسي فلورو الإيثان"
+  },
+  "E1102": {
+    "fr": "Glucose oxydase",
+    "en": "Glucose oxidase"
+  },
+  "E303": {
+    "fr": "Diacétate d'ascorbyle",
+    "en": "Potassium ascorbate",
+    "ar": "أسكوربات البوتاسيوم"
+  },
+  "E1403": {
+    "fr": "Amidon blanchi",
+    "en": "Bleached starch",
+    "ar": "نشا مبيَّض"
+  },
+  "E924": {
+    "fr": "Bromate de potassium",
+    "en": "Potassium bromate",
+    "ar": "برومات البوتاسيوم"
+  },
+  "E510": {
+    "fr": "Chlorure d'ammonium",
+    "en": "ammonium chloride",
+    "ar": "كلوريد الأمونيوم"
+  },
+  "E140i": {
+    "fr": "Chlorophylles",
+    "en": "Chlorophylls",
+    "ar": "يخضور"
+  },
+  "E216": {
+    "fr": "4-hydroxybenzoate de propyle",
+    "en": "Propyl para-hydroxybenzoate",
+    "ar": "بروبيل بارا هيدروكسي بنزوات"
+  },
+  "E927a": {
+    "fr": "Azoformamide",
+    "en": "Azodicarbonamide",
+    "ar": "أزوديكاربوناميد"
+  },
+  "E519": {
+    "fr": "Sulfate de cuivre",
+    "en": "Copper sulphate"
+  },
+  "E416": {
+    "fr": "Gomme karaya",
+    "en": "Karaya-gum"
+  },
+  "E390": {
+    "fr": "Thiodipropionate de distéaryle",
+    "en": "Thiodipropionate de distéaryle"
+  },
+  "E161": {
+    "fr": "Xanthophylles",
+    "en": "Xanthophylls"
+  },
+  "E334": {
+    "fr": "Acide L-tartrique",
+    "en": "L(+)-tartaric acid",
+    "ar": "حمض الطرطريك"
+  },
+  "E122": {
+    "fr": "Azorubine carmoisine",
+    "en": "Azorubine"
+  },
+  "E1430": {
+    "fr": "Diamidon glycériné",
+    "en": "Distarch glycerine"
+  },
+  "E227": {
+    "fr": "Sulfite acide de calcium",
+    "en": "Calcium bisulphite"
+  },
+  "E554": {
+    "fr": "Silicate alumino-sodique",
+    "en": "Sodium aluminium silicate"
+  },
+  "E367": {
+    "fr": "Fumarate de calcium",
+    "en": "Calcium fumarate"
+  },
+  "E166": {
+    "fr": "Bois de santal",
+    "en": "Sandalwood"
+  },
+  "E427": {
+    "fr": "Gomme de casse",
+    "en": "Cassia gum"
+  },
+  "E578": {
+    "fr": "Gluconate de calcium",
+    "en": "calcium gluconate",
+    "ar": "غلوكونات الكالسيوم"
+  },
+  "E1205": {
+    "fr": "Copolymère méthacrylate basique",
+    "en": "Basic methacrylate copolymer"
+  },
+  "E960": {
+    "fr": "Glucosides de stéviol",
+    "en": "Steviol glycosides"
+  },
+  "E161e": {
+    "fr": "Violaxanthine",
+    "en": "Violaxanthin",
+    "ar": "فيولاكسانثين"
+  },
+  "E304i": {
+    "fr": "Palmitate d'ascorbyle",
+    "en": "Ascorbyl palmitate",
+    "ar": "بالميتات الأسكوربيل"
+  },
+  "E969": {
+    "fr": "Advantame",
+    "en": "Advantame"
+  },
+  "E908": {
+    "fr": "Cire de son de riz",
+    "en": "Rice bran wax",
+    "ar": "شمع نخالة الأرز"
+  },
+  "E637": {
+    "fr": "Éthyl maltol",
+    "en": "Ethyl maltol"
+  },
+  "E965i": {
+    "fr": "D-Maltitol",
+    "en": "D-Maltitol"
+  },
+  "E160": {
+    "fr": "Caroténoïdes",
+    "en": "Carotenoids"
+  },
+  "E527": {
+    "fr": "Hydroxyde d'ammonium",
+    "en": "Ammonium hydroxide"
+  },
+  "E905a": {
+    "fr": "Huile minérale de qualité alimentaire",
+    "en": "mineral oil",
+    "ar": "زيت معدني"
+  },
+  "E961": {
+    "fr": "Néotame",
+    "en": "Neotame"
+  },
+  "E478": {
+    "fr": "Esters lactyles d'acides gras du glycérol et du propane-1",
+    "en": "Lactylated fatty acid esters of glycerol and propane-1"
+  },
+  "E922": {
+    "fr": "Persulfate de potassium",
+    "en": "Potassium persulfate",
+    "ar": "بيرسلفات البوتاسيوم"
+  },
+  "E160e": {
+    "fr": "Apocaroténal 8'",
+    "en": "Beta-apo-8′-carotenal (c30)"
+  },
+  "E163b": {
+    "fr": "Delphinidine",
+    "en": "Delphinidin"
+  },
+  "E182": {
+    "fr": "Orseille",
+    "en": "Orcein",
+    "ar": "أورسين"
+  },
+  "E314": {
+    "fr": "résine de gaïac",
+    "en": "Guaiacum",
+    "ar": "غاياكوم"
+  },
+  "E161h": {
+    "fr": "Zéaxanthine",
+    "en": "Zeaxanthin",
+    "ar": "زياكسانثين"
+  },
+  "E966": {
+    "fr": "Lactitol",
+    "en": "Lactitol"
+  },
+  "E710": {
+    "fr": "Spiramycines Antibiotique",
+    "en": "Spiramycin",
+    "ar": "سبيراميسين"
+  },
+  "E487": {
+    "fr": "Laurylsulfate de sodium",
+    "en": "sodium dodecyl sulfate"
+  },
+  "E530": {
+    "fr": "Oxyde de magnésium Périclase",
+    "en": "Magnesium oxide",
+    "ar": "أكسيد المغنسيوم"
+  },
+  "E405": {
+    "fr": "Alginate de propane-1",
+    "en": "Propane-1‚2-diol alginate"
+  },
+  "E236": {
+    "fr": "Acide formique",
+    "en": "Formic acid"
+  },
+  "E539": {
+    "fr": "Thiosulfate de sodium",
+    "en": "sodium thiosulfate"
+  },
+  "E436": {
+    "fr": "Tristéarate de polyoxyéthylène sorbitane",
+    "en": "Polyoxyethylene sorbitan tristearate"
+  },
+  "E515i": {
+    "fr": "Sulfate de potassium",
+    "en": "Potassium sulphate"
+  },
+  "E552": {
+    "fr": "Silicate de calcium",
+    "en": "Calcium silicate"
+  },
+  "E431": {
+    "fr": "Stéarate de polyoxyéthylène (40)",
+    "en": "Polyoxyethylene (40) stearate"
+  },
+  "E350": {
+    "fr": "malates de sodium",
+    "en": "Sodium malates",
+    "ar": "مالات الصوديوم"
+  },
+  "E124": {
+    "fr": "Ponceau 4R",
+    "en": "Ponceau 4r"
+  },
+  "E359": {
+    "fr": "Adipates d'ammonium",
+    "en": "ammonium adipate"
+  },
+  "E231": {
+    "fr": "Orthophénylphénol",
+    "en": "Orthophenyl phenol",
+    "ar": "أورثو فينيل فينول، 2-هيدروكسي ثنائي الفينيل"
+  },
+  "E332": {
+    "fr": "Citrates de potassium",
+    "en": "Potassium citrates"
+  },
+  "E141i": {
+    "fr": "Complexes cuivriques de chlorophylles",
+    "en": "Copper complexes of chlorophylls"
+  },
+  "E511": {
+    "fr": "Chlorure de magnésium",
+    "en": "Magnesium chloride"
+  },
+  "E1413": {
+    "fr": "Phosphate de diamidon phosphaté",
+    "en": "Phosphated distarch phosphate"
+  },
+  "E626": {
+    "fr": "Acide guanylique",
+    "en": "Guanylic acid"
+  },
+  "E621": {
+    "fr": "Glutamate monosodique",
+    "en": "Monosodium glutamate",
+    "ar": "غلوتامات أحادي الصوديوم"
+  },
+  "E219": {
+    "fr": "Dérivé sodique du 4-hydroxybenzoate de méthyle",
+    "en": "Sodium methyl p-hydroxybenzoate"
+  },
+  "E410": {
+    "fr": "gomme de caroube",
+    "en": "Locust bean gum"
+  },
+  "E1200": {
+    "fr": "Polydextrose",
+    "en": "Polydextrose"
+  },
+  "E500i": {
+    "fr": "Carbonate de sodium",
+    "en": "Sodium carbonate",
+    "ar": "كربونات الصوديوم"
+  },
+  "E419": {
+    "fr": "Gomme ghatti",
+    "en": "Gum ghatti",
+    "ar": "صمغ غاتي"
+  },
+  "E210": {
+    "fr": "Acide benzoïque",
+    "en": "Benzoic acid"
+  },
+  "E175": {
+    "fr": "Or",
+    "en": "Gold"
+  },
+  "E957": {
+    "fr": "Thaumatine",
+    "en": "Thaumatin",
+    "ar": "ثوماتين"
+  },
+  "E516": {
+    "fr": "Sulfate de calcium",
+    "en": "Calcium sulphate",
+    "ar": "كبريتات الكالسيوم"
+  },
+  "E918": {
+    "fr": "Oxydes d'azote",
+    "en": "Nitrogen oxides"
+  },
+  "E440a": {
+    "fr": "Pectine",
+    "en": "Pectin"
+  },
+  "E123": {
+    "fr": "Amarante",
+    "en": "Amaranth"
+  },
+  "E1518": {
+    "fr": "Triacétine",
+    "en": "Glyceryl triacetate"
+  },
+  "E965": {
+    "fr": "maltitol",
+    "en": "maltitol",
+    "ar": "مالتيتول"
+  },
+  "E1504": {
+    "fr": "Acétate d'éthyle",
+    "en": "ethyl acetate"
+  },
+  "E389": {
+    "fr": "Thiodipropionate de dilauryle",
+    "en": "Thiodipropionate de dilauryle"
+  },
+  "E1420": {
+    "fr": "Amidon acétylé",
+    "en": "Acetylated starch"
+  },
+  "E470a": {
+    "fr": "Stéarate de sodium/potassium/calcium",
+    "en": "Sodium/potassium and calcium salts of fatty acids"
+  },
+  "E435": {
+    "fr": "Monostéarate de polyoxyéthylène sorbitane",
+    "en": "Polyoxyethylene sorbitan monostearate"
+  },
+  "E1209": {
+    "fr": "Copolymère greffé d'alcool polyvinylique et de polyéthylèneglycol",
+    "en": "Polyvinyl alcohol-polyethylene glycol-graft-co-polymer"
+  },
+  "E500": {
+    "fr": "Carbonates de sodium",
+    "en": "Sodium carbonates"
+  },
+  "E313": {
+    "fr": "Gallate d'éthyle",
+    "en": "Ethyl gallate"
+  },
+  "E406": {
+    "fr": "Agar-agar",
+    "en": "Agar",
+    "ar": "أغار"
+  },
+  "E235": {
+    "fr": "Natamycine",
+    "en": "Natamycin",
+    "ar": "ناتاميسين"
+  },
+  "E509": {
+    "fr": "Chlorure de calcium",
+    "en": "Calcium chloride",
+    "ar": "كلوريد الكالسيوم"
+  },
+  "E472g": {
+    "fr": "Monoglycérides succinyles",
+    "en": "Succinylated monoglycerides",
+    "ar": "مونوغليسريدات سكسينيلات"
+  },
+  "E943b": {
+    "fr": "Isobutane",
+    "en": "Isobutane"
+  },
+  "E401": {
+    "fr": "alginate de sodium",
+    "en": "sodium alginate",
+    "ar": "ألجينات الصوديوم"
+  },
+  "E201": {
+    "fr": "Sorbate de sodium",
+    "en": "Sodium sorbate"
+  },
+  "E141": {
+    "fr": "Complexe cuivrique des chlorophylles et des chlorophyllines",
+    "en": "Copper complexes of chlorophylls and chlorophyllins"
+  },
+  "E302": {
+    "fr": "Ascorbate de calcium",
+    "en": "Calcium ascorbate"
+  },
+  "E960c": {
+    "fr": "Glycosides de stéviol produits par voie enzymatique",
+    "en": "Enzymatically produced steviol glycosides"
+  },
+  "E625": {
+    "fr": "Diglutamate de magnésium",
+    "en": "Magnesium diglutamate"
+  },
+  "E949": {
+    "fr": "Hydrogène",
+    "en": "Hydrogen"
+  },
+  "E332i": {
+    "fr": "Citrate monopotassique",
+    "en": "Monopotassium citrate"
+  },
+  "E171": {
+    "fr": "Oxyde de titane",
+    "en": "Titanium dioxide",
+    "ar": "ثنائي أكسيد التيتانيوم"
+  },
+  "E940": {
+    "fr": "Dichlorodifluorométhane",
+    "en": "Dichlorodifluoromethane"
+  },
+  "E388": {
+    "fr": "Acide thiodipropanoïque",
+    "en": "Thiodipropionic acid"
+  },
+  "E161c": {
+    "fr": "Cryptoxanthine",
+    "en": "Cryptoaxanthin",
+    "ar": "كريبتوزانتين"
+  },
+  "E350i": {
+    "fr": "Malate de sodium",
+    "en": "Sodium malate",
+    "ar": "مالات صوديوم"
+  },
+  "E163d": {
+    "fr": "Pélargonidine",
+    "en": "Pelargonidin",
+    "ar": "بيلارغونيدين"
+  },
+  "E515": {
+    "fr": "Sulfates de potassium",
+    "en": "Potassium sulphates"
+  },
+  "E954": {
+    "fr": "Saccharine et ses sels",
+    "en": "saccharin and its salts",
+    "ar": "سكارين"
+  },
+  "E948": {
+    "fr": "Dioxygène",
+    "en": "Oxygen"
+  },
+  "E380": {
+    "fr": "Citrate de triammonium",
+    "en": "Triammonium citrate"
+  },
+  "E307c": {
+    "fr": "DL-alpha-Tocophérol",
+    "en": "DL-Alpha-tocopherol"
+  },
+  "E650": {
+    "fr": "Acétate de zinc",
+    "en": "Zinc acetate",
+    "ar": "أسيتات الزنك، ملح الزنك"
+  },
+  "E632": {
+    "fr": "Inosinate dipotassique",
+    "en": "Dipotassium inosinate"
+  },
+  "E1510": {
+    "fr": "Éthanol",
+    "en": "Ethanol"
+  },
+  "E560": {
+    "fr": "Silicate de potassium",
+    "en": "Potassium silicate",
+    "ar": "سيليكات البوتاسيوم"
+  },
+  "E266": {
+    "fr": "Déhydroacétate de sodium",
+    "en": "Sodium dehydroacetate"
+  },
+  "E326": {
+    "fr": "lactate de potassium",
+    "en": "potassium lactate"
+  },
+  "E508": {
+    "fr": "Chlorure de potassium",
+    "en": "Potassium chloride"
+  },
+  "E127": {
+    "fr": "Érythrosine",
+    "en": "Erythrosine"
+  },
+  "E466": {
+    "fr": "Carboxyméthylcellulose",
+    "en": "Sodium carboxy methyl cellulose",
+    "ar": "كربوكسي ميثيل السليولوز"
+  },
+  "E222": {
+    "fr": "Bisulfite de sodium",
+    "en": "Sodium bisulphite"
+  },
+  "E321": {
+    "fr": "Butylhydroxytoluène",
+    "en": "Butylated hydroxytoluene"
+  },
+  "E461": {
+    "fr": "méthylcellulose",
+    "en": "methyl cellulose",
+    "ar": "ميثيل السليولوز"
+  },
+  "E261": {
+    "fr": "Acétates de potassium",
+    "en": "Potassium acetate",
+    "ar": "أسيتات البوتاسيوم"
+  },
+  "E422": {
+    "fr": "Glycérol",
+    "en": "Glycerol",
+    "ar": "غليسرول"
+  },
+  "E440i": {
+    "fr": "Pectine non amidée",
+    "en": "non-amidated pectines"
+  },
+  "E931": {
+    "fr": "Nitrogène",
+    "en": "Nitrogen"
+  },
+  "E484": {
+    "fr": "Citrate de stéaryle",
+    "en": "Stearyl citrate",
+    "ar": "ستيريل سترات"
+  },
+  "E575": {
+    "fr": "Glucono-delta-lactone",
+    "en": "Glucono-delta-lactone"
+  },
+  "E284": {
+    "fr": "Acide borique",
+    "en": "Boric acid"
+  },
+  "E317": {
+    "fr": "Isoascorbate de potassium",
+    "en": "Erythorbin acid"
+  },
+  "E343": {
+    "fr": "Phosphates de magnésium",
+    "en": "Magnesium phosphates"
+  },
+  "E905": {
+    "fr": "Cire synthétique",
+    "en": "Synthetic wax"
+  },
+  "E111": {
+    "fr": "Orange GGN",
+    "en": "Orange GGN"
+  },
+  "E541i": {
+    "fr": "Phosphate de sodium-aluminium acide",
+    "en": "Acid sodium aluminium phosphate"
+  },
+  "E1505": {
+    "fr": "Citrate de triéthyle",
+    "en": "Triethyl citrate"
+  },
+  "E160a": {
+    "fr": "carotènes mélangés",
+    "en": "carotene"
+  },
+  "E910": {
+    "fr": "Esters de cires",
+    "en": "Wax ester"
+  },
+  "E524": {
+    "fr": "Hydroxyde de sodium",
+    "en": "Sodium hydroxide",
+    "ar": "هيدروكسيد الصوديوم"
+  },
+  "E457": {
+    "fr": "Alpha-Cyclodextrine",
+    "en": "Alpha-Cyclodextrine",
+    "ar": "ألفا سيكلودكسترين"
+  },
+  "E905e": {
+    "fr": "Huile minérale de viscosité moyenne",
+    "en": "Mineral oil medium viscosity"
+  },
+  "E919": {
+    "fr": "Chlorure de nitrosyle",
+    "en": "Nitrosyl chloride",
+    "ar": "كلوريد النيتروسيل"
+  },
+  "E130": {
+    "fr": "Manascorubine",
+    "en": "Indanthrene blue RS"
+  },
+  "E545": {
+    "fr": "Polyphosphate d'ammonium",
+    "en": "Ammonium polyphosphate",
+    "ar": "بولي فوسفات الأمونيوم"
+  },
+  "E1452": {
+    "fr": "Succinate octenylique aluminique d'amidon",
+    "en": "Starch aluminium octenyl succinate"
+  },
+  "E152": {
+    "fr": "Noir de carbone",
+    "en": "Black 7984"
+  },
+  "E218": {
+    "fr": "4-hydroxybenzoate de méthyle",
+    "en": "Methyl p-hydroxybenzoate"
+  },
+  "E523": {
+    "fr": "Sulfate d'aluminium ammonique",
+    "en": "Aluminium ammonium sulphate"
+  },
+  "E418": {
+    "fr": "Gomme gellane",
+    "en": "Gellan gum",
+    "ar": "صمغ الجيلان"
+  },
+  "E325": {
+    "fr": "lactate de sodium",
+    "en": "sodium lactate",
+    "ar": "لاكتات الصوديوم"
+  },
+  "E465": {
+    "fr": "Éthylméthylcellulose",
+    "en": "Ethyl methyl cellulose"
+  },
+  "E1519": {
+    "fr": "Alcool benzylique",
+    "en": "Benzyl alcohol"
+  },
+  "E391": {
+    "fr": "Acide phytique",
+    "en": "Phytic acid"
+  },
+  "E265": {
+    "fr": "Acide déhydracétique",
+    "en": "Dehydroacetic acid"
+  },
+  "E492": {
+    "fr": "Tristéarate de sorbitane",
+    "en": "Sorbitan tristearate"
+  },
+  "E538": {
+    "fr": "Ferrocyanure de calcium",
+    "en": "Calcium ferrocyanide"
+  },
+  "E483": {
+    "fr": "Tartrate de stéaryle",
+    "en": "Stearyl tartrate"
+  },
+  "E283": {
+    "fr": "Propionate de potassium",
+    "en": "Potassium propionate"
+  },
+  "E344": {
+    "fr": "Citrate de lécithine",
+    "en": "Lecithin citrate"
+  },
+  "E1441": {
+    "fr": "Glycérine de diamidon hydroxypropylé",
+    "en": "Hydroxy propyl distarch glycerine"
+  },
+  "E576": {
+    "fr": "Gluconate de sodium",
+    "en": "Sodium gluconate"
+  },
+  "E901": {
+    "fr": "Cire d'abeille",
+    "en": "white and yellow beeswax",
+    "ar": "شمع العسل"
+  },
+  "E270": {
+    "fr": "Acide lactique",
+    "en": "Lactic acid",
+    "ar": "حمض اللبنيك"
+  },
+  "E1208": {
+    "fr": "Copolymère d'acétate de vinyle et de polyvinylpyrrolidone",
+    "en": "Polyvinylpyrrolidone-vinyl acetate copolymer"
+  },
+  "E470": {
+    "fr": "Sels de sodium/potassium/calcium d'acides gras",
+    "en": "Sodium/potassium/calcium and magnesium salts of fatty acids"
+  },
+  "E161f": {
+    "fr": "Rhodoxanthine",
+    "en": "Rhodoxanthin",
+    "ar": "رودوكسانثين"
+  },
+  "E906": {
+    "fr": "Gomme benzoïque",
+    "en": "Benzoin resin",
+    "ar": "صمغ بنزوين"
+  },
+  "E571": {
+    "fr": "Stéarate d'ammonium",
+    "en": "E571",
+    "ar": "ستيرات الأمونيوم"
+  },
+  "E541": {
+    "fr": "Phosphate d'aluminium et de sodium",
+    "en": "Sodium aluminium phosphate"
+  },
+  "E1412": {
+    "fr": "Phosphate de diamidon",
+    "en": "Distarch phosphate"
+  },
+  "E953": {
+    "fr": "isomalt",
+    "en": "isomalt",
+    "ar": "إسومالت"
+  },
+  "E240": {
+    "fr": "Formaldéhyde",
+    "en": "Formaldehyde"
+  },
+  "E100": {
+    "fr": "curcumine",
+    "en": "Curcumin",
+    "ar": "كركومين"
+  },
+  "E546": {
+    "fr": "Pyrophosphate de magnésium",
+    "en": "Magnesium pyrophosphate",
+    "ar": "بيروفوسفات المغنيسيوم"
+  },
+  "E343i": {
+    "fr": "Phosphate monomagnésique",
+    "en": "Monomagnesium phosphate",
+    "ar": "فوسفات المغنسيوم"
+  },
+  "E440": {
+    "fr": "Pectines",
+    "en": "Pectins",
+    "ar": "بكتين"
+  },
+  "E249": {
+    "fr": "Nitrite de potassium",
+    "en": "Potassium nitrite"
+  }
+}

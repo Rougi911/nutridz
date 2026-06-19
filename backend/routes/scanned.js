@@ -6,6 +6,7 @@ const express = require('express');
 const { getDB } = require('../db');
 const auth = require('../middleware/auth');
 const { ADDITIVES_CLASSIFICATION } = require('../data/additives');
+const { resolveAdditiveName } = require('../services/additiveResolver');
 
 function normalizeCode(tag) {
   const m = String(tag).match(/[eE](\d{3,4}[a-zA-Z]?)$/);
@@ -17,12 +18,14 @@ function mapAdditives(jsonStr) {
   try { tags = JSON.parse(jsonStr || '[]'); } catch { return []; }
   if (!Array.isArray(tags)) return [];
   return tags.map(tag => {
-    const code = normalizeCode(tag);
+    const code    = normalizeCode(tag);
     const classif = code ? ADDITIVES_CLASSIFICATION[code] : null;
+    const risk    = classif ? classif.risk : (code ? 'unknown' : null);
+    const name    = code ? resolveAdditiveName(code) : tag.replace(/^[a-z]{2}:/, '').toUpperCase();
     return {
       code: tag.replace(/^[a-z]{2}:/, '').toUpperCase(),
-      name: classif?.name || tag.replace(/^[a-z]{2}:/, '').toUpperCase(),
-      risk: classif?.risk ?? null,
+      name,
+      risk,
     };
   });
 }

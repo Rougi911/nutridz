@@ -8,6 +8,7 @@ const { getDB } = require('../db');
 const auth = require('../middleware/auth');
 const { calcMonthlyAGSTarget } = require('../services/agsUtils');
 const ADDITIVES = require('../data/additives.js');
+const { resolveAdditiveName } = require('../services/additiveResolver');
 
 const router = express.Router();
 const OFF_BASE         = 'https://world.openfoodfacts.org/api/v0/product';
@@ -166,14 +167,10 @@ router.post('/', auth, async (req, res) => {
   const additives = additiveTags.map(tag => {
     const codeDisplay = tag.replace(/^[a-z]{2}:/, '').toUpperCase(); // "en:e150d" → "E150D"
     const codeNorm    = normalizeAdditive(tag);                       // → "E150d" for dict key
-    let entry = null;
-    let risk  = null;
-    if (codeNorm) {
-      if (ADDITIVES.high_risk[codeNorm])     { entry = ADDITIVES.high_risk[codeNorm];     risk = 'high'; }
-      else if (ADDITIVES.moderate_risk[codeNorm]) { entry = ADDITIVES.moderate_risk[codeNorm]; risk = 'moderate'; }
-      else if (ADDITIVES.low_risk?.[codeNorm])    { entry = ADDITIVES.low_risk[codeNorm];      risk = 'low'; }
-    }
-    return { code: codeDisplay, name: entry?.name || codeDisplay, risk };
+    const classif     = codeNorm ? ADDITIVES.ADDITIVES_CLASSIFICATION[codeNorm] : null;
+    const risk        = classif ? classif.risk : (codeNorm ? 'unknown' : null);
+    const name        = codeNorm ? resolveAdditiveName(codeNorm) : codeDisplay;
+    return { code: codeDisplay, name, risk };
   });
 
   res.json({ barcode, name, score, verdict, nutri_score: nutriScore, nova, additives_count: additiveTags.length, additives });

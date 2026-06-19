@@ -4,6 +4,7 @@ const express = require('express');
 const { getDB } = require('../db');
 const auth = require('../middleware/auth');
 const { ADDITIVES_CLASSIFICATION } = require('../data/additives');
+const { resolveAdditiveName } = require('../services/additiveResolver');
 
 const router = express.Router();
 
@@ -25,7 +26,7 @@ function normalizeCode(tag) {
 
 // Pure function — testable sans DB
 function calcAdditivesStats(entries) {
-  const counts = { high: 0, moderate: 0, low: 0 };
+  const counts = { high: 0, moderate: 0, low: 0, unknown: 0 };
   const itemMap = {};
   let entriesWithAdditives = 0;
 
@@ -39,16 +40,18 @@ function calcAdditivesStats(entries) {
     for (const tag of tags) {
       const code = normalizeCode(tag);
       if (!code) continue;
-      const classif = ADDITIVES_CLASSIFICATION[code];
-      if (!classif) continue; // code inconnu → ignoré
 
-      counts[classif.risk]++;
+      const classif = ADDITIVES_CLASSIFICATION[code];
+      const risk = classif ? classif.risk : 'unknown';
+      const name = resolveAdditiveName(code);
+
+      counts[risk]++;
 
       if (!itemMap[code]) {
         itemMap[code] = {
           code: code.toUpperCase(), // "E150d" → "E150D" pour affichage
-          name: classif.name,
-          risk: classif.risk,
+          name,
+          risk,
           count: 0,
         };
       }
@@ -56,7 +59,7 @@ function calcAdditivesStats(entries) {
     }
   }
 
-  const riskOrder = { high: 0, moderate: 1, low: 2 };
+  const riskOrder = { high: 0, moderate: 1, low: 2, unknown: 3 };
   const items = Object.values(itemMap).sort((a, b) => {
     const rd = riskOrder[a.risk] - riskOrder[b.risk];
     return rd !== 0 ? rd : b.count - a.count;

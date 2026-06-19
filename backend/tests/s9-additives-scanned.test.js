@@ -89,7 +89,7 @@ describe('TU-S9-1 — POST /api/scan → champ risk dans chaque additif', () => 
     expect(low?.risk).toBe('low');
 
     const unknown = adds.find(a => a.code === 'E999');
-    expect(unknown?.risk).toBeNull();
+    expect(unknown?.risk).toBe('unknown'); // S10 : codes non classifiés → 'unknown' (plus null)
   });
 });
 
@@ -170,7 +170,7 @@ describe('TU-S9-3 — GET /api/scanned', () => {
     expect(mod?.risk).toBe('moderate');
 
     const unknown = adds.find(a => a.code === 'E999');
-    expect(unknown?.risk).toBeNull();
+    expect(unknown?.risk).toBe('unknown'); // S10 : codes non classifiés → 'unknown' (plus null)
   });
 });
 

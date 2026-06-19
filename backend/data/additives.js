@@ -63,6 +63,7 @@ const ADDITIVES_CLASSIFICATION = {
   E280:  { name: 'Acide propionique',                  risk: 'low',      concern: 'EFSA 2014 favorable — DJA non spécifiée' },
   E282:  { name: 'Propionate de calcium',              risk: 'moderate', concern: 'Données sur comportement (études enfants) insuffisantes — réévaluation EFSA recommandée' },
   E290:  { name: 'Dioxyde de carbone',                 risk: 'low',      concern: 'Gaz naturel — aucun risque alimentaire démontré' },
+  E296:  { name: 'Acide malique',                     risk: 'low',      concern: 'Acide naturel des fruits — EFSA 2019 : aucune préoccupation de sécurité' },
 
   // ── Antioxydants (E3xx) ───────────────────────────────────────────────────
   E300:  { name: 'Acide ascorbique (Vitamine C)',       risk: 'low',      concern: 'Antioxydant vitaminique — EFSA 2015 favorable ; attention combinaison avec benzoates' },
@@ -99,6 +100,7 @@ const ADDITIVES_CLASSIFICATION = {
   E471:  { name: 'Mono et diglycérides d\'acides gras', risk: 'moderate', concern: 'Impact potentiel microbiote (EFSA 2017) ; données insuffisantes sur certains esters' },
   E472e: { name: 'DATEM (Mono-diacétyltartrates de mono/diglycérides)', risk: 'moderate', concern: 'Réévaluation EFSA 2020 — données insuffisantes sur génotoxicité' },
   E481:  { name: 'Stéaroyl-2-lactylate de sodium (SSL)', risk: 'moderate', concern: 'Réévaluation EFSA 2020 — données manquantes sur certains métabolites' },
+  E428:  { name: 'Gélatine',                            risk: 'low',      concern: 'Protéine animale d\'usage traditionnel — EFSA : aucune préoccupation de sécurité' },
 
   // ── Exhausteurs de goût et divers (E5xx–E9xx) ─────────────────────────────
   E500:  { name: 'Carbonates de sodium',               risk: 'low',      concern: 'EFSA 2013 favorable — levure chimique' },
@@ -114,6 +116,7 @@ const ADDITIVES_CLASSIFICATION = {
   E631:  { name: 'Inosinate disodique',                risk: 'moderate', concern: 'Déconseillé aux personnes souffrant de goutte ; synergique E621' },
   E635:  { name: 'Ribonucléotides disodiques',         risk: 'moderate', concern: 'Mélange E627+E631 — même profil (goutte, synergiste umami)' },
   E900:  { name: 'Diméthylpolysiloxane',               risk: 'low',      concern: 'EFSA 2018 favorable — antimoussant, usage friture' },
+  E903:  { name: 'Cire de carnauba',                   risk: 'low',      concern: 'Cire végétale naturelle — EFSA 2012 favorable ; usage confiseries et fruits' },
   E950:  { name: 'Acésulfame K',                       risk: 'moderate', concern: 'Données sur effets métaboliques à long terme insuffisantes — EFSA 2000 (réévaluation demandée)' },
   E951:  { name: 'Aspartame',                          risk: 'moderate', concern: 'IARC 2B (2023) ; OMS 2023 : utilisation déconseillée pour perte de poids ; contre-indiqué PKU' },
   E952:  { name: 'Acide cyclamique',                   risk: 'high',     concern: 'Interdit aux USA ; cancérogène suspecté chez l\'animal ; EFSA 2000 DJA très basse' },
