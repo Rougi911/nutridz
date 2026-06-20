@@ -137,6 +137,7 @@ router.post('/', auth, async (req, res) => {
   const nutriScore  = product.nutriscore_grade || null;
   const nova        = product.nova_group || null;
   const additiveTags = (product.additives_tags || []);
+  const imageUrl    = product.image_front_small_url || product.image_front_url || product.image_url || null;
   const nut         = product.nutriments || {};
 
   const sugars  = parseFloat(nut['sugars_100g']        || 0);
@@ -160,9 +161,9 @@ router.post('/', auth, async (req, res) => {
     ).run(existing.times_this_month + 1, existing.id);
   } else {
     await db.prepare(`
-      INSERT INTO scanned_products (user_id, barcode, product_name, score, verdict, additives_json, nutri_score, nova, sugars_g, salt_g, sat_fat_g)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(req.userId, String(barcode), name, score, verdict, JSON.stringify(additiveTags), nutriScore, nova, sugars, salt, satFat);
+      INSERT INTO scanned_products (user_id, barcode, product_name, score, verdict, additives_json, nutri_score, nova, sugars_g, salt_g, sat_fat_g, image_url)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(req.userId, String(barcode), name, score, verdict, JSON.stringify(additiveTags), nutriScore, nova, sugars, salt, satFat, imageUrl);
   }
 
   const additives = additiveTags.map(tag => {
@@ -174,7 +175,7 @@ router.post('/', auth, async (req, res) => {
     return { code: codeDisplay, name, risk };
   });
 
-  res.json({ barcode, name, score, verdict, nutri_score: nutriScore, nova, additives_count: additiveTags.length, additives });
+  res.json({ barcode, name, score, verdict, nutri_score: nutriScore, nova, additives_count: additiveTags.length, additives, image_url: imageUrl });
 });
 
 // ─── GET /api/groceries/summary ─────────────────────────────────────────────

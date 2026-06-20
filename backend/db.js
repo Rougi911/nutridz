@@ -288,6 +288,9 @@ async function initDB() {
   )`);
   await db.exec(`CREATE INDEX IF NOT EXISTS idx_scanned_user_date ON scanned_products(user_id, scanned_at)`);
 
+  // S10c — photo produit OFF
+  try { await db.exec('ALTER TABLE scanned_products ADD COLUMN image_url TEXT DEFAULT NULL'); } catch (_) {}
+
   // DEF-13 — migrate weight_history (legacy) → weight_entries, then drop
   try {
     const legacy = await db.prepare('SELECT * FROM weight_history').all();

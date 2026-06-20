@@ -39,7 +39,7 @@ router.get('/', auth, async (req, res) => {
   const rows = await db.prepare(`
     SELECT id, barcode, product_name, score, verdict, nutri_score, nova,
            sugars_g, salt_g, sat_fat_g, times_this_month, scanned_at,
-           additives_json
+           additives_json, image_url
     FROM scanned_products
     WHERE user_id = ?
     ORDER BY scanned_at DESC
@@ -64,6 +64,7 @@ router.get('/', auth, async (req, res) => {
     times_this_month: r.times_this_month,
     scanned_at:       r.scanned_at,
     additives:        mapAdditives(r.additives_json),
+    image_url:        r.image_url || null,
   }));
 
   res.json({ total, limit, offset, products });
