@@ -25,11 +25,12 @@ const PORT = process.env.PORT || 3001;
 app.use(helmet());
 app.set('trust proxy', 1); // Render/Heroku proxy — needed for express-rate-limit
 
+// Origines autorisées : localhost UNIQUEMENT hors production (audit sécurité M-1).
 const allowedOrigins = [
-  'https://nutridz-web.onrender.com',
-  'https://nutrivita-v0.onrender.com', // production frontend (Phase 4)
-  'http://localhost:3000',
-  'http://localhost:19006',
+  'https://nutrivita-v0.onrender.com', // production frontend
+  ...(process.env.NODE_ENV !== 'production'
+    ? ['http://localhost:3000', 'http://localhost:19006']
+    : []),
 ];
 
 const corsOptions = {
@@ -52,6 +53,16 @@ app.options('*', cors(corsOptions));
 // are buffered in memory (prevents memory-based DoS on unauthenticated requests).
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
 app.use('/api/', limiter);
+
+// Rate-limit renforcé sur l'authentification (anti brute-force — audit sécurité M-2)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Trop de tentatives. Réessayez dans quelques minutes.' },
+});
+app.use('/api/auth', authLimiter);
 
 // Route-specific large body limit for /api/interpret (base64 image in JSON payload).
 // Must be mounted BEFORE the global express.json() so body-parser picks up this limit first.

@@ -38,7 +38,8 @@ router.post('/weight', auth, async (req, res) => {
   const db = getDB();
   const today = date || new Date().toISOString().split('T')[0];
 
-  await db.prepare('INSERT OR REPLACE INTO weight_history (user_id, weight, date) VALUES (?, ?, ?)').run(req.userId, weight, today);
+  // Table weight_entries (weight_history a été supprimée) — upsert préservant body_fat (audit L-1)
+  await db.prepare('INSERT INTO weight_entries (user_id, weight_kg, date) VALUES (?, ?, ?) ON CONFLICT(user_id, date) DO UPDATE SET weight_kg = excluded.weight_kg').run(req.userId, weight, today);
   await db.prepare('UPDATE profiles SET weight=?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?').run(weight, req.userId);
   res.json({ success: true, weight, date: today });
 });
@@ -46,7 +47,7 @@ router.post('/weight', auth, async (req, res) => {
 // GET /api/profile/weight/history
 router.get('/weight/history', auth, async (req, res) => {
   const db = getDB();
-  const rows = await db.prepare('SELECT * FROM weight_history WHERE user_id=? ORDER BY date DESC LIMIT 30').all(req.userId);
+  const rows = await db.prepare('SELECT * FROM weight_entries WHERE user_id=? ORDER BY date DESC LIMIT 30').all(req.userId);
   res.json(rows);
 });
 

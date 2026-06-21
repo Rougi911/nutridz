@@ -1,0 +1,16 @@
+# Secrets & env — NE JAMAIS committer (audit sécurité)
+.env
+.env.*
+!.env.example
+
+# Base de données locale
+*.db
+*.sqlite
+*.sqlite3
+
+# Dépendances
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*

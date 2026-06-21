@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
+const { getDB } = require('../db');
 const authMiddleware = require('../middleware/auth');
 
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    const favorites = await db.prepare(`
+    const favorites = await getDB().prepare(`
       SELECT f.dish_id, f.created_at,
              d.name, d.name_fr, d.name_ar, d.name_en,
              d.cuisine, d.emoji, d.kcal_per_portion as kcal
@@ -24,7 +24,7 @@ router.get('/', authMiddleware, async (req, res) => {
 router.post('/', authMiddleware, async (req, res) => {
   try {
     const { dish_id } = req.body;
-    await db.prepare(
+    await getDB().prepare(
       'INSERT OR IGNORE INTO favorites (user_id, dish_id) VALUES (?, ?)'
     ).run(req.userId, dish_id);
     res.json({ success: true });
@@ -36,7 +36,7 @@ router.post('/', authMiddleware, async (req, res) => {
 
 router.delete('/:dish_id', authMiddleware, async (req, res) => {
   try {
-    await db.prepare(
+    await getDB().prepare(
       'DELETE FROM favorites WHERE user_id = ? AND dish_id = ?'
     ).run(req.userId, req.params.dish_id);
     res.json({ success: true });

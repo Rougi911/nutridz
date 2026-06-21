@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/auth');
-const db = require('../db');
+const { getDB } = require('../db');
 
 router.post('/subscribe', authMiddleware, async (req, res) => {
   try {
     const { subscription } = req.body;
     if (!subscription) return res.status(400).json({ error: 'Subscription required' });
 
-    await db.prepare(`
+    await getDB().prepare(`
       INSERT OR REPLACE INTO push_subscriptions (user_id, subscription_json)
       VALUES (?, ?)
     `).run(req.userId, JSON.stringify(subscription));
@@ -22,7 +22,7 @@ router.post('/subscribe', authMiddleware, async (req, res) => {
 
 router.delete('/subscribe', authMiddleware, async (req, res) => {
   try {
-    await db.prepare(`
+    await getDB().prepare(`
       DELETE FROM push_subscriptions WHERE user_id = ?
     `).run(req.userId);
 

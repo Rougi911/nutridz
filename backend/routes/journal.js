@@ -207,9 +207,9 @@ router.get('/history', auth, async (req, res) => {
     SELECT date, SUM(kcal) as kcal, SUM(glucides) as glucides,
            SUM(proteines) as proteines, SUM(lipides) as lipides
     FROM journal_entries
-    WHERE user_id = ? AND date >= date('now', '-${days} days')
+    WHERE user_id = ? AND date >= date('now', ?)
     GROUP BY date ORDER BY date ASC
-  `).all(req.userId);
+  `).all(req.userId, `-${days} days`);
 
   res.json(rows);
 });
