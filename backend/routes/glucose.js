@@ -122,17 +122,7 @@ router.get('/metrics', auth, async (req, res) => {
   res.json(calculatePeriodMetrics(readings, targetMin, targetMax));
 });
 
-// DELETE /api/glucose/:id
-router.delete('/:id', auth, async (req, res) => {
-  const db = getDB();
-  const result = await db.prepare(
-    'DELETE FROM glucose_readings WHERE id = ? AND user_id = ?'
-  ).run(req.params.id, req.userId);
-  if (result.changes === 0) return res.status(404).json({ error: 'Lecture non trouvée' });
-  res.json({ success: true });
-});
-
-// DELETE /api/glucose/all
+// DELETE /api/glucose/all — DOIT être déclarée AVANT /:id (sinon "all" est capté comme un id)
 router.delete('/all', auth, async (req, res) => {
   const db = getDB();
   try {
@@ -142,6 +132,16 @@ router.delete('/all', auth, async (req, res) => {
     console.error('[glucose/delete-all] error:', err.message);
     res.status(500).json({ error: 'Erreur interne' });
   }
+});
+
+// DELETE /api/glucose/:id
+router.delete('/:id', auth, async (req, res) => {
+  const db = getDB();
+  const result = await db.prepare(
+    'DELETE FROM glucose_readings WHERE id = ? AND user_id = ?'
+  ).run(req.params.id, req.userId);
+  if (result.changes === 0) return res.status(404).json({ error: 'Lecture non trouvée' });
+  res.json({ success: true });
 });
 
 module.exports = router;
