@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const { body, validationResult } = require('express-validator');
 const { getDB } = require('../db');
 const auth = require('../middleware/auth');
+const { setAuthCookies, clearAuthCookies } = require('../utils/authCookie');
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET; // server.js guarantees JWT_SECRET is set before this module loads
@@ -36,7 +37,8 @@ router.post('/register', [
   }
 
   const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '30d' });
-  res.status(201).json({ token, user: { id: userId, email, name } });
+  const csrfToken = setAuthCookies(res, token); // P0-2 : cookie httpOnly + csrf (rétro-compatible, token gardé dans le body)
+  res.status(201).json({ token, csrfToken, user: { id: userId, email, name } });
 });
 
 // POST /api/auth/login
@@ -57,7 +59,21 @@ router.post('/login', [
   if (!valid) return res.status(401).json({ error: 'Identifiants incorrects' });
 
   const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '30d' });
-  res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
+  const csrfToken = setAuthCookies(res, token); // P0-2 : cookie httpOnly + csrf (rétro-compatible)
+  res.json({ token, csrfToken, user: { id: user.id, email: user.email, name: user.name } });
+});
+
+// POST /api/auth/logout — efface les cookies d'authentification (P0-2)
+router.post('/logout', (req, res) => {
+  clearAuthCookies(res);
+  res.json({ success: true });
+});
+
+// POST /api/auth/refresh — réémet un token (sliding) + rafraîchit les cookies (P0-2)
+router.post('/refresh', auth, (req, res) => {
+  const token = jwt.sign({ userId: req.userId }, JWT_SECRET, { expiresIn: '30d' });
+  const csrfToken = setAuthCookies(res, token);
+  res.json({ token, csrfToken });
 });
 
 // GET /api/user/export — RGPD data portability
