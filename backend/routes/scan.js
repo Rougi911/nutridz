@@ -9,6 +9,7 @@ const auth = require('../middleware/auth');
 const { calcMonthlyAGSTarget } = require('../services/agsUtils');
 const ADDITIVES = require('../data/additives.js');
 const { resolveAdditiveName } = require('../services/additiveResolver');
+const { computeNutriScoreGrade, detectBeverage } = require('../services/nutriScore');
 
 const router = express.Router();
 const OFF_BASE         = 'https://world.openfoodfacts.org/api/v0/product';
@@ -23,9 +24,13 @@ function normalizeAdditive(tag) {
   return m ? `E${m[1].toLowerCase()}` : null;
 }
 
+const NUTRISCORE_BASE = { a: 90, b: 75, c: 55, d: 35, e: 15 };
+
+// P1-7 : plus de fallback `?? 50`. Grade inconnu → null (laissé "non noté" en amont).
 function calcProductScore(nutriScore, additiveTags) {
-  const BASE = { a: 90, b: 75, c: 55, d: 35, e: 15 };
-  let score = BASE[(nutriScore || '').toLowerCase()] ?? 50;
+  const base = NUTRISCORE_BASE[(nutriScore || '').toLowerCase()];
+  if (base === undefined) return null;
+  let score = base;
 
   for (const tag of (additiveTags || [])) {
     const code = normalizeAdditive(tag);
@@ -38,9 +43,32 @@ function calcProductScore(nutriScore, additiveTags) {
 }
 
 function scoreToVerdict(score) {
+  if (score === null || score === undefined) return null; // non noté
   if (score >= 65) return 'Excellent';
   if (score >= 35) return 'Médiocre';
   return 'Mauvais';
+}
+
+/**
+ * P1-7 — Résolution complète du score produit avec source.
+ * Priorité : grade OFF → grade recalculé (Nutri-Score officiel) → non noté.
+ * @returns {{score:number|null, grade:string|null, verdict:string|null, source:'nutriscore_off'|'nutriscore_calcule'|'non_note'}}
+ */
+function resolveProductScore({ nutriScore, additiveTags, nutriments, categoriesTags, name }) {
+  let grade = (nutriScore || '').toLowerCase();
+  let source;
+
+  if (NUTRISCORE_BASE[grade] !== undefined) {
+    source = 'nutriscore_off';
+  } else {
+    const { isBeverage, isWater } = detectBeverage(categoriesTags, name);
+    grade = computeNutriScoreGrade(nutriments, { isBeverage, isWater });
+    if (!grade) return { score: null, grade: null, verdict: null, source: 'non_note' };
+    source = 'nutriscore_calcule';
+  }
+
+  const score = calcProductScore(grade, additiveTags);
+  return { score, grade, verdict: scoreToVerdict(score), source };
 }
 
 // ─── TDEE calculation (Mifflin-St Jeor) ─────────────────────────────────────
@@ -144,26 +172,37 @@ router.post('/', auth, async (req, res) => {
   const salt    = parseFloat(nut['salt_100g']          || 0);
   const satFat  = parseFloat(nut['saturated-fat_100g'] || 0);
 
-  const score   = calcProductScore(nutriScore, additiveTags);
-  const verdict = scoreToVerdict(score);
+  // P1-7 : grade OFF → grade recalculé (Nutri-Score officiel) → "non noté" (jamais 50/unknown)
+  const { score, verdict, grade, source } = resolveProductScore({
+    nutriScore,
+    additiveTags,
+    nutriments: nut,
+    categoriesTags: product.categories_tags,
+    name,
+  });
 
   const db = getDB();
   const month = new Date().toISOString().slice(0, 7); // YYYY-MM
 
-  // COR-09: application-level upsert — no SQL UNIQUE constraint
-  const existing = await db.prepare(
-    `SELECT id, times_this_month FROM scanned_products WHERE user_id = ? AND barcode = ? AND strftime('%Y-%m', scanned_at) = ?`
-  ).get(req.userId, String(barcode), month);
+  // Produit "non noté" (aucune donnée nutritionnelle) : score NULL incompatible avec le
+  // schéma (score NOT NULL). On ne persiste pas (il ne contribue à aucun cumul) ; la
+  // réponse live renvoie quand même score:null + source:'non_note'.
+  if (score !== null) {
+    // COR-09: application-level upsert — no SQL UNIQUE constraint
+    const existing = await db.prepare(
+      `SELECT id, times_this_month FROM scanned_products WHERE user_id = ? AND barcode = ? AND strftime('%Y-%m', scanned_at) = ?`
+    ).get(req.userId, String(barcode), month);
 
-  if (existing) {
-    await db.prepare(
-      `UPDATE scanned_products SET times_this_month = ?, scanned_at = CURRENT_TIMESTAMP WHERE id = ?`
-    ).run(existing.times_this_month + 1, existing.id);
-  } else {
-    await db.prepare(`
-      INSERT INTO scanned_products (user_id, barcode, product_name, score, verdict, additives_json, nutri_score, nova, sugars_g, salt_g, sat_fat_g, image_url)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(req.userId, String(barcode), name, score, verdict, JSON.stringify(additiveTags), nutriScore, nova, sugars, salt, satFat, imageUrl);
+    if (existing) {
+      await db.prepare(
+        `UPDATE scanned_products SET times_this_month = ?, scanned_at = CURRENT_TIMESTAMP WHERE id = ?`
+      ).run(existing.times_this_month + 1, existing.id);
+    } else {
+      await db.prepare(`
+        INSERT INTO scanned_products (user_id, barcode, product_name, score, verdict, additives_json, nutri_score, nova, sugars_g, salt_g, sat_fat_g, image_url, nutriscore_source)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(req.userId, String(barcode), name, score, verdict, JSON.stringify(additiveTags), nutriScore, nova, sugars, salt, satFat, imageUrl, source);
+    }
   }
 
   const additives = additiveTags.map(tag => {
@@ -175,7 +214,14 @@ router.post('/', auth, async (req, res) => {
     return { code: codeDisplay, name, risk };
   });
 
-  res.json({ barcode, name, score, verdict, nutri_score: nutriScore, nova, additives_count: additiveTags.length, additives, image_url: imageUrl });
+  res.json({
+    barcode, name, score, verdict,
+    nutri_score: nutriScore,              // grade OFF brut (null si absent) — rétro-compat
+    nutriscore_grade: grade,              // grade effectif (OFF ou recalculé)
+    nutriscore_source: source,            // nutriscore_off | nutriscore_calcule | non_note
+    nova,
+    additives_count: additiveTags.length, additives, image_url: imageUrl,
+  });
 });
 
 // ─── GET /api/groceries/summary ─────────────────────────────────────────────
@@ -308,6 +354,8 @@ router.post('/label', auth, async (req, res) => {
 
 module.exports = router;
 module.exports.calcProductScore   = calcProductScore;
+module.exports.resolveProductScore = resolveProductScore;
+module.exports.scoreToVerdict     = scoreToVerdict;
 module.exports.calcGrocerySummary = calcGrocerySummary;
 module.exports.normalizeAdditive  = normalizeAdditive;
 module.exports.callGeminiLabel    = callGeminiLabel;

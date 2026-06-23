@@ -291,6 +291,9 @@ async function initDB() {
   // S10c — photo produit OFF
   try { await db.exec('ALTER TABLE scanned_products ADD COLUMN image_url TEXT DEFAULT NULL'); } catch (_) {}
 
+  // P1-7 — source du Nutri-Score (nutriscore_off | nutriscore_calcule | non_note)
+  try { await db.exec('ALTER TABLE scanned_products ADD COLUMN nutriscore_source TEXT DEFAULT NULL'); } catch (_) {}
+
   // DEF-13 — migrate weight_history (legacy) → weight_entries, then drop
   try {
     const legacy = await db.prepare('SELECT * FROM weight_history').all();

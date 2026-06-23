@@ -31,8 +31,8 @@ describe('AL-08 calcProductScore', () => {
     expect(calcProductScore('c', ['en:e471'])).toBe(40);
   });
 
-  test('No Nutri-Score → 50 default', () => {
-    expect(calcProductScore(null, [])).toBe(50);
+  test('No Nutri-Score → null (P1-7 : plus de fallback 50, "non noté" géré en amont)', () => {
+    expect(calcProductScore(null, [])).toBeNull();
   });
 
   test('Multiple high-risk additives → score floored at 0', () => {
