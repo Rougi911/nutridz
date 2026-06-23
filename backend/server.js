@@ -106,6 +106,8 @@ app.use('/api/stats',   require('./routes/stats-additives'));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', version: '1.0.0' }));
+// P1-8 : endpoint léger hors /api (non rate-limité) pour le keep-warm anti cold-start Render
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 // Global error handler — MUST remain after all routes.
 // Re-applies CORS headers so error responses (413, 400, 500) are readable by the browser.
@@ -129,12 +131,15 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ error: 'Erreur interne du serveur' });
 });
 
-// Init DB puis démarrage
-initDB()
-  .then(() => app.listen(PORT, () => {
-    console.log(`NutriDZ API v2 démarrée sur le port ${PORT}`);
-    console.log(`CORS origines autorisées : ${allowedOrigins.join(', ')}`);
-  }))
-  .catch(err => { console.error('Échec init DB:', err); process.exit(1); });
+// Init DB puis démarrage — uniquement quand exécuté directement (`node server.js`).
+// Requis comme module (tests), on n'initialise pas la DB et on n'écoute pas.
+if (require.main === module) {
+  initDB()
+    .then(() => app.listen(PORT, () => {
+      console.log(`NutriDZ API v2 démarrée sur le port ${PORT}`);
+      console.log(`CORS origines autorisées : ${allowedOrigins.join(', ')}`);
+    }))
+    .catch(err => { console.error('Échec init DB:', err); process.exit(1); });
+}
 
 module.exports = app;

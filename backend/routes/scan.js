@@ -10,9 +10,34 @@ const { calcMonthlyAGSTarget } = require('../services/agsUtils');
 const ADDITIVES = require('../data/additives.js');
 const { resolveAdditiveName } = require('../services/additiveResolver');
 const { computeNutriScoreGrade, detectBeverage } = require('../services/nutriScore');
+const offCache = require('../services/offCache');
 
 const router = express.Router();
 const OFF_BASE         = 'https://world.openfoodfacts.org/api/v0/product';
+// P1-8 : ne demander à OFF que les champs utiles (payload ÷10, parsing plus rapide).
+// categories_tags est requis pour la détection boisson/eau (P1-7).
+const OFF_FIELDS = [
+  'product_name', 'product_name_fr', 'nutriscore_grade', 'nova_group',
+  'additives_tags', 'categories_tags', 'image_front_small_url',
+  'image_front_url', 'image_url', 'nutriments',
+].join(',');
+
+// P1-8 : récupération OFF avec cache mémoire (clé = barcode) + repli sur entrée périmée.
+// Retourne le produit, `null` si OFF déclare le produit introuvable, lève si réseau KO sans cache.
+async function fetchOffProduct(barcode) {
+  const fresh = offCache.getFresh(barcode);
+  if (fresh) return fresh;
+  try {
+    const { data } = await axios.get(`${OFF_BASE}/${barcode}.json?fields=${OFF_FIELDS}`, { timeout: 10000 });
+    if (!data.status || !data.product) return null;
+    offCache.set(barcode, data.product);
+    return data.product;
+  } catch (err) {
+    const stale = offCache.getStale(barcode);
+    if (stale) return stale; // OFF indisponible → on sert le cache même périmé
+    throw err;
+  }
+}
 const GEMINI_API_BASE  = 'https://generativelanguage.googleapis.com/v1beta/models';
 const GEMINI_MODEL     = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 
@@ -141,6 +166,27 @@ function calcGrocerySummary(rows, periodDays, tdee) {
   };
 }
 
+// P1-8 — Upsert applicatif du scan (par utilisateur, par mois). Appelé en tâche de fond.
+async function persistScan({ userId, barcode, name, score, verdict, additiveTags, nutriScore, nova, sugars, salt, satFat, imageUrl, source }) {
+  const db = getDB();
+  const month = new Date().toISOString().slice(0, 7); // YYYY-MM
+  // COR-09: application-level upsert — no SQL UNIQUE constraint
+  const existing = await db.prepare(
+    `SELECT id, times_this_month FROM scanned_products WHERE user_id = ? AND barcode = ? AND strftime('%Y-%m', scanned_at) = ?`
+  ).get(userId, barcode, month);
+
+  if (existing) {
+    await db.prepare(
+      `UPDATE scanned_products SET times_this_month = ?, scanned_at = CURRENT_TIMESTAMP WHERE id = ?`
+    ).run(existing.times_this_month + 1, existing.id);
+  } else {
+    await db.prepare(`
+      INSERT INTO scanned_products (user_id, barcode, product_name, score, verdict, additives_json, nutri_score, nova, sugars_g, salt_g, sat_fat_g, image_url, nutriscore_source)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(userId, barcode, name, score, verdict, JSON.stringify(additiveTags), nutriScore, nova, sugars, salt, satFat, imageUrl, source);
+  }
+}
+
 // ─── POST /api/scan ──────────────────────────────────────────────────────────
 
 router.post('/', auth, async (req, res) => {
@@ -151,14 +197,13 @@ router.post('/', auth, async (req, res) => {
 
   let product;
   try {
-    const { data } = await axios.get(`${OFF_BASE}/${barcode}.json`, { timeout: 10000 });
-    if (!data.status || !data.product) {
-      return res.status(404).json({ error: 'Produit non trouvé dans OpenFoodFacts', status: 'not_found' });
-    }
-    product = data.product;
+    product = await fetchOffProduct(barcode);
   } catch (err) {
     console.error('[scan] OFF error:', err.response?.status, err.code);
     return res.status(502).json({ error: 'OpenFoodFacts indisponible' });
+  }
+  if (!product) {
+    return res.status(404).json({ error: 'Produit non trouvé dans OpenFoodFacts', status: 'not_found' });
   }
 
   const name        = product.product_name || product.product_name_fr || 'Produit inconnu';
@@ -181,30 +226,6 @@ router.post('/', auth, async (req, res) => {
     name,
   });
 
-  const db = getDB();
-  const month = new Date().toISOString().slice(0, 7); // YYYY-MM
-
-  // Produit "non noté" (aucune donnée nutritionnelle) : score NULL incompatible avec le
-  // schéma (score NOT NULL). On ne persiste pas (il ne contribue à aucun cumul) ; la
-  // réponse live renvoie quand même score:null + source:'non_note'.
-  if (score !== null) {
-    // COR-09: application-level upsert — no SQL UNIQUE constraint
-    const existing = await db.prepare(
-      `SELECT id, times_this_month FROM scanned_products WHERE user_id = ? AND barcode = ? AND strftime('%Y-%m', scanned_at) = ?`
-    ).get(req.userId, String(barcode), month);
-
-    if (existing) {
-      await db.prepare(
-        `UPDATE scanned_products SET times_this_month = ?, scanned_at = CURRENT_TIMESTAMP WHERE id = ?`
-      ).run(existing.times_this_month + 1, existing.id);
-    } else {
-      await db.prepare(`
-        INSERT INTO scanned_products (user_id, barcode, product_name, score, verdict, additives_json, nutri_score, nova, sugars_g, salt_g, sat_fat_g, image_url, nutriscore_source)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(req.userId, String(barcode), name, score, verdict, JSON.stringify(additiveTags), nutriScore, nova, sugars, salt, satFat, imageUrl, source);
-    }
-  }
-
   const additives = additiveTags.map(tag => {
     const codeDisplay = tag.replace(/^[a-z]{2}:/, '').toUpperCase(); // "en:e150d" → "E150D"
     const codeNorm    = normalizeAdditive(tag);                       // → "E150d" for dict key
@@ -222,6 +243,16 @@ router.post('/', auth, async (req, res) => {
     nova,
     additives_count: additiveTags.length, additives, image_url: imageUrl,
   });
+
+  // P1-8 : persistance en tâche de fond — la réponse est déjà partie, on ne bloque pas
+  // sur les requêtes SQLite. Une erreur d'écriture est loguée sans casser la réponse.
+  // "Non noté" (score null) non persisté : score est NOT NULL en base.
+  if (score !== null) {
+    persistScan({
+      userId: req.userId, barcode: String(barcode), name, score, verdict,
+      additiveTags, nutriScore, nova, sugars, salt, satFat, imageUrl, source,
+    }).catch(err => console.error('[scan] persist error:', err.message));
+  }
 });
 
 // ─── GET /api/groceries/summary ─────────────────────────────────────────────
