@@ -9,7 +9,7 @@ const auth = require('../middleware/auth');
 const { calcMonthlyAGSTarget } = require('../services/agsUtils');
 const ADDITIVES = require('../data/additives.js');
 const { resolveAdditiveName } = require('../services/additiveResolver');
-const { computeNutriScoreGrade, detectBeverage } = require('../services/nutriScore');
+const { computeNutriScoreGrade, detectBeverage, detectSweeteners, detectRedMeat } = require('../services/nutriScore');
 const offCache = require('../services/offCache');
 
 const router = express.Router();
@@ -86,8 +86,11 @@ function resolveProductScore({ nutriScore, additiveTags, nutriments, categoriesT
   if (NUTRISCORE_BASE[grade] !== undefined) {
     source = 'nutriscore_off';
   } else {
+    // Repli : recalcul Nutri-Score 2023 (P1-7c) à partir des nutriments.
     const { isBeverage, isWater } = detectBeverage(categoriesTags, name);
-    grade = computeNutriScoreGrade(nutriments, { isBeverage, isWater });
+    const hasSweeteners = detectSweeteners(additiveTags);
+    const isRedMeat = detectRedMeat(categoriesTags);
+    grade = computeNutriScoreGrade(nutriments, { isBeverage, isWater, hasSweeteners, isRedMeat });
     if (!grade) return { score: null, grade: null, verdict: null, source: 'non_note' };
     source = 'nutriscore_calcule';
   }
