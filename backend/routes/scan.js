@@ -10,6 +10,7 @@ const { calcMonthlyAGSTarget } = require('../services/agsUtils');
 const ADDITIVES = require('../data/additives.js');
 const { resolveAdditiveName } = require('../services/additiveResolver');
 const { computeNutriScoreGrade, detectBeverage, detectSweeteners, detectRedMeat } = require('../services/nutriScore');
+const { buildComposition } = require('../services/compositionParser');
 const offCache = require('../services/offCache');
 
 const router = express.Router();
@@ -301,10 +302,10 @@ async function callGeminiLabel(base64Image, mimeType) {
 
   const prompt = `You are a nutritional label parser.
 STRICTLY FORBIDDEN: Do not provide medical advice, diagnoses, prognoses, treatment recommendations, or drug interactions.
-The image shows a product nutrition label. Extract the nutritional values per 100g (or per 100ml for liquids).
+The image shows a product nutrition label and ingredient list. Extract the nutritional values per 100g (or per 100ml for liquids), the ingredient list, and any additives.
 Return ONLY valid JSON — no markdown fences, no explanations:
-{"product_name":string_or_null,"per_100g":{"kcal":number,"glucides":number,"dont_sucres":number,"proteines":number,"lipides":number,"dont_satures":number,"fibres":number,"sel":number},"serving_g":number_or_null,"confidence":0.0_to_1.0}
-If a value is not visible, use null. All numbers in grams unless noted (kcal in kcal). "sel" in grams.`;
+{"product_name":string_or_null,"per_100g":{"kcal":number,"glucides":number,"dont_sucres":number,"proteines":number,"lipides":number,"dont_satures":number,"fibres":number,"sel":number},"ingredients_text":string_or_null,"additives":[string],"serving_g":number_or_null,"confidence":0.0_to_1.0}
+"ingredients_text": the ingredient list exactly as written. "additives": E-codes or additive names found. If a value is not visible, use null (do not invent). All numbers in grams unless noted (kcal in kcal). "sel" in grams.`;
 
   const url = `${GEMINI_API_BASE}/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
   const body = {
@@ -386,7 +387,50 @@ router.post('/label', auth, async (req, res) => {
   });
 });
 
+// ─── POST /api/scan/composition — photo étiquette → nutriments + additifs (S5) ─
+// Mêmes validations que /label. Le JSON brut Gemini est durci par buildComposition.
+router.post('/composition', auth, async (req, res) => {
+  const { image, mimeType = 'image/jpeg' } = req.body;
+
+  if (typeof image !== 'string' || image.length === 0) {
+    return res.status(422).json({ error: 'Champ image (base64) requis' });
+  }
+  if (image.length > 20 * 1024 * 1024) {
+    return res.status(413).json({ error: 'Image trop volumineuse (limite 15 Mo)' });
+  }
+  const SUPPORTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+  if (typeof mimeType !== 'string' || !SUPPORTED_TYPES.includes(mimeType)) {
+    return res.status(422).json({ error: 'mimeType non supporté (jpeg|png|webp)' });
+  }
+
+  let raw;
+  try {
+    raw = await callGeminiLabel(image, mimeType);
+  } catch (err) {
+    const status = err.response?.status;
+    console.error('[scan/composition] Gemini error:', status, err.message);
+    if (!status || status >= 500 || err.code === 'ECONNABORTED' || err.code === 'ECONNREFUSED') {
+      return res.status(502).json({ error: 'Service IA temporairement indisponible' });
+    }
+    return res.status(422).json({ error: 'Impossible de lire l\'étiquette nutritionnelle' });
+  }
+
+  const comp = buildComposition(raw); // parser durci (S5)
+  res.json({
+    source:             'gemini_label',
+    product_name:       comp.product_name,
+    per_100g:           comp.per_100g,
+    additives:          comp.additives,         // [{code,name,risk}]
+    serving_g:          raw.serving_g || null,
+    confidence:         comp.confidence,
+    needs_confirmation: comp.needs_confirmation,
+    warnings:           comp.warnings,
+    disclaimer:         DISCLAIMER_LABEL,
+  });
+});
+
 module.exports = router;
+module.exports.buildComposition   = buildComposition;
 module.exports.calcProductScore   = calcProductScore;
 module.exports.resolveProductScore = resolveProductScore;
 module.exports.scoreToVerdict     = scoreToVerdict;
