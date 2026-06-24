@@ -100,6 +100,7 @@ app.use('/api/interpret', require('./routes/interpret'));
 app.use('/api/scan',    require('./routes/scan'));
 app.use('/api/groceries', require('./routes/scan'));
 app.use('/api/scanned', require('./routes/scanned'));
+app.use('/api/alternatives', require('./routes/alternatives')); // S12
 app.use('/api/strava',  require('./routes/strava'));
 app.use('/api/stats',   require('./routes/deficiencies'));
 app.use('/api/stats',   require('./routes/stats-additives'));
