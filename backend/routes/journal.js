@@ -122,6 +122,8 @@ router.post('/', auth, async (req, res) => {
   const meal_type_raw  = req.body.meal_type;
   const date           = req.body.date;
   const modifiers      = req.body.modifiers || [];
+  // S15 — entrée liée (ex : sauce rattachée à un aliment du même repas)
+  const parent_entry_id = req.body.parent_entry_id || null;
 
   const meal_type = MEAL_TYPE_FROM_API[meal_type_raw] || meal_type_raw;
 
@@ -168,11 +170,12 @@ router.post('/', auth, async (req, res) => {
     lipides:   Math.round(lipides   * 10) / 10,
     fibres:    Math.round(fibres    * 10) / 10,
     modifiers_json: JSON.stringify(validModifiers),
+    parent_entry_id,
   };
 
   await db.prepare(`
-    INSERT INTO journal_entries (id, user_id, date, meal_type, product_id, grams, kcal, glucides, proteines, lipides, fibres, modifiers_json)
-    VALUES (@id, @user_id, @date, @meal_type, @product_id, @grams, @kcal, @glucides, @proteines, @lipides, @fibres, @modifiers_json)
+    INSERT INTO journal_entries (id, user_id, date, meal_type, product_id, grams, kcal, glucides, proteines, lipides, fibres, modifiers_json, parent_entry_id)
+    VALUES (@id, @user_id, @date, @meal_type, @product_id, @grams, @kcal, @glucides, @proteines, @lipides, @fibres, @modifiers_json, @parent_entry_id)
   `).run(entry);
 
   res.status(201).json(entry);
@@ -188,6 +191,61 @@ router.delete('/all', auth, async (req, res) => {
     console.error('[journal/delete-all] error:', err.message);
     res.status(500).json({ error: 'Erreur interne' });
   }
+});
+
+// PATCH /api/journal/:id — modifier la quantité (recalcul proportionnel kcal/macros)
+// IDOR-guard : ne touche que les entrées de req.userId.
+router.patch('/:id', auth, async (req, res) => {
+  const grams = req.body.grams ?? req.body.amount;
+  if (grams === undefined || grams === null || isNaN(grams) || grams <= 0) {
+    return res.status(400).json({ error: 'Quantité invalide' });
+  }
+
+  const db = getDB();
+  const entry = await db.prepare(
+    'SELECT * FROM journal_entries WHERE id = ? AND user_id = ?'
+  ).get(req.params.id, req.userId);
+  if (!entry) return res.status(404).json({ error: 'Entrée non trouvée' });
+
+  const product = await db.prepare('SELECT * FROM products WHERE id = ?').get(entry.product_id);
+  if (!product) return res.status(404).json({ error: 'Produit non trouvé' });
+
+  const ratio = grams / 100;
+  let kcal      = (product.kcal_per100 || 0) * ratio;
+  let glucides  = (product.glucides    || 0) * ratio;
+  let proteines = (product.proteines   || 0) * ratio;
+  let lipides   = (product.lipides     || 0) * ratio;
+  let fibres    = (product.fibres      || 0) * ratio;
+
+  // Les modifiers ont leur propre quantité (indépendante de l'aliment) → réappliqués tels quels.
+  try {
+    for (const mod of JSON.parse(entry.modifiers_json || '[]')) {
+      const def = findById(mod.id);
+      if (!def || !mod.amount_g) continue;
+      const r = mod.amount_g / 100;
+      kcal      += def.kcal_per_100g * r;
+      glucides  += def.glucides      * r;
+      proteines += def.proteines     * r;
+      lipides   += def.lipides       * r;
+      fibres    += def.fibres        * r;
+    }
+  } catch (_) {}
+
+  const updated = {
+    grams,
+    kcal:      Math.round(kcal),
+    glucides:  Math.round(glucides  * 10) / 10,
+    proteines: Math.round(proteines * 10) / 10,
+    lipides:   Math.round(lipides   * 10) / 10,
+    fibres:    Math.round(fibres    * 10) / 10,
+  };
+
+  await db.prepare(`
+    UPDATE journal_entries SET grams = ?, kcal = ?, glucides = ?, proteines = ?, lipides = ?, fibres = ?
+    WHERE id = ? AND user_id = ?
+  `).run(updated.grams, updated.kcal, updated.glucides, updated.proteines, updated.lipides, updated.fibres, req.params.id, req.userId);
+
+  res.json({ id: req.params.id, ...updated });
 });
 
 // DELETE /api/journal/:id

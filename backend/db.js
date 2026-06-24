@@ -2,8 +2,9 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
 const { applyTranslations } = require('./scripts/applyDishTranslations');
+const { CONDIMENTS } = require('./data/condiments');
 
-const DB_PATH = path.join(__dirname, 'nutridz.db');
+const DB_PATH = process.env.NUTRIDZ_DB_PATH || path.join(__dirname, 'nutridz.db');
 
 class Statement {
   constructor(db, sql) {
@@ -242,6 +243,12 @@ async function initDB() {
   // Add source column to products (safe for existing DBs)
   try { await db.exec('ALTER TABLE products ADD COLUMN source TEXT DEFAULT NULL'); } catch (_) {}
 
+  // S15 — portion par défaut (pré-remplit l'éditeur), surtout pour les condiments
+  try { await db.exec('ALTER TABLE products ADD COLUMN portion_default_g INTEGER DEFAULT NULL'); } catch (_) {}
+
+  // S15 — lien sauce → aliment parent (entrée de journal liée)
+  try { await db.exec('ALTER TABLE journal_entries ADD COLUMN parent_entry_id TEXT DEFAULT NULL'); } catch (_) {}
+
   // Add Strava & Google Fit columns to profiles (safe for existing DBs)
   const stravaColumns = [
     'ALTER TABLE profiles ADD COLUMN strava_access_token TEXT',
@@ -319,6 +326,7 @@ async function initDB() {
   } catch (_) {}
 
   await seedDishes();
+  await seedCondiments();
   await applyDishTranslationsFromFile();
   console.log('✅ Base de données initialisée');
 }
@@ -417,6 +425,34 @@ async function seedDishes() {
     );
   }
   console.log(`🍽️ ${dishes.length} plats de seed insérés`);
+}
+
+// S15 — seed du catalogue sauces & condiments dans products.
+// Idempotent : barcode synthétique `cond:<key>` + INSERT OR IGNORE (UNIQUE sur barcode).
+// Macros P/G/L laissées à NULL (à compléter via CIQUAL/OFF — voir data/condiments.js).
+async function seedCondiments() {
+  const db = getDB();
+  const stmt = db.prepare(`
+    INSERT OR IGNORE INTO products
+      (barcode, name, brand, kcal_per100, glucides, proteines, lipides, category, portion_default_g, is_algerian, source)
+    VALUES (@barcode, @name, @brand, @kcal_per100, @glucides, @proteines, @lipides, @category, @portion_default_g, 0, 'condiment')
+  `);
+  let inserted = 0;
+  for (const cdt of CONDIMENTS) {
+    const r = await stmt.run({
+      barcode: `cond:${cdt.key}`,
+      name: cdt.name_fr,
+      brand: 'NutriVita',
+      kcal_per100: cdt.kcal_per_100g,
+      glucides: cdt.glucides,
+      proteines: cdt.proteines,
+      lipides: cdt.lipides,
+      category: cdt.category,
+      portion_default_g: cdt.portion_default_g,
+    });
+    inserted += r.changes;
+  }
+  if (inserted > 0) console.log(`🧂 ${inserted} condiment(s) seedé(s)`);
 }
 
 async function applyDishTranslationsFromFile() {
