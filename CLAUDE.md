@@ -337,3 +337,22 @@ partiellement restylé — ne pas écraser, merger intelligemment.
 sont déjà embarqués par react-scripts 5.0.1. Ne jamais les ajouter en devDependencies.
 Ne jamais créer ni modifier package.json ou package-lock.json dans ce projet.
 user-event utilisé dans ce projet = v13 (API synchrone, userEvent.click() sans await).
+
+## Boucle de dev autonome (déclencheur : « lance la boucle »)
+Quand l'utilisateur dit « lance la boucle » (ou équivalent), exécuter ceci sans redemander :
+
+1. Lire `C:\AppliSanteNutriVita\BACKLOG.md` et appliquer les **règles de la boucle** en tête de ce fichier.
+2. Travailler **uniquement dans le repo nutridz (backend)**.
+3. Prendre la **première tâche non cochée** de ce périmètre → implémenter → `npm test` →
+   si vert : `git add` (fichiers touchés) + commit conventionnel + `git push` → mettre à jour le
+   **Journal** du backlog + cocher la case.
+4. Enchaîner la tâche suivante du même périmètre, **sans redemander**.
+
+**S'ARRÊTER et demander confirmation** seulement si :
+- la tâche est 🔒 (rotation secrets, purge historique git, migration BDD prod, permissions) ;
+- la tâche concerne le **frontend v0design** (autre repo → session séparée) ;
+- la tâche exige une **décision produit** ou un **cutover prod** ;
+- blocage après 2 essais (laisser la case décochée, noter le blocage sous la tâche, passer à la suivante).
+
+**Périmètre interdit sans validation humaine** : ne jamais pousser en prod une tâche 🔒.
+**Rappel** : ne jamais committer de secret (`.env`, tokens, `*.db`) ni modifier `package.json`/`package-lock.json` frontend.
