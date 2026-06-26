@@ -1,13 +1,169 @@
 'use strict';
-// SL-API-05 : Strava webhook routes (no JWT auth — called by Strava servers)
-// GET  /api/strava/webhook — hub challenge validation
-// POST /api/strava/webhook — activity event handler
+// SL-API-05 : Strava — OAuth + sync + webhook
+// GET    /api/strava/connect    (auth) — URL OAuth (state signé anti-CSRF)
+// GET    /api/strava/callback           — exchangeCode → stocke les tokens → redirige app
+// GET    /api/strava/status     (auth) — { connected, athleteName }
+// POST   /api/strava/sync       (auth) — importe les activités du jour (dédup par strava_id)
+// DELETE /api/strava/disconnect (auth) — efface les tokens
+// GET    /api/strava/webhook            — hub challenge validation (no JWT — Strava servers)
+// POST   /api/strava/webhook            — activity event handler
 const express  = require('express');
+const jwt      = require('jsonwebtoken');
+const { v4: uuidv4 } = require('uuid');
 const { getDB } = require('../db');
-const { getValidToken, mapStravaType } = require('../services/strava');
+const auth = require('../middleware/auth');
+const {
+  getAuthUrl, exchangeCode, getValidToken, getTodayActivities, mapStravaType,
+} = require('../services/strava');
 const stravaService = require('../services/strava');
 
 const router = express.Router();
+
+// REG-05 / anti-CSRF : le state OAuth est un JWT court (10 min) liant le flux à l'utilisateur.
+// Un attaquant ne peut pas forger un state valide → empêche l'injection d'un code dans la
+// session d'un autre user. Les tokens Strava restent backend-only.
+const STATE_TTL = '10m';
+const STATE_TYPE = 'strava_oauth';
+
+function signState(userId) {
+  return jwt.sign({ uid: userId, t: STATE_TYPE }, process.env.JWT_SECRET, { expiresIn: STATE_TTL });
+}
+
+function verifyState(state) {
+  try {
+    const decoded = jwt.verify(state, process.env.JWT_SECRET);
+    if (decoded.t !== STATE_TYPE || !decoded.uid) return null;
+    return decoded.uid;
+  } catch {
+    return null;
+  }
+}
+
+// ─── GET /api/strava/connect — URL OAuth (auth) ──────────────────────────────
+
+router.get('/connect', auth, (req, res) => {
+  if (!process.env.STRAVA_CLIENT_ID || !process.env.STRAVA_REDIRECT_URI) {
+    return res.status(503).json({ error: 'Strava non configuré (STRAVA_CLIENT_ID manquant)' });
+  }
+  const url = getAuthUrl(signState(req.userId));
+  res.json({ url });
+});
+
+// ─── GET /api/strava/callback — échange du code (no auth, redirection navigateur) ──
+
+router.get('/callback', async (req, res) => {
+  const { code, state } = req.query;
+  const frontendUrl = (process.env.FRONTEND_URL || '').replace(/\/$/, '');
+  if (!frontendUrl) {
+    console.error('[Strava callback] FRONTEND_URL non défini — redirection impossible');
+    return res.status(500).send('Server misconfiguration: FRONTEND_URL not set');
+  }
+  const redirectErr = (reason) => res.redirect(`${frontendUrl}/reglages?strava=error&reason=${reason}`);
+
+  if (!code || !state) return redirectErr('missing_params');
+
+  const userId = verifyState(state);
+  if (!userId) return redirectErr('invalid_state'); // anti-CSRF : state forgé/expiré rejeté
+
+  try {
+    const tokens = await exchangeCode(code);
+    const athleteName = [tokens.athlete?.firstname, tokens.athlete?.lastname]
+      .filter(Boolean).join(' ') || 'Athlète Strava';
+
+    await getDB().prepare(`
+      UPDATE profiles SET
+        strava_access_token = ?,
+        strava_refresh_token = ?,
+        strava_athlete_id = ?,
+        strava_token_expires_at = ?,
+        strava_athlete_name = ?
+      WHERE user_id = ?
+    `).run(
+      tokens.access_token,
+      tokens.refresh_token,
+      String(tokens.athlete?.id || ''),
+      tokens.expires_at,
+      athleteName,
+      userId,
+    );
+
+    res.redirect(`${frontendUrl}/reglages?strava=ok&athlete=${encodeURIComponent(athleteName)}`);
+  } catch (err) {
+    console.error('[Strava callback] échec échange:', err.message);
+    redirectErr('exchange_failed');
+  }
+});
+
+// ─── GET /api/strava/status — état de connexion (auth) ───────────────────────
+
+router.get('/status', auth, async (req, res) => {
+  try {
+    const profile = await getDB().prepare(
+      'SELECT strava_access_token, strava_athlete_name FROM profiles WHERE user_id = ?'
+    ).get(req.userId);
+    res.json({
+      connected: !!profile?.strava_access_token,
+      athleteName: profile?.strava_athlete_name || null,
+    });
+  } catch (err) {
+    console.error('[Strava status] erreur:', err.message);
+    res.status(500).json({ error: 'Erreur état Strava' });
+  }
+});
+
+// ─── POST /api/strava/sync — import des activités du jour (auth) ─────────────
+
+router.post('/sync', auth, async (req, res) => {
+  try {
+    const result = await getTodayActivities(req.userId);
+    if (!result.connected) {
+      return res.json({ connected: false, imported: 0, activities: [] });
+    }
+
+    const db = getDB();
+    const today = new Date().toISOString().split('T')[0];
+    let imported = 0;
+
+    for (const act of result.activities) {
+      // dédup par strava_id (par utilisateur)
+      const exists = await db.prepare(
+        'SELECT id FROM activities WHERE strava_id = ? AND user_id = ?'
+      ).get(act.strava_id, req.userId);
+      if (exists) continue;
+
+      await db.prepare(`
+        INSERT INTO activities (id, user_id, date, type, duration_min, distance_km, calories_burned, source, strava_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'strava', ?)
+      `).run(uuidv4(), req.userId, today, act.type, act.duration_min, act.distance_km, act.calories_burned, act.strava_id);
+      imported++;
+    }
+
+    res.json({ connected: true, imported, activities: result.activities });
+  } catch (err) {
+    console.error('[Strava sync] erreur:', err.message);
+    res.status(500).json({ error: 'Erreur synchronisation Strava' });
+  }
+});
+
+// ─── DELETE /api/strava/disconnect — efface les tokens (auth) ────────────────
+
+router.delete('/disconnect', auth, async (req, res) => {
+  try {
+    await getDB().prepare(`
+      UPDATE profiles SET
+        strava_access_token = NULL,
+        strava_refresh_token = NULL,
+        strava_athlete_id = NULL,
+        strava_token_expires_at = NULL,
+        strava_athlete_name = NULL
+      WHERE user_id = ?
+    `).run(req.userId);
+    res.json({ connected: false });
+  } catch (err) {
+    console.error('[Strava disconnect] erreur:', err.message);
+    res.status(500).json({ error: 'Erreur déconnexion Strava' });
+  }
+});
 
 // AL-02 modérée MET values (COR-04)
 const MET_MODERATE = { course: 9.0, velo: 7.0, marche: 3.5, natation: 6.0, muscu: 5.0 };
