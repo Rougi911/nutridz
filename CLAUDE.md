@@ -17,7 +17,7 @@ NutriVita est une application de nutrition intelligente déployée en PWA, cibla
 ### Backend
 - **Runtime** : Node.js 20.11.0 sur Render (plan gratuit)
 - **Framework** : Express 4.18 + helmet + cors + express-rate-limit
-- **Base de données** : SQLite 5.1.7 (sqlite3, async — pas better-sqlite3)
+- **Base de données** : PostgreSQL via `pg` (node-postgres), Pool max 5 sur chaîne **pooled** Neon (S7). Couche `db.js` async garde l'interface historique (`prepare().get/all/run`, `exec`, `withClient`, `transaction`). *Migration depuis SQLite faite sur branche `feat/postgres` — voir « Stack base de données (PostgreSQL) » plus bas.*
 - **Authentification** : JWT (bcryptjs)
 - **Yarn** comme package manager sur Render
 
@@ -41,6 +41,7 @@ NutriVita est une application de nutrition intelligente déployée en PWA, cibla
 ```
 NODE_ENV=production
 NODE_VERSION=20.11.0
+DATABASE_URL=postgresql://...-pooler.../neondb?sslmode=require  # PostgreSQL Neon (chaîne POOLED). Requis depuis S7.
 JWT_SECRET=MonAppNutriDZAlgerie2024SecretKey!
 FRONTEND_URL=https://nutridz-web.onrender.com
 CLARIFAI_API_KEY=...                  # Reconnaissance d'aliments par photo
@@ -63,7 +64,7 @@ REACT_APP_VAPID_PUBLIC_KEY=...        # Push notifications (générer avec web-p
 nutridz/
 ├── backend/
 │   ├── server.js                     # Point d'entrée Express, trust proxy activé
-│   ├── db.js                         # SQLite async (Statement class, .run/.get/.all retournent Promise)
+│   ├── db.js                         # PostgreSQL via pg (Statement traduit ?/@clé → $n ; .run/.get/.all → Promise ; RETURNING auto, withClient/transaction)
 │   ├── package.json                  # yarn start = node server.js
 │   ├── middleware/
 │   │   └── auth.js                   # JWT, expose req.userId (PAS req.user)
@@ -146,13 +147,32 @@ nutridz/
 
 ## Conventions critiques
 
-### Backend SQLite async
-La DB utilise sqlite3 (PAS better-sqlite3). Toutes les requêtes sont async :
+### Backend PostgreSQL (pg) async
+La DB utilise `pg` (node-postgres) sur la chaîne **pooled** Neon. Toutes les requêtes sont async :
 ```javascript
 const row = await db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
 const rows = await db.prepare('SELECT * FROM products').all();
-const result = await db.prepare('INSERT INTO users (...) VALUES (?)').run(value);
+const result = await db.prepare('INSERT INTO users (...) VALUES (?)').run(value); // result.lastInsertRowid
 ```
+La couche `db.js` traduit les placeholders `?` (positionnels) et `@clé` (nommés) → `$n`, ajoute
+`RETURNING *` aux `INSERT` (→ `lastInsertRowid`, `undefined` sur `ON CONFLICT DO NOTHING`),
+et parse `int8`/`numeric` en `number`. Transactions : `db.withClient(fn)` / `db.transaction(fn)`
+sur un **client dédié libéré en `finally`** (jamais sur le pool partagé).
+
+### Stack base de données (PostgreSQL) — règles SQL
+SQL Postgres, **pas SQLite**. À respecter pour toute nouvelle requête :
+- **Upsert** : `INSERT ... ON CONFLICT (cols) DO UPDATE/NOTHING` (jamais `INSERT OR IGNORE/REPLACE`).
+- **Auto-id** : lire `result.lastInsertRowid` (la couche ajoute `RETURNING`), jamais `rowid`.
+- **Dates** : pas de `strftime`/`date('now', ...)`. Calculer les coupures « now − N jours » **en JS**
+  et passer en paramètre ; sinon `to_char()`, `::date`, `now() - interval '…'`. Les colonnes
+  métier date/heure sont stockées en **TEXT** (`YYYY-MM-DD`), `TIMESTAMPTZ` pour `created_at`/`scanned_at`.
+- **Schéma** (`db.js`) : `SERIAL`, `TIMESTAMPTZ DEFAULT now()`, `ADD COLUMN IF NOT EXISTS`, seeds `ON CONFLICT`.
+- **FK appliquées** (contrairement à SQLite) : insérer les lignes parentes d'abord (ex. `users` avant `journal_entries`).
+- **Pas de prepared statements nommés** (incompatible pgbouncer mode transaction).
+- **Tests** : service Postgres en CI, `DATABASE_URL` requis, **schéma isolé par worker Jest**
+  (`search_path=test_w$JEST_WORKER_ID`). Sans `DATABASE_URL`, `getDB()` lève.
+- **Cache OFF** : `services/offCache.js` = mémoire + table `off_cache(barcode, payload JSONB, fetched_at)`
+  (persistant après spin-down), best-effort.
 
 ### Auth middleware
 `req.userId` (PAS `req.user.id`). Toutes les routes protégées doivent utiliser `req.userId`.
@@ -199,7 +219,7 @@ Utilise regex `\u0300-\u036f` pour la suppression des accents (pas les caractèr
 | Lazy loading | ✅ | BilanPage, GlucoseTrackingPage, DishDetailPage (-19.5 kB bundle) |
 | Onboarding guidé | ✅ | Modal 4 étapes au premier login (corps/objectif/features) |
 | Landing page publique | ✅ | `/` hero + 6 features + CTA, redirige vers journal si connecté |
-| Notifications push | ⚠️ | Infrastructure prête (table SQLite + route + hook) — VAPID key à configurer sur Render |
+| Notifications push | ⚠️ | Infrastructure prête (table `push_subscriptions` + route + hook) — VAPID key à configurer sur Render |
 | Google Analytics | ⏳ | Code prêt, attend REACT_APP_GA_ID |
 | Mode hors ligne complet | ❌ | Cache basique uniquement |
 
@@ -262,9 +282,11 @@ Réponse attendue : `{"status":"ok","version":"1.0.0"}`
 | #5 | Phase 2 | VoiceInput.jsx frontend : Web Speech API, intégration Journal + Glucose | `40f1ffe` |
 | #6 | — | Polish : dark mode, skeleton loaders, lazy loading, favoris plats, dupliquer J-1 | `e889949` |
 | #7 | — | Features avancées : export PDF, onboarding, push infra, landing page publique | `a149285` |
+| S7 | — | Migration SQLite → PostgreSQL (couche pg, schéma PG, scan_month/off_cache, CI Postgres) | branche `feat/postgres` (PR #1) |
 
 ## Notes importantes
 
+- **Base PostgreSQL (Neon)** : `DATABASE_URL` = chaîne **pooled** (`-pooler`, pgbouncer transaction). La couche `db.js` retire `channel_binding` automatiquement si le pooler refuse le SASL. Repartir propre est OK (l'ancienne SQLite prod était éphémère). Au lancement public : **Render Starter** (supprime le spin-down) + **Neon sans auto-suspend**. Migration livrée sur branche `feat/postgres` (PR) — bascule = humain (créer Neon + `DATABASE_URL` Render + merge + vérifier la persistance après un redéploiement).
 - **Plan gratuit Render** : backend s'endort après 15min, 30-60s pour réveiller à la première requête
 - **Clarifai** : 1000 analyses/mois gratuit, modèle `food-item-recognition` ou fallback `general-image-recognition`
 - **USDA** : 1000 req/heure avec clé gratuite, sinon DEMO_KEY limité à ~30/jour
@@ -348,10 +370,13 @@ Quand l'utilisateur dit « lance la boucle » (ou équivalent), exécuter ceci s
    **Journal** du backlog + cocher la case.
 4. Enchaîner la tâche suivante du même périmètre, **sans redemander**.
 
-**S'ARRÊTER et demander confirmation** seulement si :
-- la tâche est 🔒 (rotation secrets, purge historique git, migration BDD prod, permissions) ;
+**Règle d'autonomie (priorité)** : avancer **jusqu'au bout** sans redemander. Pour tout choix SANS impact fonctionnel ni réglementaire, prendre l'option par défaut raisonnable, la noter, et continuer.
+
+**S'ARRÊTER et demander confirmation UNIQUEMENT si :**
+- choix à **impact fonctionnel** visible (comportement/UX produit ambigu, options divergentes) ;
+- choix à **impact réglementaire** (RGPD, REG-05, données de santé) ;
+- action **🔒** (secrets, purge historique git, bascule BDD prod, permissions, **cutover prod** déconnectant des users) ;
 - la tâche concerne le **frontend v0design** (autre repo → session séparée) ;
-- la tâche exige une **décision produit** ou un **cutover prod** ;
 - blocage après 2 essais (laisser la case décochée, noter le blocage sous la tâche, passer à la suivante).
 
 **Périmètre interdit sans validation humaine** : ne jamais pousser en prod une tâche 🔒.
