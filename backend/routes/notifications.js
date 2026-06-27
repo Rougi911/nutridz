@@ -9,8 +9,9 @@ router.post('/subscribe', authMiddleware, async (req, res) => {
     if (!subscription) return res.status(400).json({ error: 'Subscription required' });
 
     await getDB().prepare(`
-      INSERT OR REPLACE INTO push_subscriptions (user_id, subscription_json)
+      INSERT INTO push_subscriptions (user_id, subscription_json)
       VALUES (?, ?)
+      ON CONFLICT (user_id) DO UPDATE SET subscription_json = excluded.subscription_json
     `).run(req.userId, JSON.stringify(subscription));
 
     res.json({ success: true });

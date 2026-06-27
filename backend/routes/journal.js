@@ -261,13 +261,15 @@ router.get('/history', auth, async (req, res) => {
   const days = parseInt(req.query.days) || 7;
   const db = getDB();
 
+  // Coupure calculée en JS (la colonne `date` est en TEXT 'YYYY-MM-DD' → comparaison lexicale).
+  const cutoff = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
   const rows = await db.prepare(`
     SELECT date, SUM(kcal) as kcal, SUM(glucides) as glucides,
            SUM(proteines) as proteines, SUM(lipides) as lipides
     FROM journal_entries
-    WHERE user_id = ? AND date >= date('now', ?)
+    WHERE user_id = ? AND date >= ?
     GROUP BY date ORDER BY date ASC
-  `).all(req.userId, `-${days} days`);
+  `).all(req.userId, cutoff);
 
   res.json(rows);
 });

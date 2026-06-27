@@ -76,9 +76,11 @@ beforeAll(async () => {
   await initDB();
   db = getDB();
   app = makeApp();
-  // Profils pour 2 users
-  await db.prepare("INSERT OR IGNORE INTO profiles (user_id, weight) VALUES ('u1', 70)").run();
-  await db.prepare("INSERT OR IGNORE INTO profiles (user_id, weight) VALUES ('u2', 80)").run();
+  // Postgres applique les FK (contrairement à SQLite) → créer les users puis les profils.
+  await db.prepare("INSERT INTO users (id, email, password_hash, name) VALUES ('u1', 's16-u1@test.local', 'x', 'U1') ON CONFLICT (id) DO NOTHING").run();
+  await db.prepare("INSERT INTO users (id, email, password_hash, name) VALUES ('u2', 's16-u2@test.local', 'x', 'U2') ON CONFLICT (id) DO NOTHING").run();
+  await db.prepare("INSERT INTO profiles (user_id, weight) VALUES ('u1', 70) ON CONFLICT (user_id) DO NOTHING").run();
+  await db.prepare("INSERT INTO profiles (user_id, weight) VALUES ('u2', 80) ON CONFLICT (user_id) DO NOTHING").run();
 });
 
 beforeEach(() => { jest.clearAllMocks(); mockAxios(); });
