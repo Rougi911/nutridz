@@ -10,7 +10,175 @@
  * `scrubEvent` est une fonction pure → testée sans le SDK ni appel réseau.
  */
 
-const { scrubEvent, initSentry, isEnabled } = require('../observability/sentry');
+const {
+  scrubEvent,
+  initSentry,
+  isEnabled,
+  redactText,
+  sanitizeUrl,
+} = require('../observability/sentry');
+
+describe('S20b — redactText : caviardage du texte libre', () => {
+  test('caviarde une valeur de glycémie avec unité mg/dl', () => {
+    const out = redactText('Erreur insertion glucose 142 mg/dl pour user');
+    expect(out).not.toContain('142');
+    expect(out).toContain('[Filtered]');
+  });
+
+  test('caviarde une glycémie en g/l (décimale)', () => {
+    const out = redactText('glycémie 1.42 g/l au réveil');
+    expect(out).not.toContain('1.42');
+  });
+
+  test('caviarde une glycémie mmol/l', () => {
+    const out = redactText('reading 7,8 mmol/l');
+    expect(out).not.toContain('7,8');
+  });
+
+  test('caviarde un mot-clé glycémie suivi d\'un nombre sans unité', () => {
+    const out = redactText('glucose value is 200 critical');
+    expect(out).not.toContain('200');
+  });
+
+  test('caviarde un email', () => {
+    const out = redactText('login failed for user@example.com');
+    expect(out).not.toContain('user@example.com');
+    expect(out).toContain('[Filtered]');
+  });
+
+  test('caviarde un JWT et un Bearer token', () => {
+    const out = redactText('header Bearer eyJabc.eyJdef.sigGHI rejected');
+    expect(out).not.toContain('eyJabc.eyJdef.sigGHI');
+  });
+
+  test('caviarde une affectation token=...', () => {
+    const out = redactText('failed with access_token=secretXYZ123 invalid');
+    expect(out).not.toContain('secretXYZ123');
+  });
+
+  test('préserve un texte non sensible (et un code HTTP)', () => {
+    const out = redactText('Connexion à la base échouée, code 500');
+    expect(out).toBe('Connexion à la base échouée, code 500');
+  });
+
+  test('renvoie les non-chaînes inchangées', () => {
+    expect(redactText(null)).toBeNull();
+    expect(redactText(undefined)).toBeUndefined();
+    expect(redactText(42)).toBe(42);
+  });
+});
+
+describe('S20b — sanitizeUrl : nettoyage des URL', () => {
+  test('retire la query string contenant un token OAuth', () => {
+    const url =
+      'https://nutridz.onrender.com/api/activity/strava/callback?code=abc123&state=42&access_token=xyzTok';
+    const out = sanitizeUrl(url);
+    expect(out).not.toContain('abc123');
+    expect(out).not.toContain('xyzTok');
+    expect(out).not.toContain('?');
+    expect(out).toBe('https://nutridz.onrender.com/api/activity/strava/callback');
+  });
+
+  test('retire le fragment', () => {
+    expect(sanitizeUrl('https://x.co/page#token=abc')).toBe('https://x.co/page');
+  });
+
+  test('laisse une URL sans query inchangée', () => {
+    expect(sanitizeUrl('/api/glucose')).toBe('/api/glucose');
+  });
+
+  test('renvoie les non-chaînes inchangées', () => {
+    expect(sanitizeUrl(undefined)).toBeUndefined();
+  });
+});
+
+describe('S20b — scrubEvent : caviardage du texte libre & des URL', () => {
+  test('caviarde une glycémie dans event.message', () => {
+    const out = scrubEvent({ message: 'POST /api/glucose failed value 142 mg/dl' });
+    expect(out.message).not.toContain('142');
+    expect(out.message).toContain('[Filtered]');
+  });
+
+  test('caviarde event.logentry.message et .formatted', () => {
+    const out = scrubEvent({
+      logentry: { message: 'glucose 99 mg/dl', formatted: 'glucose 99 mg/dl' },
+    });
+    expect(out.logentry.message).not.toContain('99');
+    expect(out.logentry.formatted).not.toContain('99');
+  });
+
+  test('caviarde la value des exceptions', () => {
+    const out = scrubEvent({
+      exception: {
+        values: [
+          { type: 'Error', value: 'insert glycémie 1.55 g/l for user@example.com failed' },
+        ],
+      },
+    });
+    expect(out.exception.values[0].value).not.toContain('1.55');
+    expect(out.exception.values[0].value).not.toContain('user@example.com');
+  });
+
+  test('caviarde les lignes de contexte des stacktraces', () => {
+    const out = scrubEvent({
+      exception: {
+        values: [
+          {
+            type: 'Error',
+            value: 'fail',
+            stacktrace: {
+              frames: [
+                {
+                  filename: 'glucose.js',
+                  context_line: "  const value = 142; // mg/dl",
+                  pre_context: ['const email = "a@b.co";'],
+                  post_context: ['Bearer eyJa.eyJb.sigC'],
+                },
+              ],
+            },
+          },
+        ],
+      },
+    });
+    const f = out.exception.values[0].stacktrace.frames[0];
+    expect(f.context_line).not.toContain('142');
+    expect(f.pre_context[0]).not.toContain('a@b.co');
+    expect(f.post_context[0]).not.toContain('eyJa.eyJb.sigC');
+  });
+
+  test('nettoie event.request.url (token OAuth)', () => {
+    const out = scrubEvent({
+      request: { url: 'https://x.co/cb?code=abc123&access_token=xyzTok' },
+    });
+    expect(out.request.url).not.toContain('abc123');
+    expect(out.request.url).not.toContain('xyzTok');
+    expect(out.request.url).toBe('https://x.co/cb');
+  });
+
+  test('non-régression : le scrubbing structuré existant reste actif', () => {
+    const out = scrubEvent({
+      message: 'ok',
+      request: {
+        url: '/api/glucose?value=142',
+        headers: { authorization: 'Bearer x', 'content-type': 'application/json' },
+        data: { glucose: 99, email: 'user@example.com', note: 'ok' },
+      },
+      user: { id: 7, email: 'user@example.com' },
+      extra: { password: 'x', safe: 1 },
+    });
+    expect(out.request.headers.authorization).toBe('[Filtered]');
+    expect(out.request.headers['content-type']).toBe('application/json');
+    expect(out.request.data.glucose).toBe('[Filtered]');
+    expect(out.request.data.email).toBe('[Filtered]');
+    expect(out.request.data.note).toBe('ok');
+    expect(out.user.email).toBeUndefined();
+    expect(out.user.id).toBe(7);
+    expect(out.extra.password).toBe('[Filtered]');
+    expect(out.extra.safe).toBe(1);
+    // url nettoyée (query retirée)
+    expect(out.request.url).toBe('/api/glucose');
+  });
+});
 
 describe('S20 — scrubEvent (beforeSend) : exclusion des données sensibles', () => {
   test('redacte les valeurs de glycémie dans le corps de requête', () => {

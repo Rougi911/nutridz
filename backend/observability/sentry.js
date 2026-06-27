@@ -61,6 +61,55 @@ function redactDeep(node, seen) {
   return node;
 }
 
+/**
+ * Caviarde les valeurs sensibles dans du **texte libre** (message d'exception,
+ * stacktrace, ligne de code…). Parité avec le frontend (B1/B2). Le scrubbing
+ * structuré (clés) ne couvre PAS ces chaînes : une glycémie, un email ou un
+ * token peuvent fuiter via un message d'erreur ou une stacktrace.
+ *
+ * On sur-redacte volontairement (sécurité > confort de debug). Renvoie les
+ * non-chaînes inchangées.
+ */
+function redactText(text) {
+  if (typeof text !== 'string' || text.length === 0) return text;
+  let out = text;
+  // Emails
+  out = out.replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, REDACTED);
+  // JWT (eyJ... . ... . ...)
+  out = out.replace(/\beyJ[\w-]*\.[\w-]*\.[\w-]*/g, REDACTED);
+  // Bearer tokens
+  out = out.replace(/\bBearer\s+[\w.\-]+/gi, `Bearer ${REDACTED}`);
+  // Affectations secret/token = valeur (password=..., access_token: ...)
+  out = out.replace(
+    /\b(password|passwd|pwd|secret|client[_-]?secret|api[_-]?key|access[_-]?token|refresh[_-]?token|token|jwt)\b\s*[:=]\s*[^\s&"']+/gi,
+    `$1=${REDACTED}`,
+  );
+  // Glycémie : nombre suivi d'une unité (142 mg/dl, 1.42 g/l, 7,8 mmol/l)
+  out = out.replace(
+    /\b\d+(?:[.,]\d+)?\s*(?:mg\s*\/?\s*dl|mmol(?:\/l)?|g\/l)\b/gi,
+    REDACTED,
+  );
+  // Glycémie : mot-clé suivi (de près) d'un nombre, même sans unité.
+  // `value`/`reading` inclus pour parité avec le scrubbing structuré (clés
+  // sensibles) — on sur-redacte plutôt que de laisser fuir une glycémie.
+  out = out.replace(
+    /\b(?:glucose|glyc[eé]mie|glyca?emi[ae]|blood[\s_]*sugar|reading|value|valeur)\b[^\d\n]{0,12}\d+(?:[.,]\d+)?/gi,
+    REDACTED,
+  );
+  return out;
+}
+
+/**
+ * Nettoie une URL : retire la query string et le fragment (peuvent contenir
+ * tokens OAuth, email, codes…), puis caviarde tout résidu sensible du chemin.
+ * Renvoie les non-chaînes inchangées.
+ */
+function sanitizeUrl(url) {
+  if (typeof url !== 'string' || url.length === 0) return url;
+  const stripped = url.replace(/[?#][\s\S]*$/, '');
+  return redactText(stripped);
+}
+
 // Redacte les paramètres sensibles d'une query string `a=1&b=2`.
 function redactQueryString(qs) {
   if (typeof qs !== 'string' || qs.length === 0) return qs;
@@ -85,8 +134,53 @@ function scrubEvent(event) {
   if (event === null || typeof event !== 'object') return event;
   const seen = new WeakSet();
 
+  // --- Texte libre : message, logentry, exceptions, stacktraces ---
+  if (typeof event.message === 'string') {
+    event.message = redactText(event.message);
+  } else if (event.message && typeof event.message === 'object') {
+    if (typeof event.message.formatted === 'string') {
+      event.message.formatted = redactText(event.message.formatted);
+    }
+    if (typeof event.message.message === 'string') {
+      event.message.message = redactText(event.message.message);
+    }
+  }
+
+  if (event.logentry && typeof event.logentry === 'object') {
+    if (typeof event.logentry.message === 'string') {
+      event.logentry.message = redactText(event.logentry.message);
+    }
+    if (typeof event.logentry.formatted === 'string') {
+      event.logentry.formatted = redactText(event.logentry.formatted);
+    }
+  }
+
+  if (event.exception && Array.isArray(event.exception.values)) {
+    for (const exc of event.exception.values) {
+      if (!exc || typeof exc !== 'object') continue;
+      if (typeof exc.value === 'string') exc.value = redactText(exc.value);
+      if (exc.stacktrace && Array.isArray(exc.stacktrace.frames)) {
+        for (const frame of exc.stacktrace.frames) {
+          if (!frame || typeof frame !== 'object') continue;
+          if (typeof frame.context_line === 'string') {
+            frame.context_line = redactText(frame.context_line);
+          }
+          if (Array.isArray(frame.pre_context)) {
+            frame.pre_context = frame.pre_context.map((l) =>
+              (typeof l === 'string' ? redactText(l) : l));
+          }
+          if (Array.isArray(frame.post_context)) {
+            frame.post_context = frame.post_context.map((l) =>
+              (typeof l === 'string' ? redactText(l) : l));
+          }
+        }
+      }
+    }
+  }
+
   if (event.request && typeof event.request === 'object') {
     const req = event.request;
+    if (typeof req.url === 'string') req.url = sanitizeUrl(req.url);
     if (req.headers && typeof req.headers === 'object') {
       for (const h of Object.keys(req.headers)) {
         if (isSensitiveKey(h)) req.headers[h] = REDACTED;
@@ -157,4 +251,11 @@ function isEnabled() {
   return enabled;
 }
 
-module.exports = { scrubEvent, initSentry, setupErrorHandler, isEnabled };
+module.exports = {
+  scrubEvent,
+  redactText,
+  sanitizeUrl,
+  initSentry,
+  setupErrorHandler,
+  isEnabled,
+};
