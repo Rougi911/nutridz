@@ -32,6 +32,6 @@ if (require.main === module) {
   const { getDB } = require('../db');
   const db = getDB();
   applyTranslations(db)
-    .then(() => { db._db.close(); })
+    .then(() => { db.close(); })
     .catch(err => { console.error(err); process.exit(1); });
 }

@@ -1,10 +1,65 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-const fs = require('fs');
+'use strict';
+/**
+ * S7 — Couche d'accès PostgreSQL (migration SQLite → pg).
+ *
+ * Garde l'interface historique : `getDB().prepare(sql).get/all/run()`, `exec()`,
+ * `withClient()`, `transaction()`. Les routes ne changent pas leur façon d'appeler la DB ;
+ * seules les requêtes au SQL spécifiquement SQLite ont été portées (RETURNING, ON CONFLICT,
+ * fonctions date). Voir PLAN-MIGRATION-S7-POSTGRES.md.
+ *
+ * Connexions : pool petit (max 5) sur la chaîne POOLED Neon (pgbouncer mode transaction).
+ * Conséquence : aucun prepared statement nommé (on envoie toujours texte + valeurs).
+ */
+
+const { Pool, types } = require('pg');
 const { applyTranslations } = require('./scripts/applyDishTranslations');
 const { CONDIMENTS } = require('./data/condiments');
 
-const DB_PATH = process.env.NUTRIDZ_DB_PATH || path.join(__dirname, 'nutridz.db');
+// pg renvoie int8 (bigint) et numeric en chaînes par défaut. On force le type number
+// pour coller au comportement SQLite (ex. COUNT(*) → number, REAL → number).
+types.setTypeParser(20, v => (v === null ? null : parseInt(v, 10)));    // int8 / bigint
+types.setTypeParser(1700, v => (v === null ? null : parseFloat(v)));    // numeric / decimal
+
+// ─── Connexion ────────────────────────────────────────────────────────────────
+
+function getConnectionString() {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error('DATABASE_URL non défini — requis depuis la migration Postgres (S7).');
+  }
+  return url;
+}
+
+function isLocalUrl(url) {
+  return /@(localhost|127\.0\.0\.1)[:/]/.test(url) || /sslmode=disable/.test(url);
+}
+
+// Schéma dédié par worker Jest pour isoler les tests qui tournent en parallèle (S7d).
+function testSchema() {
+  const w = process.env.JEST_WORKER_ID;
+  return w ? `test_w${w}` : null;
+}
+
+function buildPool(connectionString) {
+  const schema = testSchema();
+  const cfg = {
+    connectionString,
+    max: 5,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
+    allowExitOnIdle: true,
+    statement_timeout: 15000,
+    ssl: isLocalUrl(connectionString) ? false : { rejectUnauthorized: false },
+  };
+  if (schema) cfg.options = `-c search_path=${schema}`;
+  return new Pool(cfg);
+}
+
+// ─── Statement : traduction des paramètres `?` / `@clé` → `$n` ────────────────
+
+function isPlainObject(v) {
+  return v !== null && typeof v === 'object' && !Array.isArray(v);
+}
 
 class Statement {
   constructor(db, sql) {
@@ -12,84 +67,145 @@ class Statement {
     this._sql = sql;
   }
 
-  // Converts {key: val} → {'@key': val} for @named params; positional args pass through as array
-  _params(args) {
-    if (args.length === 1 && args[0] !== null && typeof args[0] === 'object' && !Array.isArray(args[0])) {
-      const out = {};
-      for (const k of Object.keys(args[0])) out[`@${k}`] = args[0][k];
-      return out;
+  // Retourne { text, values } prêt pour pg.
+  _prepare(args) {
+    // Mode nommé : un seul argument objet → placeholders `@clé`.
+    if (args.length === 1 && isPlainObject(args[0])) {
+      const obj = args[0];
+      const values = [];
+      const seen = {};
+      const text = this._sql.replace(/@(\w+)/g, (m, key) => {
+        if (!(key in obj)) return m; // littéral éventuel — on ne touche pas
+        if (seen[key] === undefined) {
+          values.push(obj[key]);
+          seen[key] = `$${values.length}`;
+        }
+        return seen[key];
+      });
+      return { text, values };
     }
-    return args;
+    // Mode positionnel : placeholders `?` dans l'ordre.
+    const values = args;
+    let i = 0;
+    const text = this._sql.replace(/\?/g, () => `$${++i}`);
+    return { text, values };
   }
 
-  get(...args) {
-    return new Promise((resolve, reject) =>
-      this._db.get(this._sql, this._params(args), (err, row) => err ? reject(err) : resolve(row))
-    );
+  async get(...args) {
+    const { text, values } = this._prepare(args);
+    const r = await this._db._query(text, values);
+    return r.rows[0];
   }
 
-  all(...args) {
-    return new Promise((resolve, reject) =>
-      this._db.all(this._sql, this._params(args), (err, rows) => err ? reject(err) : resolve(rows))
-    );
+  async all(...args) {
+    const { text, values } = this._prepare(args);
+    const r = await this._db._query(text, values);
+    return r.rows;
   }
 
-  run(...args) {
-    return new Promise((resolve, reject) =>
-      this._db.run(this._sql, this._params(args), function(err) {
-        err ? reject(err) : resolve({ lastInsertRowid: this.lastID, changes: this.changes });
-      })
-    );
+  async run(...args) {
+    let { text, values } = this._prepare(args);
+    // Postgres ne renvoie pas d'auto-id sans RETURNING. On l'ajoute aux INSERT
+    // pour exposer `lastInsertRowid` (rétro-compatibilité avec l'API SQLite).
+    if (/^\s*INSERT\b/i.test(text) && !/\breturning\b/i.test(text)) {
+      text = text.trim().replace(/;\s*$/, '') + ' RETURNING *';
+    }
+    const r = await this._db._query(text, values);
+    // ON CONFLICT DO NOTHING ne renvoie aucune ligne → lastInsertRowid undefined.
+    return { lastInsertRowid: r.rows[0] ? r.rows[0].id : undefined, changes: r.rowCount };
   }
 }
 
 class DB {
-  constructor(dbPath) {
-    this._db = new sqlite3.Database(dbPath);
+  constructor(connectionString) {
+    this._connectionString = connectionString;
+    this._pool = buildPool(connectionString);
   }
 
-  prepare(sql) { return new Statement(this._db, sql); }
+  get pool() { return this._pool; }
 
-  exec(sql) {
-    return new Promise((resolve, reject) =>
-      this._db.exec(sql, err => err ? reject(err) : resolve())
-    );
+  prepare(sql) { return new Statement(this, sql); }
+
+  _query(text, values) { return this._pool.query(text, values); }
+
+  // exec() — DDL multi-instructions, sans paramètres.
+  async exec(sql) { await this._pool.query(sql); }
+
+  // Vérifie la connexion ; si la chaîne Neon échoue via le pooler à cause du
+  // channel binding (SASL), on retire `channel_binding` et on reconstruit le pool.
+  async ensureConnected() {
+    try {
+      await this._pool.query('SELECT 1');
+    } catch (err) {
+      const msg = String(err && err.message);
+      if (/channel binding|channel_binding|SASL/i.test(msg) && /channel_binding/.test(this._connectionString)) {
+        console.warn('[db] channel_binding incompatible avec le pooler → retrait et reconnexion');
+        await this._pool.end().catch(() => {});
+        this._connectionString = this._connectionString
+          .replace(/([?&])channel_binding=[^&]*/i, '$1')
+          .replace(/[?&]$/, '');
+        this._pool = buildPool(this._connectionString);
+        await this._pool.query('SELECT 1');
+      } else {
+        throw err;
+      }
+    }
   }
 
+  // Client dédié, libéré dans un finally (évite l'épuisement du pool).
+  async withClient(fn) {
+    const client = await this._pool.connect();
+    try {
+      return await fn(client);
+    } finally {
+      client.release();
+    }
+  }
+
+  // Transaction sur un client dédié. `fn` reçoit le client lié à la transaction.
   transaction(fn) {
     const self = this;
-    return async function(items) {
-      await new Promise((res, rej) => self._db.run('BEGIN', e => e ? rej(e) : res()));
-      try {
-        await fn(items);
-        await new Promise((res, rej) => self._db.run('COMMIT', e => e ? rej(e) : res()));
-      } catch (e) {
-        await new Promise(res => self._db.run('ROLLBACK', () => res()));
-        throw e;
-      }
+    return async function (items) {
+      return self.withClient(async (client) => {
+        await client.query('BEGIN');
+        try {
+          const out = await fn(client, items);
+          await client.query('COMMIT');
+          return out;
+        } catch (e) {
+          await client.query('ROLLBACK').catch(() => {});
+          throw e;
+        }
+      });
     };
   }
+
+  async close() { await this._pool.end(); }
 }
 
 let db;
 
 function getDB() {
   if (!db) {
-    fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
-    db = new DB(DB_PATH);
+    db = new DB(getConnectionString());
   }
   return db;
 }
 
 async function initDB() {
   const db = getDB();
+  await db.ensureConnected();
+
+  // Schéma de test isolé par worker Jest (idempotent).
+  const schema = testSchema();
+  if (schema) await db.exec(`CREATE SCHEMA IF NOT EXISTS ${schema}`);
 
   await db.exec(`CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     name TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT now()
   )`);
 
   await db.exec(`CREATE TABLE IF NOT EXISTS profiles (
@@ -102,12 +218,12 @@ async function initDB() {
     sport TEXT DEFAULT 'marche',
     goal TEXT DEFAULT 'maintien',
     pace TEXT DEFAULT 'modere',
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT now(),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   )`);
 
   await db.exec(`CREATE TABLE IF NOT EXISTS products (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     barcode TEXT UNIQUE,
     name TEXT NOT NULL,
     brand TEXT NOT NULL,
@@ -124,7 +240,9 @@ async function initDB() {
     image_url TEXT,
     category TEXT DEFAULT 'divers',
     is_algerian INTEGER DEFAULT 1,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    source TEXT DEFAULT NULL,
+    portion_default_g INTEGER DEFAULT NULL,
+    created_at TIMESTAMPTZ DEFAULT now()
   )`);
 
   await db.exec(`CREATE TABLE IF NOT EXISTS journal_entries (
@@ -140,80 +258,38 @@ async function initDB() {
     lipides REAL DEFAULT 0,
     fibres REAL DEFAULT 0,
     modifiers_json TEXT DEFAULT '[]',
-    logged_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    parent_entry_id TEXT DEFAULT NULL,
+    logged_at TIMESTAMPTZ DEFAULT now(),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id)
   )`);
 
   await db.exec(`CREATE TABLE IF NOT EXISTS weight_entries (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     user_id TEXT NOT NULL,
     weight_kg REAL NOT NULL,
     body_fat_pct REAL,
     date TEXT NOT NULL,
     notes TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMPTZ DEFAULT now(),
     UNIQUE(user_id, date)
   )`);
-
   await db.exec(`CREATE INDEX IF NOT EXISTS idx_weight_user_date ON weight_entries(user_id, date DESC)`);
 
   await db.exec(`CREATE TABLE IF NOT EXISTS glucose_readings (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     user_id TEXT NOT NULL,
     glucose_mg_dl REAL NOT NULL,
     reading_type TEXT CHECK(reading_type IN ('fasting', 'pre_meal', 'post_meal', 'bedtime', 'random', 'cgm')) NOT NULL,
     timestamp TEXT NOT NULL,
     notes TEXT,
     source TEXT DEFAULT 'manual',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT now()
   )`);
-
   await db.exec(`CREATE INDEX IF NOT EXISTS idx_glucose_user_timestamp ON glucose_readings(user_id, timestamp DESC)`);
 
-  await db.exec(`CREATE TABLE IF NOT EXISTS favorites (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL,
-    dish_id INTEGER NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(user_id, dish_id),
-    FOREIGN KEY (dish_id) REFERENCES dishes(id)
-  )`);
-  await db.exec(`CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id)`);
-
-  await db.exec(`CREATE TABLE IF NOT EXISTS push_subscriptions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL UNIQUE,
-    subscription_json TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
-
-  await db.exec(`CREATE TABLE IF NOT EXISTS dish_analyses (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    plat_identifie TEXT,
-    kcal REAL,
-    data TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-  )`);
-
-  await db.exec(`CREATE TABLE IF NOT EXISTS activities (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    date TEXT NOT NULL,
-    type TEXT NOT NULL,
-    duration_min INTEGER DEFAULT 0,
-    distance_km REAL DEFAULT 0,
-    calories_burned REAL DEFAULT 0,
-    source TEXT DEFAULT 'manual',
-    strava_id TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-  )`);
-
   await db.exec(`CREATE TABLE IF NOT EXISTS dishes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     name_fr TEXT,
     name_ar TEXT,
@@ -237,48 +313,56 @@ async function initDB() {
     cook_time_min INTEGER,
     is_user_created INTEGER DEFAULT 0,
     created_by_user_id TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT now()
   )`);
 
-  // Add source column to products (safe for existing DBs)
-  try { await db.exec('ALTER TABLE products ADD COLUMN source TEXT DEFAULT NULL'); } catch (_) {}
+  await db.exec(`CREATE TABLE IF NOT EXISTS favorites (
+    id SERIAL PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    dish_id INTEGER NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE(user_id, dish_id),
+    FOREIGN KEY (dish_id) REFERENCES dishes(id)
+  )`);
+  await db.exec(`CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id)`);
 
-  // S15 — portion par défaut (pré-remplit l'éditeur), surtout pour les condiments
-  try { await db.exec('ALTER TABLE products ADD COLUMN portion_default_g INTEGER DEFAULT NULL'); } catch (_) {}
+  await db.exec(`CREATE TABLE IF NOT EXISTS push_subscriptions (
+    id SERIAL PRIMARY KEY,
+    user_id TEXT NOT NULL UNIQUE,
+    subscription_json TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now()
+  )`);
 
-  // S15 — lien sauce → aliment parent (entrée de journal liée)
-  try { await db.exec('ALTER TABLE journal_entries ADD COLUMN parent_entry_id TEXT DEFAULT NULL'); } catch (_) {}
+  await db.exec(`CREATE TABLE IF NOT EXISTS dish_analyses (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    plat_identifie TEXT,
+    kcal REAL,
+    data TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )`);
 
-  // Add Strava & Google Fit columns to profiles (safe for existing DBs)
-  const stravaColumns = [
-    'ALTER TABLE profiles ADD COLUMN strava_access_token TEXT',
-    'ALTER TABLE profiles ADD COLUMN strava_refresh_token TEXT',
-    'ALTER TABLE profiles ADD COLUMN strava_athlete_id TEXT',
-    'ALTER TABLE profiles ADD COLUMN strava_token_expires_at INTEGER',
-    'ALTER TABLE profiles ADD COLUMN strava_athlete_name TEXT',
-  ];
-  for (const sql of stravaColumns) {
-    try { await db.exec(sql); } catch (_) { /* column already exists */ }
-  }
+  // S7b — colonne `name` ajoutée (l'insert du webhook strava.js la référence).
+  await db.exec(`CREATE TABLE IF NOT EXISTS activities (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    date TEXT NOT NULL,
+    type TEXT NOT NULL,
+    name TEXT,
+    duration_min INTEGER DEFAULT 0,
+    distance_km REAL DEFAULT 0,
+    calories_burned REAL DEFAULT 0,
+    source TEXT DEFAULT 'manual',
+    strava_id TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )`);
 
-  // REG-01 Art.9 RGPD — explicit glucose consent proof (date + version)
-  // DEF-09 — personalized TIR targets per user
-  const profileColumns = [
-    'ALTER TABLE profiles ADD COLUMN consent_glucose_date TEXT',
-    'ALTER TABLE profiles ADD COLUMN consent_glucose_version TEXT',
-    'ALTER TABLE profiles ADD COLUMN glucose_target_min_mg_dl INTEGER DEFAULT 70',
-    'ALTER TABLE profiles ADD COLUMN glucose_target_max_mg_dl INTEGER DEFAULT 180',
-    // SL-API-04 — geographic factor for vitamin D (REG-03: approx lat, never precise)
-    'ALTER TABLE profiles ADD COLUMN country TEXT DEFAULT \'FR\'',
-    'ALTER TABLE profiles ADD COLUMN latitude_approx REAL DEFAULT 46.0',
-  ];
-  for (const sql of profileColumns) {
-    try { await db.exec(sql); } catch (_) { /* column already exists */ }
-  }
-
-  // SL-API-02/03 — scanned products with nutrient data (sugars, salt, sat_fat)
+  // SL-API-02/03 — produits scannés. S7b : colonne `scan_month` (YYYY-MM) + index unique
+  // → upsert atomique par (user, barcode, mois) en remplacement de l'upsert applicatif racy.
   await db.exec(`CREATE TABLE IF NOT EXISTS scanned_products (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     user_id TEXT NOT NULL,
     barcode TEXT NOT NULL,
     product_name TEXT NOT NULL,
@@ -290,45 +374,58 @@ async function initDB() {
     sugars_g REAL DEFAULT 0,
     salt_g REAL DEFAULT 0,
     sat_fat_g REAL DEFAULT 0,
+    image_url TEXT DEFAULT NULL,
+    nutriscore_source TEXT DEFAULT NULL,
+    scan_month TEXT,
     times_this_month INTEGER DEFAULT 1,
-    scanned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    scanned_at TIMESTAMPTZ DEFAULT now()
   )`);
   await db.exec(`CREATE INDEX IF NOT EXISTS idx_scanned_user_date ON scanned_products(user_id, scanned_at)`);
+  await db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS uq_scanned_user_barcode_month ON scanned_products(user_id, barcode, scan_month)`);
 
-  // S10c — photo produit OFF
-  try { await db.exec('ALTER TABLE scanned_products ADD COLUMN image_url TEXT DEFAULT NULL'); } catch (_) {}
+  // S7e — cache OpenFoodFacts persistant (remplace le cache mémoire volatil).
+  await db.exec(`CREATE TABLE IF NOT EXISTS off_cache (
+    barcode TEXT PRIMARY KEY,
+    payload JSONB NOT NULL,
+    fetched_at TIMESTAMPTZ DEFAULT now()
+  )`);
 
-  // P1-7 — source du Nutri-Score (nutriscore_off | nutriscore_calcule | non_note)
-  try { await db.exec('ALTER TABLE scanned_products ADD COLUMN nutriscore_source TEXT DEFAULT NULL'); } catch (_) {}
+  // ── Colonnes ajoutées au fil de l'eau (idempotent, natif Postgres) ──────────
+  const addColumns = [
+    'ALTER TABLE products ADD COLUMN IF NOT EXISTS source TEXT DEFAULT NULL',
+    'ALTER TABLE products ADD COLUMN IF NOT EXISTS portion_default_g INTEGER DEFAULT NULL',
+    'ALTER TABLE journal_entries ADD COLUMN IF NOT EXISTS parent_entry_id TEXT DEFAULT NULL',
+    'ALTER TABLE activities ADD COLUMN IF NOT EXISTS name TEXT',
+    'ALTER TABLE scanned_products ADD COLUMN IF NOT EXISTS image_url TEXT DEFAULT NULL',
+    'ALTER TABLE scanned_products ADD COLUMN IF NOT EXISTS nutriscore_source TEXT DEFAULT NULL',
+    'ALTER TABLE scanned_products ADD COLUMN IF NOT EXISTS scan_month TEXT',
+    'ALTER TABLE profiles ADD COLUMN IF NOT EXISTS strava_access_token TEXT',
+    'ALTER TABLE profiles ADD COLUMN IF NOT EXISTS strava_refresh_token TEXT',
+    'ALTER TABLE profiles ADD COLUMN IF NOT EXISTS strava_athlete_id TEXT',
+    'ALTER TABLE profiles ADD COLUMN IF NOT EXISTS strava_token_expires_at BIGINT',
+    'ALTER TABLE profiles ADD COLUMN IF NOT EXISTS strava_athlete_name TEXT',
+    'ALTER TABLE profiles ADD COLUMN IF NOT EXISTS consent_glucose_date TEXT',
+    'ALTER TABLE profiles ADD COLUMN IF NOT EXISTS consent_glucose_version TEXT',
+    'ALTER TABLE profiles ADD COLUMN IF NOT EXISTS glucose_target_min_mg_dl INTEGER DEFAULT 70',
+    'ALTER TABLE profiles ADD COLUMN IF NOT EXISTS glucose_target_max_mg_dl INTEGER DEFAULT 180',
+    "ALTER TABLE profiles ADD COLUMN IF NOT EXISTS country TEXT DEFAULT 'FR'",
+    'ALTER TABLE profiles ADD COLUMN IF NOT EXISTS latitude_approx REAL DEFAULT 46.0',
+  ];
+  for (const sql of addColumns) await db.exec(sql);
 
-  // DEF-13 — migrate weight_history (legacy) → weight_entries, then drop
+  // weight_history (legacy SQLite) n'existe pas sur Postgres frais — nettoyage idempotent.
+  await db.exec('DROP TABLE IF EXISTS weight_history');
+
+  // Nettoyage one-time : retirer les anciens produits de seed (barcodes 619110000000*).
   try {
-    const legacy = await db.prepare('SELECT * FROM weight_history').all();
-    if (legacy.length > 0) {
-      for (const row of legacy) {
-        try {
-          await db.prepare('INSERT OR IGNORE INTO weight_entries (user_id, weight_kg, date) VALUES (?, ?, ?)').run(row.user_id, row.weight, row.date);
-        } catch (_) {}
-      }
-      console.log(`🔄 Migré ${legacy.length} entrée(s) weight_history → weight_entries`);
-    }
-    await db.exec('DROP TABLE IF EXISTS weight_history');
-  } catch (_) { /* table may not exist */ }
-
-  // One-time cleanup: remove hardcoded seed products (barcodes 619110000000*)
-  try {
-    const deleted = await db.prepare(
-      "DELETE FROM products WHERE barcode LIKE '619110000000%'"
-    ).run();
-    if (deleted.changes > 0) {
-      console.log(`🧹 ${deleted.changes} produit(s) de seed supprimé(s)`);
-    }
-  } catch (_) {}
+    const deleted = await db.prepare("DELETE FROM products WHERE barcode LIKE '619110000000%'").run();
+    if (deleted.changes > 0) console.log(`🧹 ${deleted.changes} produit(s) de seed supprimé(s)`);
+  } catch (_) { /* rien à nettoyer */ }
 
   await seedDishes();
   await seedCondiments();
   await applyDishTranslationsFromFile();
-  console.log('✅ Base de données initialisée');
+  console.log('✅ Base de données initialisée (Postgres)');
 }
 
 async function seedDishes() {
@@ -428,14 +525,15 @@ async function seedDishes() {
 }
 
 // S15 — seed du catalogue sauces & condiments dans products.
-// Idempotent : barcode synthétique `cond:<key>` + INSERT OR IGNORE (UNIQUE sur barcode).
+// Idempotent : barcode synthétique `cond:<key>` + ON CONFLICT (barcode) DO NOTHING.
 // Macros P/G/L laissées à NULL (à compléter via CIQUAL/OFF — voir data/condiments.js).
 async function seedCondiments() {
   const db = getDB();
   const stmt = db.prepare(`
-    INSERT OR IGNORE INTO products
+    INSERT INTO products
       (barcode, name, brand, kcal_per100, glucides, proteines, lipides, category, portion_default_g, is_algerian, source)
     VALUES (@barcode, @name, @brand, @kcal_per100, @glucides, @proteines, @lipides, @category, @portion_default_g, 0, 'condiment')
+    ON CONFLICT (barcode) DO NOTHING
   `);
   let inserted = 0;
   for (const cdt of CONDIMENTS) {
