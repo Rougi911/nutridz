@@ -6,6 +6,11 @@ if (!process.env.JWT_SECRET) {
   process.exit(1);
 }
 
+// S20 — Observabilité : initialiser Sentry au plus tôt (no-op si SENTRY_DSN absent,
+// aucun crash). Région EU + scrubbing PII/glycémie gérés dans le module.
+const { initSentry, setupErrorHandler } = require('./observability/sentry');
+initSentry();
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -109,6 +114,10 @@ app.use('/api/stats',   require('./routes/stats-additives'));
 app.get('/api/health', (req, res) => res.json({ status: 'ok', version: '1.0.0' }));
 // P1-8 : endpoint léger hors /api (non rate-limité) pour le keep-warm anti cold-start Render
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
+// S20 — Capture des erreurs de routes par Sentry (no-op si désactivé).
+// DOIT être monté APRÈS toutes les routes et AVANT le handler d'erreurs final.
+setupErrorHandler(app);
 
 // Global error handler — MUST remain after all routes.
 // Re-applies CORS headers so error responses (413, 400, 500) are readable by the browser.
