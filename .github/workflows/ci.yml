@@ -12,6 +12,22 @@ jobs:
     defaults:
       run:
         working-directory: backend
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: nutridz_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
 
@@ -30,3 +46,5 @@ jobs:
         env:
           NODE_ENV: test
           JWT_SECRET: ci-test-secret-not-real
+          # Migration S7 : tests d'intégration sur Postgres (DB/schéma isolé par worker Jest).
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/nutridz_test

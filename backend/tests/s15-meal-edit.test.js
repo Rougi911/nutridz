@@ -45,6 +45,10 @@ beforeAll(async () => {
   db = getDB();
   app = makeApp();
 
+  // Postgres applique les FK (contrairement à SQLite) → créer les users référencés.
+  await db.prepare("INSERT INTO users (id, email, password_hash, name) VALUES ('u1', 's15-u1@test.local', 'x', 'U1') ON CONFLICT (id) DO NOTHING").run();
+  await db.prepare("INSERT INTO users (id, email, password_hash, name) VALUES ('u2', 's15-u2@test.local', 'x', 'U2') ON CONFLICT (id) DO NOTHING").run();
+
   // Produit aliment de base : 200 kcal/100g, macros connues
   const p = await db.prepare(`
     INSERT INTO products (name, brand, kcal_per100, glucides, proteines, lipides, fibres)
