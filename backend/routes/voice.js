@@ -90,7 +90,7 @@ router.post('/add-to-journal', authMiddleware, async (req, res) => {
             `INSERT INTO products (name, brand, emoji, kcal_per100, glucides, proteines, lipides, fibres, source, score, is_algerian)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
           ).run(c.nom_fr, 'CIQUAL', '🥗', c.kcal || 100, c.glucides || 0, c.proteines || 0, c.lipides || 0, c.fibres || 0, 'ciqual', 'B', 0);
-          product = await db.prepare('SELECT * FROM products WHERE rowid = ?').get(ins.lastInsertRowid);
+          product = await db.prepare('SELECT * FROM products WHERE id = ?').get(ins.lastInsertRowid);
         }
       }
     }
@@ -107,7 +107,7 @@ router.post('/add-to-journal', authMiddleware, async (req, res) => {
           `INSERT INTO products (name, brand, emoji, kcal_per100, glucides, proteines, lipides, fibres, source, score, is_algerian)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         ).run(name, 'Voice', '🎤', kcal_per100, glucides || 0, proteines || 0, lipides || 0, fibres || 0, 'voice', 'C', 0);
-        product = await db.prepare('SELECT * FROM products WHERE rowid = ?').get(ins.lastInsertRowid);
+        product = await db.prepare('SELECT * FROM products WHERE id = ?').get(ins.lastInsertRowid);
       }
     }
 
@@ -123,7 +123,7 @@ router.post('/add-to-journal', authMiddleware, async (req, res) => {
           `INSERT INTO products (name, brand, emoji, kcal_per100, glucides, proteines, lipides, fibres, source, score, is_algerian)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         ).run(name, 'Voice', '🎤', 150, 20, 5, 5, 1, 'voice', 'C', 0);
-        product = await db.prepare('SELECT * FROM products WHERE rowid = ?').get(ins.lastInsertRowid);
+        product = await db.prepare('SELECT * FROM products WHERE id = ?').get(ins.lastInsertRowid);
       }
     }
 

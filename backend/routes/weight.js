@@ -31,8 +31,12 @@ router.post('/', auth, async (req, res) => {
   const today = date || new Date().toISOString().split('T')[0];
 
   await db.prepare(`
-    INSERT OR REPLACE INTO weight_entries (user_id, weight_kg, body_fat_pct, date, notes)
+    INSERT INTO weight_entries (user_id, weight_kg, body_fat_pct, date, notes)
     VALUES (?, ?, ?, ?, ?)
+    ON CONFLICT (user_id, date) DO UPDATE SET
+      weight_kg = excluded.weight_kg,
+      body_fat_pct = excluded.body_fat_pct,
+      notes = excluded.notes
   `).run(req.userId, weight_kg, body_fat_pct ?? null, today, notes ?? null);
 
   const entry = await db.prepare(
@@ -123,11 +127,13 @@ router.get('/evolution', auth, async (req, res) => {
   let activityMap = {};
   let activitiesExist = false;
   try {
-    const cols = await db.prepare('PRAGMA table_info(activities)').all();
+    const cols = await db.prepare(
+      `SELECT column_name FROM information_schema.columns WHERE table_name = 'activities'`
+    ).all();
     activitiesExist = cols.length > 0;
     if (activitiesExist) {
       const actRows = await db.prepare(`
-        SELECT date, SUM(calories_burned) as activity_kcal, GROUP_CONCAT(type) as types
+        SELECT date, SUM(calories_burned) as activity_kcal, string_agg(type, ',') as types
         FROM activities
         WHERE user_id = ? AND date >= ?
         GROUP BY date

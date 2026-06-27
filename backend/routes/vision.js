@@ -38,9 +38,10 @@ router.post('/analyze', auth, upload.single('image'), async (req, res) => {
 
   const analysisId = uuidv4();
   await db.prepare(`
-    INSERT OR IGNORE INTO dish_analyses
+    INSERT INTO dish_analyses
     (id, user_id, plat_identifie, kcal, data, created_at)
-    VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    VALUES (?, ?, ?, ?, ?, now())
+    ON CONFLICT (id) DO NOTHING
   `).run(
     analysisId,
     req.userId,

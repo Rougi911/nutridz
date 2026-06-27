@@ -245,8 +245,9 @@ router.post('/webhook', async (req, res) => {
 
       const { v4: uuidv4 } = require('uuid');
       await db.prepare(`
-        INSERT OR IGNORE INTO activities (id, user_id, date, type, duration_min, distance_km, calories_burned, name, source)
+        INSERT INTO activities (id, user_id, date, type, duration_min, distance_km, calories_burned, name, source)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'strava')
+        ON CONFLICT (id) DO NOTHING
       `).run(uuidv4(), userId, date, type, durMin, distKm, kcal, activity.name || type);
 
     } catch (err) {

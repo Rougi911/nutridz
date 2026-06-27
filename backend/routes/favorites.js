@@ -25,7 +25,7 @@ router.post('/', authMiddleware, async (req, res) => {
   try {
     const { dish_id } = req.body;
     await getDB().prepare(
-      'INSERT OR IGNORE INTO favorites (user_id, dish_id) VALUES (?, ?)'
+      'INSERT INTO favorites (user_id, dish_id) VALUES (?, ?) ON CONFLICT (user_id, dish_id) DO NOTHING'
     ).run(req.userId, dish_id);
     res.json({ success: true });
   } catch (error) {

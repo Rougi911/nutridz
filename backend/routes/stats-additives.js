@@ -98,7 +98,7 @@ router.get('/additives', auth, async (req, res) => {
   const scannedRows = await db.prepare(`
     SELECT additives_json AS additifs
     FROM scanned_products
-    WHERE user_id = ? AND date(scanned_at) >= ?
+    WHERE user_id = ? AND scanned_at::date >= ?::date
   `).all(req.userId, sinceStr);
 
   const entries = [...journalEntries, ...scannedRows];

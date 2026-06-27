@@ -26,7 +26,7 @@ const OFF_FIELDS = [
 // P1-8 : récupération OFF avec cache mémoire (clé = barcode) + repli sur entrée périmée.
 // Retourne le produit, `null` si OFF déclare le produit introuvable, lève si réseau KO sans cache.
 async function fetchOffProduct(barcode) {
-  const fresh = offCache.getFresh(barcode);
+  const fresh = await offCache.getFresh(barcode);
   if (fresh) return fresh;
   try {
     const { data } = await axios.get(`${OFF_BASE}/${barcode}.json?fields=${OFF_FIELDS}`, { timeout: 10000 });
@@ -34,8 +34,8 @@ async function fetchOffProduct(barcode) {
     offCache.set(barcode, data.product);
     return data.product;
   } catch (err) {
-    const stale = offCache.getStale(barcode);
-    if (stale) return stale; // OFF indisponible → on sert le cache même périmé
+    const stale = await offCache.getStale(barcode); // OFF indisponible → on sert le cache même périmé
+    if (stale) return stale;
     throw err;
   }
 }
@@ -174,21 +174,17 @@ function calcGrocerySummary(rows, periodDays, tdee) {
 async function persistScan({ userId, barcode, name, score, verdict, additiveTags, nutriScore, nova, sugars, salt, satFat, imageUrl, source }) {
   const db = getDB();
   const month = new Date().toISOString().slice(0, 7); // YYYY-MM
-  // COR-09: application-level upsert — no SQL UNIQUE constraint
-  const existing = await db.prepare(
-    `SELECT id, times_this_month FROM scanned_products WHERE user_id = ? AND barcode = ? AND strftime('%Y-%m', scanned_at) = ?`
-  ).get(userId, barcode, month);
-
-  if (existing) {
-    await db.prepare(
-      `UPDATE scanned_products SET times_this_month = ?, scanned_at = CURRENT_TIMESTAMP WHERE id = ?`
-    ).run(existing.times_this_month + 1, existing.id);
-  } else {
-    await db.prepare(`
-      INSERT INTO scanned_products (user_id, barcode, product_name, score, verdict, additives_json, nutri_score, nova, sugars_g, salt_g, sat_fat_g, image_url, nutriscore_source)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(userId, barcode, name, score, verdict, JSON.stringify(additiveTags), nutriScore, nova, sugars, salt, satFat, imageUrl, source);
-  }
+  // S7b : upsert atomique par (user, barcode, mois) via index unique scan_month
+  // (remplace l'upsert applicatif racy + le strftime SQLite-only).
+  await db.prepare(`
+    INSERT INTO scanned_products
+      (user_id, barcode, product_name, score, verdict, additives_json, nutri_score, nova,
+       sugars_g, salt_g, sat_fat_g, image_url, nutriscore_source, scan_month, times_this_month, scanned_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, now())
+    ON CONFLICT (user_id, barcode, scan_month) DO UPDATE SET
+      times_this_month = scanned_products.times_this_month + 1,
+      scanned_at = now()
+  `).run(userId, barcode, name, score, verdict, JSON.stringify(additiveTags), nutriScore, nova, sugars, salt, satFat, imageUrl, source, month);
 }
 
 // ─── POST /api/scan ──────────────────────────────────────────────────────────
@@ -266,13 +262,16 @@ router.get('/summary', auth, async (req, res) => {
   const periodDays = period === 'week' ? 7 : 30;
   const db = getDB();
 
-  const filter = period === 'week'
-    ? `date(scanned_at) >= date('now', '-7 days')`
-    : `strftime('%Y-%m', scanned_at) = strftime('%Y-%m', 'now')`;
-
-  const rows = await db.prepare(
-    `SELECT sugars_g, salt_g, sat_fat_g, times_this_month, additives_json FROM scanned_products WHERE user_id = ? AND ${filter}`
-  ).all(req.userId);
+  // S7c : filtres date portés en Postgres. Mois courant via la colonne indexée scan_month.
+  const rows = period === 'week'
+    ? await db.prepare(
+        `SELECT sugars_g, salt_g, sat_fat_g, times_this_month, additives_json FROM scanned_products
+         WHERE user_id = ? AND scanned_at::date >= (now() - interval '7 days')::date`
+      ).all(req.userId)
+    : await db.prepare(
+        `SELECT sugars_g, salt_g, sat_fat_g, times_this_month, additives_json FROM scanned_products
+         WHERE user_id = ? AND scan_month = ?`
+      ).all(req.userId, new Date().toISOString().slice(0, 7));
 
   const profile = await db.prepare(
     `SELECT weight, height, age, sexe, activity_level FROM profiles WHERE user_id = ?`
