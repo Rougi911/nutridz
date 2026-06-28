@@ -4,6 +4,7 @@
 //   2. additive-names.json (taxonomie OFF, multilangue)
 //   3. Fallback : le code lui-même ("E903")
 const { ADDITIVES_CLASSIFICATION } = require('../data/additives');
+const { classifyAdditive } = require('./additiveClassify');
 const ADDITIVE_NAMES = require('../data/additive-names.json');
 
 /**
@@ -22,7 +23,11 @@ function resolveAdditiveName(code, lang = 'fr') {
     return offEntry[lang] || offEntry.fr || offEntry.en || code;
   }
 
-  // 3) Fallback code
+  // 3) DEF-7 — sous-variante non listée → nom éditorial du code parent (ex. E322i → « Lécithines »)
+  const parent = classifyAdditive(code);
+  if (parent?.name) return parent.name;
+
+  // 4) Fallback code
   return code;
 }
 

@@ -74,8 +74,8 @@ describe('S5 buildComposition — parser durci (23 scénarios)', () => {
   test('code inconnu E4999 → unknown', () => {
     expect(buildComposition({ per_100g: { kcal: '100' }, ingredients_text: 'E4999 bizarre', confidence: 0.8 }).additives.some(a => a.risk === 'unknown')).toBe(true);
   });
-  test('sous-variant E450i → capté en unknown', () => {
-    expect(buildComposition({ per_100g: { kcal: '100' }, ingredients_text: 'émulsifiant E450i', confidence: 0.8 }).additives.some(a => a.code === 'E450I' && a.risk === 'unknown')).toBe(true);
+  test('DEF-7 — sous-variante E450i hérite du code parent E450 (moderate, plus « unknown »)', () => {
+    expect(buildComposition({ per_100g: { kcal: '100' }, ingredients_text: 'émulsifiant E450i', confidence: 0.8 }).additives.some(a => a.code === 'E450I' && a.risk === 'moderate')).toBe(true);
   });
   test('nom en majuscules → E330', () => {
     expect(buildComposition({ per_100g: { kcal: '100' }, ingredients_text: 'sucre, ACIDE CITRIQUE', confidence: 0.8 }).additives.some(a => a.code === 'E330')).toBe(true);

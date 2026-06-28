@@ -8,6 +8,7 @@ const { getDB } = require('../db');
 const auth = require('../middleware/auth');
 const { calcMonthlyAGSTarget } = require('../services/agsUtils');
 const ADDITIVES = require('../data/additives.js');
+const { classifyAdditive } = require('../services/additiveClassify'); // DEF-7
 const { resolveAdditiveName } = require('../services/additiveResolver');
 const { computeNutriScoreGrade, detectBeverage, detectSweeteners, detectRedMeat } = require('../services/nutriScore');
 const { buildComposition } = require('../services/compositionParser');
@@ -61,8 +62,9 @@ function calcProductScore(nutriScore, additiveTags) {
   for (const tag of (additiveTags || [])) {
     const code = normalizeAdditive(tag);
     if (!code) continue;
-    if (ADDITIVES.high_risk[code])     score -= 30;
-    else if (ADDITIVES.moderate_risk[code]) score -= 15;
+    const r = classifyAdditive(code)?.risk; // DEF-7 : sous-variantes héritent du parent
+    if (r === 'high')          score -= 30;
+    else if (r === 'moderate') score -= 15;
   }
 
   return Math.max(0, Math.min(100, Math.round(score)));
@@ -150,12 +152,13 @@ function calcGrocerySummary(rows, periodDays, tdee) {
       for (const tag of tags) {
         const code = normalizeAdditive(tag);
         if (!code || seen.has(code)) continue;
-        if (ADDITIVES.high_risk[code]) {
+        const cl = classifyAdditive(code); // DEF-7 : sous-variantes héritent du parent
+        if (cl?.risk === 'high') {
           seen.add(code);
-          riskAdditives.push({ code, name: ADDITIVES.high_risk[code].name, risk: 'high' });
-        } else if (ADDITIVES.moderate_risk[code]) {
+          riskAdditives.push({ code, name: cl.name, risk: 'high' });
+        } else if (cl?.risk === 'moderate') {
           seen.add(code);
-          riskAdditives.push({ code, name: ADDITIVES.moderate_risk[code].name, risk: 'moderate' });
+          riskAdditives.push({ code, name: cl.name, risk: 'moderate' });
         }
       }
     } catch (_) { /* malformed json ignored */ }
@@ -229,7 +232,7 @@ router.post('/', auth, async (req, res) => {
   const additives = additiveTags.map(tag => {
     const codeDisplay = tag.replace(/^[a-z]{2}:/, '').toUpperCase(); // "en:e150d" → "E150D"
     const codeNorm    = normalizeAdditive(tag);                       // → "E150d" for dict key
-    const classif     = codeNorm ? ADDITIVES.ADDITIVES_CLASSIFICATION[codeNorm] : null;
+    const classif     = codeNorm ? classifyAdditive(codeNorm) : null; // DEF-7 : repli parent
     const risk        = classif ? classif.risk : 'unknown'; // S10b : toujours 'unknown', jamais null
     const name        = codeNorm ? resolveAdditiveName(codeNorm) : codeDisplay;
     return { code: codeDisplay, name, risk };

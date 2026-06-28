@@ -13,6 +13,7 @@
  * ou extraction trop maigre (<4 champs).
  */
 const ADDITIVES = require('../data/additives');
+const { classifyAdditive } = require('./additiveClassify'); // DEF-7 : repli code parent
 const EFSA = ADDITIVES.ADDITIVES_CLASSIFICATION; // code → {name, risk, concern}
 const NAMES2E = ADDITIVES.ADDITIVES_NAMES;       // nom (minuscule) → code E
 
@@ -64,7 +65,7 @@ function extractAdditives(ingredientsText, additivesList) {
   const found = new Map();
   const add = (codeNorm) => {
     if (!codeNorm) return;
-    const cl = EFSA[codeNorm]; const code = codeNorm.toUpperCase();
+    const cl = classifyAdditive(codeNorm); const code = codeNorm.toUpperCase(); // DEF-7 : repli parent
     if (!found.has(code)) found.set(code, { code, name: (cl && cl.name) || code, risk: (cl && cl.risk) || 'unknown' });
   };
   const txt = (ingredientsText || '') + ' ' + ((additivesList || []).join(' '));

@@ -5,7 +5,7 @@
 const express = require('express');
 const { getDB } = require('../db');
 const auth = require('../middleware/auth');
-const { ADDITIVES_CLASSIFICATION } = require('../data/additives');
+const { classifyAdditive } = require('../services/additiveClassify');
 const { resolveAdditiveName } = require('../services/additiveResolver');
 
 // S10b : regex élargie à 0-3 lettres pour couvrir E500ii, E500iii, etc.
@@ -21,7 +21,7 @@ function mapAdditives(jsonStr) {
   return tags.map(tag => {
     const displayCode = tag.replace(/^[a-z]{2}:/, '').toUpperCase();
     const code    = normalizeCode(tag);
-    const classif = code ? ADDITIVES_CLASSIFICATION[code] : null;
+    const classif = code ? classifyAdditive(code) : null; // DEF-7 : repli sur le code parent
     const risk    = classif ? classif.risk : 'unknown'; // S10b : toujours 'unknown'
     const name    = code ? resolveAdditiveName(code) : displayCode;
     return { code: displayCode, name, risk };

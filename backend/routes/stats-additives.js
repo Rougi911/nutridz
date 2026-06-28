@@ -3,7 +3,7 @@
 const express = require('express');
 const { getDB } = require('../db');
 const auth = require('../middleware/auth');
-const { ADDITIVES_CLASSIFICATION } = require('../data/additives');
+const { classifyAdditive } = require('../services/additiveClassify');
 const { resolveAdditiveName } = require('../services/additiveResolver');
 
 const router = express.Router();
@@ -45,7 +45,7 @@ function calcAdditivesStats(entries) {
       const mapKey = code || displayCode; // clé de dédup (normalisée)
       const itemCode = code ? code.toUpperCase() : displayCode; // affichage toujours majuscules
 
-      const classif = code ? ADDITIVES_CLASSIFICATION[code] : null;
+      const classif = code ? classifyAdditive(code) : null; // DEF-7 : repli sur le code parent
       const risk = classif ? classif.risk : 'unknown';
       const name = code ? resolveAdditiveName(code) : displayCode;
 
