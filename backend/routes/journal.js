@@ -113,6 +113,76 @@ router.post('/query', auth, async (req, res) => {
   }
 });
 
+// POST /api/journal/range — entrées plates (ApiMealEntry) sur une plage de N jours (S22 / DEF-8).
+// Alimente les graphiques Bilan « calories/jour » et le radar micronutriments sur les vues
+// jour/semaine/mois/année. Une seule requête → le front filtre par date côté client.
+router.post('/range', auth, async (req, res) => {
+  try {
+    const days = Math.min(365, Math.max(1, parseInt(req.body.days) || 30));
+    const db = getDB();
+    // Coupure lexicale : la colonne `date` est en TEXT 'YYYY-MM-DD'.
+    const to     = new Date().toISOString().slice(0, 10);
+    const cutoff = new Date(Date.now() - (days - 1) * 86400000).toISOString().slice(0, 10);
+
+    const rows = await db.prepare(`
+      SELECT je.*, p.name, p.kcal_per100,
+             p.glucides as p_glucides, p.proteines as p_proteines, p.lipides as p_lipides, p.fibres as p_fibres
+      FROM journal_entries je
+      JOIN products p ON je.product_id = p.id
+      WHERE je.user_id = ? AND je.date >= ?
+      ORDER BY je.date ASC, je.logged_at ASC
+    `).all(req.userId, cutoff);
+
+    // Cache des lookups CIQUAL par nom (une plage peut contenir le même aliment N fois).
+    const ciqualCache = new Map();
+    const lookupMicros = (name) => {
+      if (!name) return null;
+      if (!ciqualCache.has(name)) {
+        const hits = ciqualSearch(name, 1);
+        ciqualCache.set(name, hits.length > 0 ? {
+          vitaminC:   hits[0].vitaminC,
+          vitaminD:   hits[0].vitaminD,
+          vitaminB9:  hits[0].vitaminB9,
+          vitaminB12: hits[0].vitaminB12,
+          iron:       hits[0].iron,
+          calcium:    hits[0].calcium,
+          magnesium:  hits[0].magnesium,
+          zinc:       hits[0].zinc,
+        } : null);
+      }
+      return ciqualCache.get(name);
+    };
+
+    const entries = rows.map(e => {
+      const micronutrients = lookupMicros(e.name);
+      return {
+        id: e.id,
+        food_id: String(e.product_id),
+        food: {
+          id: String(e.product_id),
+          name: e.name,
+          calories: e.kcal_per100,
+          protein:  e.p_proteines ?? 0,
+          carbs:    e.p_glucides  ?? 0,
+          fat:      e.p_lipides   ?? 0,
+          fiber:    e.p_fibres    ?? 0,
+          source:   'nutrivita',
+          ...(micronutrients && { micronutrients }),
+        },
+        amount: e.grams,
+        meal_type: MEAL_TYPE_TO_API[e.meal_type] || e.meal_type,
+        date: e.date,
+        created_at: e.logged_at || e.date,
+      };
+    });
+
+    res.json({ from: cutoff, to, days, entries });
+  } catch (err) {
+    console.error('[journal/range] error:', err.message);
+    res.status(500).json({ error: 'Erreur interne' });
+  }
+});
+
 // POST /api/journal — ajouter une entrée
 // Accepte product_id|food_id et grams|amount (contrat P4.16 — SL-API)
 router.post('/', auth, async (req, res) => {

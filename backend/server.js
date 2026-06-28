@@ -56,7 +56,17 @@ app.options('*', cors(corsOptions));
 
 // Rate limiting — mounted BEFORE body parsers so the counter runs before large payloads
 // are buffered in memory (prevents memory-based DoS on unauthenticated requests).
-const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
+// S22/DEF-11 : 100/15 min était trop bas — au chargement l'app appelle journal + journal/range
+// + glucose + weight + activities + profil + additifs, plus le polling. Un seul utilisateur actif
+// pouvait approcher la limite et basculer hors-ligne (429). Relevé à 300/15 min (20/min), l'auth
+// gardant son limiteur strict (10/15 min). Les préflights CORS (OPTIONS) ne consomment plus le quota.
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.method === 'OPTIONS',
+});
 app.use('/api/', limiter);
 
 // Rate-limit renforcé sur l'authentification (anti brute-force — audit sécurité M-2)
