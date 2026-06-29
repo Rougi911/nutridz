@@ -150,4 +150,4 @@ function calcMicronutrientsIntake(entries) {
   return totals;
 }
 
-module.exports = { lookupMicro, calcDeficiencies, calcMicronutrientsIntake, ANSES_REF };
+module.exports = { lookupMicro, calcDeficiencies, calcMicronutrientsIntake, ANSES_REF, STATUS_LOW, STATUS_IMPROVE, STATUS_OK };

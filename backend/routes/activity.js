@@ -156,6 +156,46 @@ router.post('/manual', auth, async (req, res) => {
   res.status(201).json({ success: true, activity });
 });
 
+// ─── S25 — Éditer / supprimer une activité ───────────────────────────────────────
+
+// PATCH /api/activities/:id — modifier une activité MANUELLE (recalcul kcal). IDOR-guard (userId).
+// Les activités importées de Strava ne sont pas modifiables (source de vérité = Strava).
+router.patch('/:id', auth, async (req, res) => {
+  const db = getDB();
+  const existing = await db.prepare('SELECT * FROM activities WHERE id = ? AND user_id = ?').get(req.params.id, req.userId);
+  if (!existing) return res.status(404).json({ error: 'Activité non trouvée' });
+  if (existing.source === 'strava') return res.status(409).json({ error: 'Activité Strava non modifiable' });
+
+  const type         = req.body.type ?? existing.type;
+  const duration_min = req.body.duration_min ?? existing.duration_min;
+  const distance_km  = req.body.distance_km ?? existing.distance_km;
+  const intensite    = req.body.intensite || 'moderee'; // non persistée → défaut modérée au recalcul
+  if (!type || duration_min == null || isNaN(duration_min) || duration_min <= 0) {
+    return res.status(400).json({ error: 'type et duration_min (>0) requis' });
+  }
+
+  const profile = await db.prepare('SELECT weight FROM profiles WHERE user_id = ?').get(req.userId);
+  const weight = profile?.weight || 70;
+  const met = MET[type]?.[intensite] ?? MET.marche.moderee;
+  const calories_burned = Math.round(met * weight * (duration_min / 60));
+
+  await db.prepare(`
+    UPDATE activities SET type = ?, duration_min = ?, distance_km = ?, calories_burned = ?
+    WHERE id = ? AND user_id = ?
+  `).run(type, duration_min, distance_km, calories_burned, req.params.id, req.userId);
+
+  const activity = await db.prepare('SELECT * FROM activities WHERE id = ?').get(req.params.id);
+  res.json({ success: true, activity });
+});
+
+// DELETE /api/activities/:id — supprimer une activité (manuelle ou Strava). IDOR-guard (userId).
+router.delete('/:id', auth, async (req, res) => {
+  const db = getDB();
+  const result = await db.prepare('DELETE FROM activities WHERE id = ? AND user_id = ?').run(req.params.id, req.userId);
+  if (result.changes === 0) return res.status(404).json({ error: 'Activité non trouvée' });
+  res.json({ success: true });
+});
+
 // ─── Bilan complet par date ────────────────────────────────────────────────────
 
 router.get('/bilan/:date', auth, async (req, res) => {

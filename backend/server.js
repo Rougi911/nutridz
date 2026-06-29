@@ -119,6 +119,7 @@ app.use('/api/alternatives', require('./routes/alternatives')); // S12
 app.use('/api/strava',  require('./routes/strava'));
 app.use('/api/stats',   require('./routes/deficiencies'));
 app.use('/api/stats',   require('./routes/stats-additives'));
+app.use('/api/suggestions', require('./routes/suggestions')); // S27 — carences → aliments de saison
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', version: '1.0.0' }));
