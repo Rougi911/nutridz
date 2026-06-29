@@ -160,6 +160,18 @@ if (require.main === module) {
       console.log(`NutriDZ API v2 démarrée sur le port ${PORT}`);
       console.log(`CORS origines autorisées : ${allowedOrigins.join(', ')}`);
     }))
+    .then(() => {
+      // S26 — planificateur de rappels push : vérifie chaque minute les heures configurées.
+      // No-op total si les clés VAPID ne sont pas définies (le serveur tourne sans).
+      const { isPushEnabled, sendDueReminders } = require('./services/pushSender');
+      if (isPushEnabled()) {
+        const { getDB } = require('./db');
+        setInterval(() => {
+          sendDueReminders(getDB()).catch((e) => console.error('[reminders]', e.message));
+        }, 60 * 1000);
+        console.log('[S26] Planificateur de rappels push actif (VAPID configuré).');
+      }
+    })
     .catch(err => { console.error('Échec init DB:', err); process.exit(1); });
 }
 
