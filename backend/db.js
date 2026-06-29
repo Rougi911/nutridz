@@ -359,6 +359,21 @@ async function initDB() {
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   )`);
 
+  // S26 — préférences de rappels (activation + heure par type). RGPD : aucune donnée santé ici.
+  // (La table `push_subscriptions` existe déjà plus haut — on ne la redéfinit pas.)
+  await db.exec(`CREATE TABLE IF NOT EXISTS notification_prefs (
+    user_id TEXT PRIMARY KEY,
+    journal_enabled BOOLEAN DEFAULT false,
+    journal_time TEXT DEFAULT '20:00',
+    glucose_enabled BOOLEAN DEFAULT false,
+    glucose_time TEXT DEFAULT '08:00',
+    hydration_enabled BOOLEAN DEFAULT false,
+    deficiency_enabled BOOLEAN DEFAULT false,
+    geo_consent BOOLEAN DEFAULT false,
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )`);
+
   // SL-API-02/03 — produits scannés. S7b : colonne `scan_month` (YYYY-MM) + index unique
   // → upsert atomique par (user, barcode, mois) en remplacement de l'upsert applicatif racy.
   await db.exec(`CREATE TABLE IF NOT EXISTS scanned_products (
