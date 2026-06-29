@@ -96,6 +96,26 @@ test('recherche OFF KO → 200 alternatives:[] avec catégorie', async () => {
   expect(res.body.alternatives).toEqual([]);
 });
 
+test('FIX S12b — catégorie trop spécifique vide → repli sur une catégorie plus générale', async () => {
+  axios.get = jest.fn((url, config) => {
+    if (String(url).includes('/api/v0/product/')) {
+      return Promise.resolve({ data: { status: 1, product: { categories_tags: ['en:spreads', 'en:chocolate-spreads', 'en:hazelnut-spreads'], nutriscore_grade: 'e' } } });
+    }
+    if (String(url).includes('/api/v2/search')) {
+      const cat = config && config.params && config.params.categories_tags;
+      if (cat === 'en:hazelnut-spreads') return Promise.resolve({ data: { products: [] } }); // trop spécifique → vide
+      return Promise.resolve({ data: { products: [
+        { code: '8888888', product_name: 'Alternative A', nutriscore_grade: 'a', image_front_small_url: IMG },
+      ] } });
+    }
+    return Promise.reject(new Error('unexpected url'));
+  });
+  const res = await request(app).get('/api/alternatives/1234567');
+  expect(res.status).toBe(200);
+  expect(res.body.category).toBe('en:chocolate-spreads'); // 2e essai (catégorie plus générale)
+  expect(res.body.alternatives.map(a => a.barcode)).toEqual(['8888888']);
+});
+
 test('code-barres invalide → 400', async () => {
   const res = await request(app).get('/api/alternatives/abc');
   expect(res.status).toBe(400);

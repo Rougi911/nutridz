@@ -40,26 +40,8 @@ router.get('/:barcode', auth, async (req, res) => {
   if (!category) return res.json(empty());
   const originRank = rank(product.nutriscore_grade);
 
-  // 2. Recherche OFF v2 sur la catégorie, triée par meilleur Nutri-Score
-  let products;
-  try {
-    const { data } = await axios.get(OFF_SEARCH, {
-      params: {
-        categories_tags: category,
-        fields: 'code,product_name,nutriscore_grade,image_front_small_url,nutriscore_score',
-        sort_by: 'nutriscore_score',
-        page_size: 12,
-      },
-      timeout: 10000,
-    });
-    products = (data && data.products) || [];
-  } catch (err) {
-    console.error('[alternatives] OFF search error:', err.code || err.response?.status);
-    return res.json(empty(category));
-  }
-
-  // 3. Filtrer : origine exclue, grade strictement meilleur, nom + image présents ; top 5 triés
-  const alternatives = products
+  // Filtrage : origine exclue, grade strictement meilleur, nom + image présents ; top 5 triés.
+  const filterBetter = (products) => products
     .filter(p => String(p.code) !== String(barcode))
     .filter(p => p.product_name && p.image_front_small_url)
     .filter(p => GRADE_RANK[String(p.nutriscore_grade || '').toLowerCase()] && rank(p.nutriscore_grade) < originRank)
@@ -67,7 +49,36 @@ router.get('/:barcode', auth, async (req, res) => {
     .sort((a, b) => rank(a.nutriScore) - rank(b.nutriScore))
     .slice(0, 5);
 
-  res.json({ source_barcode: String(barcode), category, alternatives });
+  // 2. Recherche OFF v2 — FIX S12b : la catégorie la plus spécifique (ex. « pâtes à tartiner aux
+  //    noisettes ») est souvent trop niche → 0 résultat (cause du « ne fonctionne pas »). On essaie
+  //    de la plus spécifique vers la plus générale (max 4) et on s'arrête à la 1re qui donne des
+  //    alternatives mieux notées.
+  const candidates = cats.slice(-4).reverse();
+  for (const cat of candidates) {
+    let products = [];
+    try {
+      const { data } = await axios.get(OFF_SEARCH, {
+        params: {
+          categories_tags: cat,
+          fields: 'code,product_name,nutriscore_grade,image_front_small_url,nutriscore_score',
+          sort_by: 'nutriscore_score',
+          page_size: 24,
+        },
+        timeout: 8000,
+      });
+      products = (data && data.products) || [];
+    } catch (err) {
+      console.error('[alternatives] OFF search error:', err.code || err.response?.status);
+      continue; // catégorie suivante (plus générale)
+    }
+    const alternatives = filterBetter(products);
+    if (alternatives.length) {
+      return res.json({ source_barcode: String(barcode), category: cat, alternatives });
+    }
+  }
+
+  // Aucune alternative trouvée sur toutes les catégories essayées.
+  return res.json(empty(category));
 });
 
 module.exports = router;
