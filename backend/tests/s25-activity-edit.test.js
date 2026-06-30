@@ -122,3 +122,26 @@ describe('S25 — DELETE /api/activities/:id', () => {
     expect(row).toBeTruthy();
   });
 });
+
+describe('G4-a — POST /api/activities/range', () => {
+  test('agrège les calories brûlées par jour sur la plage', async () => {
+    const today = new Date().toISOString().slice(0, 10);
+    await createManual('u1', { type: 'course', duration_min: 30, date: today });
+    const res = await request(app).post('/api/activities/range').set('x-test-user', 'u1').send({ days: 7 });
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    const row = res.body.find((r) => r.date === today);
+    expect(row).toBeTruthy();
+    expect(row.burned).toBeGreaterThan(0);
+  });
+
+  test('IDOR : ne renvoie pas les activités d\'un autre user', async () => {
+    const today = new Date().toISOString().slice(0, 10);
+    await createManual('u2', { type: 'course', duration_min: 90, date: today });
+    const u1 = await request(app).post('/api/activities/range').set('x-test-user', 'u1').send({ days: 7 });
+    // u1 ne doit pas voir le total gonflé de u2 (90 min) — il ne voit que ses propres jours.
+    const row = u1.body.find((r) => r.date === today);
+    // u1 a 30 min course ≈ 315 kcal ; pas le cumul de u2.
+    expect(!row || row.burned < 600).toBe(true);
+  });
+});

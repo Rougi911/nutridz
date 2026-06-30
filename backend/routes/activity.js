@@ -128,6 +128,25 @@ router.post('/query', auth, async (req, res) => {
   }
 });
 
+// G4-a — POST /api/activities/range {days} : calories brûlées agrégées PAR JOUR sur la plage.
+// Alimente la série « écart » (dépensé − ingéré) du graphe métrique du Bilan.
+router.post('/range', auth, async (req, res) => {
+  try {
+    const days = Math.min(365, Math.max(1, parseInt(req.body.days) || 30));
+    const db = getDB();
+    const cutoff = new Date(Date.now() - (days - 1) * 86400000).toISOString().slice(0, 10);
+    const rows = await db.prepare(
+      `SELECT date, COALESCE(SUM(calories_burned), 0) AS burned
+       FROM activities WHERE user_id = ? AND date >= ?
+       GROUP BY date ORDER BY date ASC`
+    ).all(req.userId, cutoff);
+    res.json(rows.map((r) => ({ date: r.date, burned: Math.round(r.burned) })));
+  } catch (err) {
+    console.error('[activity/range] error:', err.message);
+    res.status(500).json({ error: 'Erreur interne' });
+  }
+});
+
 // ─── Saisie manuelle ──────────────────────────────────────────────────────────
 
 router.post('/manual', auth, async (req, res) => {
