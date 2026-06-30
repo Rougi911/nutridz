@@ -261,11 +261,15 @@ router.post('/', auth, async (req, res) => {
 // ─── GET /api/groceries/summary ─────────────────────────────────────────────
 
 router.get('/summary', auth, async (req, res) => {
-  const period = (req.query.period || 'month') === 'week' ? 'week' : 'month';
+  // C3 — navigation mois : ?month=YYYY-MM force la période « mois » sur ce mois précis ;
+  // sinon period=week|month sur la fenêtre courante.
+  const reqMonth = /^\d{4}-\d{2}$/.test(String(req.query.month || '')) ? String(req.query.month) : null;
+  const period = reqMonth ? 'month' : ((req.query.period || 'month') === 'week' ? 'week' : 'month');
   const periodDays = period === 'week' ? 7 : 30;
+  const targetMonth = reqMonth || new Date().toISOString().slice(0, 7);
   const db = getDB();
 
-  // S7c : filtres date portés en Postgres. Mois courant via la colonne indexée scan_month.
+  // S7c : filtres date portés en Postgres. Mois via la colonne indexée scan_month.
   const rows = period === 'week'
     ? await db.prepare(
         `SELECT sugars_g, salt_g, sat_fat_g, times_this_month, additives_json FROM scanned_products
@@ -274,7 +278,7 @@ router.get('/summary', auth, async (req, res) => {
     : await db.prepare(
         `SELECT sugars_g, salt_g, sat_fat_g, times_this_month, additives_json FROM scanned_products
          WHERE user_id = ? AND scan_month = ?`
-      ).all(req.userId, new Date().toISOString().slice(0, 7));
+      ).all(req.userId, targetMonth);
 
   const profile = await db.prepare(
     `SELECT weight, height, age, sexe, activity_level FROM profiles WHERE user_id = ?`
@@ -283,8 +287,9 @@ router.get('/summary', auth, async (req, res) => {
   const tdee = profile ? calcTDEE(profile) : 2000;
 
   const summary = calcGrocerySummary(rows, periodDays, tdee);
-  const year    = new Date().getFullYear();
-  const month   = new Date().getMonth() + 1;
+  const [ty, tm] = targetMonth.split('-').map(Number);
+  const year  = period === 'week' ? new Date().getFullYear() : ty;
+  const month = period === 'week' ? (new Date().getMonth() + 1) : tm;
 
   res.json({ period, year, month, products_scanned: rows.length, ...summary });
 });
