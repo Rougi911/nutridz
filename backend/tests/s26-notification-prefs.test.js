@@ -58,20 +58,29 @@ describe('S26 — préférences de rappels', () => {
     expect(get.body.geo_consent).toBe(true);
   });
 
-  test('heure invalide → bornée à la valeur par défaut', async () => {
-    const put = await request(app).put('/api/notifications/prefs').set('x-test-user', 'u1')
-      .send({ journal_time: '99:99' });
-    expect(put.status).toBe(200);
-    expect(put.body.prefs.journal_time).toBe('20:00');
+  test('patch partiel : n\'écrase pas les autres champs (fix régression notifications)', async () => {
+    await request(app).put('/api/notifications/prefs').set('x-test-user', 'u1')
+      .send({ journal_enabled: true, journal_time: '07:30' });
+    // active la glycémie SANS toucher au journal
+    await request(app).put('/api/notifications/prefs').set('x-test-user', 'u1')
+      .send({ glucose_enabled: true });
+    const get = await request(app).get('/api/notifications/prefs').set('x-test-user', 'u1');
+    expect(get.body.journal_enabled).toBe(true);  // toujours actif
+    expect(get.body.journal_time).toBe('07:30');   // heure conservée
+    expect(get.body.glucose_enabled).toBe(true);
+  });
+
+  test('heure invalide → conserve la valeur courante (fusion, pas de désactivation)', async () => {
+    await request(app).put('/api/notifications/prefs').set('x-test-user', 'u1').send({ journal_time: '06:15' });
+    const put = await request(app).put('/api/notifications/prefs').set('x-test-user', 'u1').send({ journal_time: '99:99' });
+    expect(put.body.prefs.journal_time).toBe('06:15');
   });
 
   test('IDOR : les prefs de u2 n\'affectent pas u1', async () => {
     await request(app).put('/api/notifications/prefs').set('x-test-user', 'u2')
-      .send({ hydration_enabled: true, journal_time: '06:00' });
+      .send({ hydration_enabled: true });
     const u1 = await request(app).get('/api/notifications/prefs').set('x-test-user', 'u1');
-    // u1 garde ses propres valeurs (journal_time réinitialisé à 20:00 au test précédent)
-    expect(u1.body.hydration_enabled).toBe(false);
-    expect(u1.body.journal_time).toBe('20:00');
+    expect(u1.body.hydration_enabled).toBe(false); // u1 n'a jamais activé l'hydratation
   });
 
   test('subscribe stocke un abonnement (table existante)', async () => {

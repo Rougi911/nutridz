@@ -57,17 +57,21 @@ router.put('/prefs', authMiddleware, async (req, res) => {
   const b = req.body || {};
   const bool = (v, d) => (typeof v === 'boolean' ? v : d);
   const time = (v, d) => (/^([01]\d|2[0-3]):[0-5]\d$/.test(String(v)) ? String(v) : d);
-  const p = {
-    journal_enabled:    bool(b.journal_enabled, false),
-    journal_time:       time(b.journal_time, '20:00'),
-    glucose_enabled:    bool(b.glucose_enabled, false),
-    glucose_time:       time(b.glucose_time, '08:00'),
-    hydration_enabled:  bool(b.hydration_enabled, false),
-    deficiency_enabled: bool(b.deficiency_enabled, false),
-    geo_consent:        bool(b.geo_consent, false),
-  };
   try {
-    await getDB().prepare(`
+    const db = getDB();
+    // Fusion avec l'existant : un patch partiel ne réinitialise PAS les autres champs.
+    // (Bug : activer un type de rappel — ou choisir une heure — désactivait les autres.)
+    const cur = (await db.prepare('SELECT * FROM notification_prefs WHERE user_id = ?').get(req.userId)) || { ...DEFAULT_PREFS };
+    const p = {
+      journal_enabled:    bool(b.journal_enabled, !!cur.journal_enabled),
+      journal_time:       b.journal_time === undefined ? cur.journal_time : time(b.journal_time, cur.journal_time),
+      glucose_enabled:    bool(b.glucose_enabled, !!cur.glucose_enabled),
+      glucose_time:       b.glucose_time === undefined ? cur.glucose_time : time(b.glucose_time, cur.glucose_time),
+      hydration_enabled:  bool(b.hydration_enabled, !!cur.hydration_enabled),
+      deficiency_enabled: bool(b.deficiency_enabled, !!cur.deficiency_enabled),
+      geo_consent:        bool(b.geo_consent, !!cur.geo_consent),
+    };
+    await db.prepare(`
       INSERT INTO notification_prefs
         (user_id, journal_enabled, journal_time, glucose_enabled, glucose_time, hydration_enabled, deficiency_enabled, geo_consent, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, now())
