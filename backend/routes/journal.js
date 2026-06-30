@@ -135,26 +135,31 @@ router.post('/range', auth, async (req, res) => {
 
     // Cache des lookups CIQUAL par nom (une plage peut contenir le même aliment N fois).
     const ciqualCache = new Map();
-    const lookupMicros = (name) => {
+    const lookupCiqual = (name) => {
       if (!name) return null;
       if (!ciqualCache.has(name)) {
         const hits = ciqualSearch(name, 1);
         ciqualCache.set(name, hits.length > 0 ? {
-          vitaminC:   hits[0].vitaminC,
-          vitaminD:   hits[0].vitaminD,
-          vitaminB9:  hits[0].vitaminB9,
-          vitaminB12: hits[0].vitaminB12,
-          iron:       hits[0].iron,
-          calcium:    hits[0].calcium,
-          magnesium:  hits[0].magnesium,
-          zinc:       hits[0].zinc,
+          micronutrients: {
+            vitaminC:   hits[0].vitaminC,
+            vitaminD:   hits[0].vitaminD,
+            vitaminB9:  hits[0].vitaminB9,
+            vitaminB12: hits[0].vitaminB12,
+            iron:       hits[0].iron,
+            calcium:    hits[0].calcium,
+            magnesium:  hits[0].magnesium,
+            zinc:       hits[0].zinc,
+          },
+          // G7 — composition (sucres/sel/AGS) ; sucres/satures null tant que ciqual.json
+          // n'a pas été régénéré avec ces colonnes (voir downloadCiqual.js).
+          composition: { sucres: hits[0].sucres ?? null, sel: hits[0].sel ?? null, satures: hits[0].satures ?? null },
         } : null);
       }
       return ciqualCache.get(name);
     };
 
     const entries = rows.map(e => {
-      const micronutrients = lookupMicros(e.name);
+      const ciq = lookupCiqual(e.name);
       return {
         id: e.id,
         food_id: String(e.product_id),
@@ -167,7 +172,8 @@ router.post('/range', auth, async (req, res) => {
           fat:      e.p_lipides   ?? 0,
           fiber:    e.p_fibres    ?? 0,
           source:   'nutrivita',
-          ...(micronutrients && { micronutrients }),
+          ...(ciq?.micronutrients && { micronutrients: ciq.micronutrients }),
+          ...(ciq?.composition && { composition: ciq.composition }),
         },
         amount: e.grams,
         meal_type: MEAL_TYPE_TO_API[e.meal_type] || e.meal_type,

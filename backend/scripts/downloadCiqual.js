@@ -26,6 +26,11 @@ const COL_GLUCIDES  = 'Glucides (g/100 g)';
 const COL_LIPIDES   = 'Lipides (g/100 g)';
 const COL_FIBRES    = 'Fibres alimentaires (g/100 g)';
 const COL_SEL       = 'Sel chlorure de sodium (g/100 g)';
+const COL_SUCRES    = 'Sucres (g/100 g)';      // G7 — composition radar
+const COL_AGS       = 'AG saturés (g/100 g)';  // G7 — composition radar
+// ⚠️ AVERTISSEMENT G7 : ce script NE produit PAS les micronutriments (vitamines/minéraux) déjà
+// présents dans le ciqual.json déployé (ajoutés par un process séparé). NE PAS régénérer la prod
+// avec ce seul script sans réintégrer l'enrichissement micronutriments (sinon régression radar S2).
 
 async function main() {
   console.log('📥 Téléchargement CIQUAL 2020 depuis ANSES...');
@@ -84,6 +89,8 @@ async function main() {
         lipides:     Math.round(lipides   * 10) / 10,
         fibres:      Math.round(fibres    * 10) / 10,
         sel:         Math.round(parseVal(r[COL_SEL]) * 100) / 100,
+        sucres:      Math.round(parseVal(r[COL_SUCRES]) * 10) / 10,  // G7
+        satures:     Math.round(parseVal(r[COL_AGS])    * 10) / 10,  // G7
       };
     })
     .filter(r => r.alim_nom_fr && r.alim_nom_fr.length > 1);

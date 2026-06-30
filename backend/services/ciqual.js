@@ -140,6 +140,10 @@ function formatEntry(entry) {
     lipides:   entry.lipides   || 0,
     fibres:    entry.fibres    || 0,
     sel:       entry.sel       || 0,
+    // G7 — composition pour le radar « plats consommés » (null tant que ciqual.json n'a pas
+    // été régénéré avec ces colonnes — voir downloadCiqual.js).
+    sucres:    entry.sucres    ?? null,
+    satures:   entry.satures   ?? null,
     // Micronutriments ANSES (null = donnée non disponible)
     vitaminC:   entry.vitaminC   ?? null,
     vitaminD:   entry.vitaminD   ?? null,
