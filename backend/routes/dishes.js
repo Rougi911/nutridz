@@ -41,6 +41,11 @@ router.get('/', auth, async (req, res) => {
     FROM dishes WHERE 1=1`;
   const params = [];
 
+  // P0-2 (audit 2026-07-02) — même règle de visibilité que GET /:id : les plats
+  // personnalisés des autres utilisateurs sont exclus de la liste.
+  sql += ' AND (COALESCE(is_user_created, 0) = 0 OR created_by_user_id = ?)';
+  params.push(req.userId);
+
   if (q) {
     sql += ' AND (name LIKE ? OR name_ar LIKE ? OR name_en LIKE ?)';
     params.push(`%${q}%`, `%${q}%`, `%${q}%`);
@@ -66,9 +71,14 @@ router.get('/cuisines', auth, async (req, res) => {
 });
 
 // GET /api/dishes/:id
+// P0-2 (audit 2026-07-02) — fix IDOR : un plat créé par un utilisateur
+// (is_user_created=1) n'est visible que par son créateur. Les plats du
+// catalogue commun restent accessibles à tous les utilisateurs authentifiés.
 router.get('/:id', auth, async (req, res) => {
   const db = getDB();
-  const dish = await db.prepare('SELECT * FROM dishes WHERE id = ?').get(req.params.id);
+  const dish = await db.prepare(
+    'SELECT * FROM dishes WHERE id = ? AND (COALESCE(is_user_created, 0) = 0 OR created_by_user_id = ?)'
+  ).get(req.params.id, req.userId);
   if (!dish) return res.status(404).json({ error: 'Plat non trouvé' });
   const lang = getLang(req);
   res.json({ ...localizeDish(dish, lang), ingredients: JSON.parse(dish.ingredients_json || '[]'), flag: CUISINE_FLAGS[dish.cuisine] || '🌍' });

@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const { getDB } = require('../db');
 const auth = require('../middleware/auth');
 const { analyzeDishPhoto, analyzeMultiplePhotos, refineAnalysis } = require('../services/foodvision');
+const { searchByName: searchCiqualByName } = require('../services/ciqual');
 
 const router = express.Router();
 
@@ -145,6 +146,35 @@ router.post('/add-to-journal', auth, async (req, res) => {
       lipides: aliment.lipides || Math.round(product.lipides * ratio * 10) / 10,
       fibres: aliment.fibres || Math.round(product.fibres * ratio * 10) / 10
     };
+
+    // P0-8 (audit 2026-07-02) — l'IA renvoie parfois des kcal sans macros : le journal
+    // affichait alors « 480 kcal, 0 g partout » (constat live L3). Fallback CIQUAL par
+    // nom : on complète les macros manquantes à partir de la meilleure correspondance,
+    // et on répare aussi la fiche produit « Estimé par IA » créée avec des zéros.
+    const noMacros = entry.kcal > 0 && !entry.glucides && !entry.proteines && !entry.lipides;
+    if (noMacros && aliment.quantite_g > 0) {
+      try {
+        const match = searchCiqualByName(aliment.nom, 1)[0];
+        if (match && (match.glucides || match.proteines || match.lipides)) {
+          entry.glucides = Math.round((match.glucides || 0) * ratio * 10) / 10;
+          entry.proteines = Math.round((match.proteines || 0) * ratio * 10) / 10;
+          entry.lipides = Math.round((match.lipides || 0) * ratio * 10) / 10;
+          if (!entry.fibres) entry.fibres = Math.round((match.fibres || 0) * ratio * 10) / 10;
+          await db.prepare(`
+            UPDATE products SET glucides = ?, proteines = ?, lipides = ?, fibres = ?
+            WHERE id = ? AND COALESCE(glucides,0) = 0 AND COALESCE(proteines,0) = 0 AND COALESCE(lipides,0) = 0
+          `).run(
+            Math.round((match.glucides || 0) * 10) / 10,
+            Math.round((match.proteines || 0) * 10) / 10,
+            Math.round((match.lipides || 0) * 10) / 10,
+            Math.round((match.fibres || 0) * 10) / 10,
+            product.id
+          );
+        }
+      } catch (err) {
+        console.error('[vision/add-to-journal] fallback CIQUAL échoué:', err.message);
+      }
+    }
 
     await db.prepare(`
       INSERT INTO journal_entries (id, user_id, date, meal_type, product_id, grams, kcal, glucides, proteines, lipides, fibres)
