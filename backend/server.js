@@ -120,6 +120,8 @@ app.use('/api/strava',  require('./routes/strava'));
 app.use('/api/stats',   require('./routes/deficiencies'));
 app.use('/api/stats',   require('./routes/stats-additives'));
 app.use('/api/suggestions', require('./routes/suggestions')); // S27 — carences → aliments de saison
+app.use('/api/health-score', require('./routes/health-score')); // P1-5 — score santé hebdo agrégé
+app.use('/api/glucose-meals', require('./routes/glucose-meals')); // P1-4 — corrélation glycémie × repas
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', version: '1.0.0' }));
