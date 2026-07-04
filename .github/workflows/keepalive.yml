@@ -1,30 +1,44 @@
 name: keep-alive
 
-# Garde les instances Render éveillées pour éviter le cold start (~30-60s) au
-# premier chargement. Render endort le service après ~15 min d'inactivité ;
-# on ping toutes les ~10 min. Gratuit (GitHub Actions).
+# Garde les instances Render éveillées pour éviter le cold start (~60-90 s) au
+# premier chargement (constat E2E : services endormis, 500 transitoires + flash
+# "Utilisateur"). Render endort le service après ~15 min d'inactivité.
 #
-# NOTE : GitHub peut retarder/regrouper les jobs schedule en période de charge,
-# et désactive le schedule après 60 jours sans commit sur le repo.
+# LIMITE GitHub Actions (à connaître) : le cron `schedule` est souvent retardé
+# de 5-20 min en période de charge, et est désactivé après 60 jours sans commit.
+# Pour combler ces trous, chaque run ping en boucle pendant ~12 min (toutes les
+# ~90 s). Combiné au cron */5, ça couvre mieux la fenêtre de 15 min.
+#
+# ⚠️ Ce keep-alive reste "best effort". Pour supprimer réellement le cold start :
+#    passer le service en Render Starter (payant, pas de spin-down) OU utiliser un
+#    moniteur externe fiable (UptimeRobot, cron-job.org) qui ping toutes les 5 min.
 
 on:
   schedule:
-    - cron: '*/10 * * * *'   # toutes les 10 minutes
-  workflow_dispatch:          # permet un déclenchement manuel
+    - cron: '*/5 * * * *'    # toutes les 5 min (minimum GitHub ; souvent retardé)
+  workflow_dispatch:          # déclenchement manuel
+
+# Évite d'empiler les runs si l'un déborde sur le suivant.
+concurrency:
+  group: keep-alive
+  cancel-in-progress: false
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping backend
+      - name: Ping front + back en boucle (~12 min)
         run: |
-          for i in 1 2 3; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 https://nutridz-2.onrender.com/health) && break
-            echo "tentative $i échouée, nouvelle tentative..."; sleep 10
+          BACK="https://nutridz-2.onrender.com/health"
+          FRONT="https://nutrivita-v0.onrender.com/"
+          ping() {
+            local url="$1"; local code
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 "$url" || echo "000")
+            echo "$(date -u +%H:%M:%S) $url -> HTTP $code"
+          }
+          # 9 itérations espacées de 90 s ≈ 12 min de couverture par run.
+          for i in $(seq 1 9); do
+            ping "$BACK"
+            ping "$FRONT"
+            [ "$i" -lt 9 ] && sleep 90
           done
-          echo "backend /health -> HTTP $code"
-
-      - name: Ping frontend
-        run: |
-          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 https://nutrivita-v0.onrender.com/ || echo "000")
-          echo "frontend / -> HTTP $code"
