@@ -37,8 +37,21 @@ jobs:
             echo "$(date -u +%H:%M:%S) $url -> HTTP $code"
           }
           # 9 itérations espacées de 90 s ≈ 12 min de couverture par run.
+          #
+          # BUG corrigé : `[ "$i" -lt 9 ] && sleep 90` en dernière ligne de boucle
+          # renvoyait le code de sortie du test `[ ... ]`, qui est FAUX (exit 1)
+          # à la toute dernière itération (i=9). Ce code 1 devenait le code de
+          # sortie du script entier → le job échouait à CHAQUE run, même quand
+          # tous les pings réussissaient (constat : échec systématique après
+          # ~13 min, soit la durée de la boucle complète). Le `if/then/fi`
+          # renvoie toujours 0 quand la condition est fausse et qu'il n'y a pas
+          # de `else` — plus de fuite de code de sortie. `exit 0` final en filet
+          # de sécurité (le ping reste "best effort", cf. commentaire plus haut).
           for i in $(seq 1 9); do
             ping "$BACK"
             ping "$FRONT"
-            [ "$i" -lt 9 ] && sleep 90
+            if [ "$i" -lt 9 ]; then
+              sleep 90
+            fi
           done
+          exit 0
