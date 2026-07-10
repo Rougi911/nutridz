@@ -13,7 +13,7 @@ const JWT_SECRET = process.env.JWT_SECRET; // server.js guarantees JWT_SECRET is
 // POST /api/auth/register
 router.post('/register', [
   body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 6 }),
+  body('password').isLength({ min: 8 }).withMessage('Mot de passe : 8 caractères minimum'), // L (ultrareview) : 6 trop faible pour données santé
   body('name').trim().notEmpty()
 ], async (req, res) => {
   const errors = validationResult(req);

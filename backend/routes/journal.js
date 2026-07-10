@@ -345,7 +345,8 @@ router.get('/history', auth, async (req, res) => {
   const db = getDB();
 
   // Coupure calculée en JS (la colonne `date` est en TEXT 'YYYY-MM-DD' → comparaison lexicale).
-  const cutoff = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+  // L (ultrareview) : (days - 1) → fenêtre de N jours pile (aujourd'hui inclus), pas N+1.
+  const cutoff = new Date(Date.now() - (days - 1) * 86400000).toISOString().slice(0, 10);
   const rows = await db.prepare(`
     SELECT date, SUM(kcal) as kcal, SUM(glucides) as glucides,
            SUM(proteines) as proteines, SUM(lipides) as lipides

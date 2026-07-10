@@ -5,7 +5,7 @@ const DATE_LOCALES = { fr, ar, en: enUS };
 
 const T = {
   fr: {
-    nav: { journal: 'Journal', products: 'Produits', scanner: 'Scanner', vision: 'Analyser', dishes: 'Plats', history: 'Historique', profile: 'Profil', bilan: 'Bilan', glucose: 'Glycémie' },
+    nav: { journal: 'Journal', products: 'Produits', scanner: 'Scanner', vision: 'Analyser', dishes: 'Plats', history: 'Historique', profile: 'Profil', bilan: 'Bilan', stats: 'Stats', glucose: 'Glycémie' },
     common: {
       save: 'Enregistrer', saving: 'Enregistrement...', cancel: 'Annuler', retry: 'Réessayer',
       error: 'Erreur', loading: 'Chargement...', add: 'Ajouter', delete: 'Supprimer', close: 'Fermer',
@@ -255,7 +255,7 @@ const T = {
   },
 
   ar: {
-    nav: { journal: 'اليومية', products: 'منتجات', scanner: 'مسح', vision: 'تحليل', dishes: 'أطباق', history: 'تاريخ', profile: 'الملف', bilan: 'ميزان', glucose: 'السكر' },
+    nav: { journal: 'اليومية', products: 'منتجات', scanner: 'مسح', vision: 'تحليل', dishes: 'أطباق', history: 'تاريخ', profile: 'الملف', bilan: 'ميزان', stats: 'إحصائيات', glucose: 'السكر' },
     common: {
       save: 'حفظ', saving: 'جارٍ الحفظ...', cancel: 'إلغاء', retry: 'إعادة المحاولة',
       error: 'خطأ', loading: 'تحميل...', add: 'إضافة', delete: 'حذف', close: 'إغلاق',
@@ -505,7 +505,7 @@ const T = {
   },
 
   en: {
-    nav: { journal: 'Journal', products: 'Products', scanner: 'Scanner', vision: 'Analyze', dishes: 'Dishes', history: 'History', profile: 'Profile', bilan: 'Balance', glucose: 'Glucose' },
+    nav: { journal: 'Journal', products: 'Products', scanner: 'Scanner', vision: 'Analyze', dishes: 'Dishes', history: 'History', profile: 'Profile', bilan: 'Balance', stats: 'Stats', glucose: 'Glucose' },
     common: {
       save: 'Save', saving: 'Saving...', cancel: 'Cancel', retry: 'Retry',
       error: 'Error', loading: 'Loading...', add: 'Add', delete: 'Delete', close: 'Close',

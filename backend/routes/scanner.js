@@ -20,6 +20,11 @@ const upload = multer({
 // ─── 1. Lookup code-barres ────────────────────────────────────────────────────
 router.get('/barcode/:code', auth, async (req, res) => {
   const { code } = req.params;
+  // L (ultrareview) : valider le code-barres (4 à 14 chiffres) avant tout lookup —
+  // empêche l'injection de segments d'URL arbitraires vers OpenFoodFacts.
+  if (!/^\d{4,14}$/.test(code)) {
+    return res.status(400).json({ error: 'Code-barres invalide' });
+  }
   const db = getDB();
 
   const local = await db.prepare('SELECT * FROM products WHERE barcode = ?').get(code);

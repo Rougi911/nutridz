@@ -1,7 +1,16 @@
 # HANDOFF — NutriVita
-_Dernière mise à jour : 2026-06-12 — par Claude_
+_Dernière mise à jour : 2026-07-10 — mise en conformité ultrareview_
 
 ## Phase en cours
+**Mise en conformité ultrareview** (branche `fix/ultrareview`) : correction des 3 critiques,
+9 élevés, ~17 moyens et ~12 faibles de l'audit multi-agents. Détail complet : `RAPPORT-TESTS.md`
+et le rapport d'audit dans le projet claude.ai. Tests : **backend 455 (34 suites) + frontend 42
+(11 suites) au vert**, plus les tests de non-régression ajoutés pour les fixes majeurs.
+
+⚠️ **Action humaine restante (🔒)** : rotation du `JWT_SECRET` sur Render + purge de
+l'historique git (le secret a été committé jusqu'en 07/2026) — procédure : `backend/SECRET-ROTATION.md`.
+
+### Historique antérieur (pour mémoire)
 **P3 TERMINÉE** — SL-API-02/03/04/05 implémentés et gatés.
 Gate P3 : GO (revue-code + reglementaire, 2026-06-12) — commit "backend : scan produits + bilan courses + carences + webhooks Strava (cycle V)"
 

@@ -1,10 +1,12 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Remplacez par l'URL de votre API en production
-const BASE_URL = __DEV__
-  ? 'http://192.168.1.X:3001/api'  // ← Remplacer par votre IP locale en dev
-  : 'https://api.nutridz.dz/api';  // ← URL de production
+// L (ultrareview) : URL de prod réelle (le backend Render). En dev, surchargez via la
+// variable d'env Expo EXPO_PUBLIC_API_URL (ex: http://192.168.1.42:3001/api) pour pointer
+// vers votre IP locale — l'ancien placeholder '192.168.1.X'/'api.nutridz.dz' était injoignable.
+const BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL ||
+  (__DEV__ ? 'http://localhost:3001/api' : 'https://nutridz-api.onrender.com/api');
 
 const api = axios.create({
   baseURL: BASE_URL,
