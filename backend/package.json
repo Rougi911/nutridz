@@ -9,7 +9,6 @@
     "test": "jest --testPathPatterns=tests/"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.20.0",
     "@sentry/node": "^8.55.2",
     "axios": "^1.6.2",
     "bcryptjs": "^2.4.3",
@@ -22,10 +21,10 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "pg": "^8.22.0",
-    "sqlite3": "^5.1.7",
     "tesseract.js": "^5.1.1",
     "uuid": "^9.0.0",
-    "web-push": "^3.6.7"
+    "web-push": "^3.6.7",
+    "express-async-errors": "^3.1.1"
   },
   "devDependencies": {
     "adm-zip": "^0.5.17",

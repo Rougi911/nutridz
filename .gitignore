@@ -1,2 +1,29 @@
-
+# Claude
 .claude/
+
+# Dépendances
+node_modules/
+
+# Secrets — ne JAMAIS committer
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Bases de données locales
+*.db
+*.sqlite
+*.sqlite3
+
+# Builds & artefacts
+frontend/build/
+mobile/.expo/
+coverage/
+dist/
+
+# Logs & OS
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db

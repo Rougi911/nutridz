@@ -35,7 +35,7 @@ router.get('/strava/callback', async (req, res) => {
   }
 
   if (!code || !state) {
-    return res.redirect(`${frontendUrl}/bilan?strava=error&reason=missing_params`);
+    return res.redirect(`${frontendUrl}/stats?strava=error&reason=missing_params`);
   }
 
   try {
@@ -66,10 +66,10 @@ router.get('/strava/callback', async (req, res) => {
     );
 
     console.log(`[Strava callback] Token saved successfully for uid=${uid}`);
-    res.redirect(`${frontendUrl}/bilan?strava=ok&athlete=${encodeURIComponent(athleteName)}`);
+    res.redirect(`${frontendUrl}/stats?strava=ok&athlete=${encodeURIComponent(athleteName)}`);
   } catch (err) {
     console.error('[Strava callback] Error:', err.message);
-    res.redirect(`${frontendUrl}/bilan?strava=error&reason=exchange_failed`);
+    res.redirect(`${frontendUrl}/stats?strava=error&reason=exchange_failed`);
   }
 });
 

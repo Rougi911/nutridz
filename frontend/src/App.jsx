@@ -22,6 +22,9 @@ const StatsPage          = lazy(() => import('./pages/StatsPage'));
 const GlucoseTrackingPage = lazy(() => import('./pages/GlucoseTrackingPage'));
 const DishDetailPage     = lazy(() => import('./pages/DishDetailPage'));
 const SettingsPage       = lazy(() => import('./pages/SettingsPage'));
+const ProductsPage       = lazy(() => import('./pages/ProductsPage'));
+const ScannerPage        = lazy(() => import('./pages/ScannerPage'));
+const FoodVisionPage     = lazy(() => import('./pages/FoodVisionPage'));
 
 const PageLoader = () => (
   <div style={{ padding: '1rem' }}>
@@ -68,7 +71,10 @@ export default function App() {
               <Route path="/" element={isAuthenticated ? <Navigate to="/journal" replace /> : <LandingPage />} />
               <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
                 <Route path="journal" element={<JournalPage />} />
+                <Route path="products" element={<ProductsPage />} />
                 <Route path="products/:id" element={<ProductDetailPage />} />
+                <Route path="scanner" element={<ScannerPage />} />
+                <Route path="vision" element={<FoodVisionPage />} />
                 <Route path="dishes" element={<DishesPage />} />
                 <Route path="dishes/:id" element={<DishDetailPage />} />
                 <Route path="stats" element={<StatsPage />} />
@@ -76,6 +82,7 @@ export default function App() {
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="settings" element={<SettingsPage />} />
               </Route>
+              <Route path="*" element={<Navigate to={isAuthenticated ? '/journal' : '/'} replace />} />
             </Routes>
           </Suspense>
         </BrowserRouter>

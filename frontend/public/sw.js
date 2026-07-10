@@ -1,21 +1,25 @@
-const CACHE_NAME = 'nutridz-v1';
-const STATIC_ASSETS = [
-  '/',
-  '/static/js/main.chunk.js',
-  '/static/js/bundle.js',
-  '/manifest.json',
-  '/icons/icon-192.png'
-];
+/* Service Worker NutriVita.
+ * Stratégie :
+ *  - Navigations / index.html : NETWORK-FIRST (jamais de HTML périmé après déploiement).
+ *  - Assets hashés /static/ (immutables CRA) : CACHE-FIRST.
+ *  - API : jamais mise en cache.
+ *  - Fallback hors-ligne : dernière index.html connue.
+ * Les handlers push vivent dans sw-push.js, importé ici pour être réellement chargés.
+ */
+importScripts('/sw-push.js');
 
-// Installation : mise en cache des assets statiques
+// Incrémenté à chaque déploiement pour purger l'ancien cache (fix bundle périmé).
+const CACHE_NAME = 'nutridz-v2';
+const OFFLINE_URL = '/index.html';
+const PRECACHE = ['/', '/index.html', '/manifest.json', '/icons/icon-192.png'];
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE)).catch(() => {})
   );
   self.skipWaiting();
 });
 
-// Activation : supprimer les anciens caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -25,28 +29,38 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch : cache-first pour les assets, network-first pour l'API
 self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
+  const { request } = event;
+  if (request.method !== 'GET') return;
 
-  // L'API ne passe jamais par le cache
-  if (url.pathname.startsWith('/api/')) return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return; // cross-origin (CDN, API externe) : laisser passer
+  if (url.pathname.startsWith('/api/')) return;     // l'API ne passe jamais par le cache
 
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((response) => {
-        // Mettre en cache les nouvelles ressources statiques
-        if (response.ok && event.request.method === 'GET') {
+  // Navigations (HTML) : network-first → toujours le dernier index.html.
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
           const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          caches.open(CACHE_NAME).then((cache) => cache.put(OFFLINE_URL, clone));
+          return response;
+        })
+        .catch(() => caches.match(OFFLINE_URL).then((c) => c || caches.match('/')))
+    );
+    return;
+  }
+
+  // Assets hashés immutables : cache-first.
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
+      return fetch(request).then((response) => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         }
         return response;
-      }).catch(() => {
-        // Hors ligne : renvoyer la page principale
-        if (event.request.mode === 'navigate') {
-          return caches.match('/');
-        }
       });
     })
   );

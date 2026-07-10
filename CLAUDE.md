@@ -42,7 +42,7 @@ NutriVita est une application de nutrition intelligente déployée en PWA, cibla
 NODE_ENV=production
 NODE_VERSION=20.11.0
 DATABASE_URL=postgresql://...-pooler.../neondb?sslmode=require  # PostgreSQL Neon (chaîne POOLED). Requis depuis S7.
-JWT_SECRET=MonAppNutriDZAlgerie2024SecretKey!
+JWT_SECRET=...                        # ⚠️ JAMAI
 FRONTEND_URL=https://nutridz-web.onrender.com
 CLARIFAI_API_KEY=...                  # Reconnaissance d'aliments par photo
 USDA_API_KEY=...                      # Base nutritionnelle USDA FoodData
