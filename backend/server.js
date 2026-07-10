@@ -85,6 +85,21 @@ const authLimiter = rateLimit({
 });
 app.use('/api/auth', authLimiter);
 
+// M8 (ultrareview) — limiteur dédié aux endpoints IA coûteux (Gemini/vision payants,
+// corps jusqu'à 15 Mo) : empêche un compte authentifié d'épuiser les quotas API
+// (DoS financier). 30 requêtes / 15 min par IP, en plus du limiteur global.
+const aiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.method === 'OPTIONS',
+  message: { error: 'Trop d\'analyses IA. Réessayez dans quelques minutes.' },
+});
+app.use('/api/interpret', aiLimiter);
+app.use('/api/vision', aiLimiter);
+app.use('/api/scan', aiLimiter);
+
 // Route-specific large body limit for /api/interpret (base64 image in JSON payload).
 // Must be mounted BEFORE the global express.json() so body-parser picks up this limit first.
 // /api/vision uses multer (multipart) — unaffected by express.json limits.

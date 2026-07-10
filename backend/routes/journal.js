@@ -205,6 +205,13 @@ router.post('/', auth, async (req, res) => {
 
   if (!product_id_raw || !grams || !meal_type) return res.status(400).json({ error: 'Champs manquants' });
 
+  // M2 (ultrareview) : valider grams (>0, numérique) — sinon kcal NaN/négatifs persistés,
+  // corrompant tous les SUM (journal, bilan, health-score). PATCH validait déjà, pas POST.
+  const gramsNum = Number(grams);
+  if (isNaN(gramsNum) || gramsNum <= 0 || gramsNum > 5000) {
+    return res.status(400).json({ error: 'Quantité invalide (grammes)' });
+  }
+
   // Convertir en entier (products.id est INTEGER AUTOINCREMENT)
   const product_id = parseInt(product_id_raw, 10);
   if (isNaN(product_id)) return res.status(400).json({ error: 'food_id invalide' });
@@ -213,7 +220,7 @@ router.post('/', auth, async (req, res) => {
   const product = await db.prepare('SELECT * FROM products WHERE id = ?').get(product_id);
   if (!product) return res.status(404).json({ error: 'Produit non trouvé' });
 
-  const ratio = grams / 100;
+  const ratio = gramsNum / 100;
   let kcal      = product.kcal_per100  * ratio;
   let glucides  = product.glucides     * ratio;
   let proteines = product.proteines    * ratio;
@@ -239,7 +246,7 @@ router.post('/', auth, async (req, res) => {
     date: date || new Date().toISOString().split('T')[0],
     meal_type,
     product_id,
-    grams,
+    grams: gramsNum,
     kcal:      Math.round(kcal),
     glucides:  Math.round(glucides  * 10) / 10,
     proteines: Math.round(proteines * 10) / 10,

@@ -143,7 +143,11 @@ router.post('/:id/log', auth, async (req, res) => {
   if (!meal_type) return res.status(400).json({ error: 'meal_type requis' });
 
   const db = getDB();
-  const dish = await db.prepare('SELECT * FROM dishes WHERE id = ?').get(req.params.id);
+  // M7 (ultrareview) : même garde de visibilité que GET /:id — un plat privé d'un autre
+  // utilisateur ne doit pas être journalisable (IDOR). Catalogue commun accessible à tous.
+  const dish = await db.prepare(
+    'SELECT * FROM dishes WHERE id = ? AND (COALESCE(is_user_created, 0) = 0 OR created_by_user_id = ?)'
+  ).get(req.params.id, req.userId);
   if (!dish) return res.status(404).json({ error: 'Plat non trouvé' });
 
   const defaultPortion = dish.default_portion_g || 300;

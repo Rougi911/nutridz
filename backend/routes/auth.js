@@ -85,7 +85,7 @@ router.get('/export', auth, async (req, res) => {
   twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
   const since = twoYearsAgo.toISOString().split('T')[0];
 
-  const [user, profile, journal, activities, dishAnalyses, weightEntries, glucoseReadings, favorites] = await Promise.all([
+  const [user, profile, journal, activities, dishAnalyses, weightEntries, glucoseReadings, favorites, scannedProducts] = await Promise.all([
     db.prepare('SELECT id, email, name, created_at FROM users WHERE id = ?').get(req.userId),
     db.prepare('SELECT age, weight, height, sexe, activity_level, sport, goal, pace, strava_athlete_name, consent_glucose_date FROM profiles WHERE user_id = ?').get(req.userId),
     db.prepare('SELECT date, meal_type, grams, kcal, glucides, proteines, lipides, logged_at FROM journal_entries WHERE user_id = ? AND date >= ? ORDER BY date DESC').all(req.userId, since),
@@ -94,6 +94,8 @@ router.get('/export', auth, async (req, res) => {
     db.prepare('SELECT weight_kg, body_fat_pct, date, notes, created_at FROM weight_entries WHERE user_id = ? ORDER BY date DESC').all(req.userId),
     db.prepare('SELECT glucose_mg_dl, reading_type, timestamp, notes, source, created_at FROM glucose_readings WHERE user_id = ? ORDER BY timestamp DESC').all(req.userId),
     db.prepare('SELECT dish_id, created_at FROM favorites WHERE user_id = ? ORDER BY created_at DESC').all(req.userId),
+    // M4 (ultrareview) : scanned_products fait partie des données personnelles à exporter.
+    db.prepare('SELECT barcode, product_name, scanned_at FROM scanned_products WHERE user_id = ? ORDER BY scanned_at DESC').all(req.userId).catch(() => []),
   ]);
 
   const payload = {
@@ -107,6 +109,7 @@ router.get('/export', auth, async (req, res) => {
     weight_entries: weightEntries,
     glucose_readings: glucoseReadings,
     favorites,
+    scanned_products: scannedProducts,
   };
 
   res.setHeader('Content-Disposition', `attachment; filename="nutrivita-data-${req.userId.slice(0, 8)}.json"`);
@@ -130,6 +133,10 @@ router.delete('/account', auth, async (req, res) => {
   await db.prepare('DELETE FROM glucose_readings WHERE user_id = ?').run(userId);
   await db.prepare('DELETE FROM favorites WHERE user_id = ?').run(userId);
   await db.prepare('DELETE FROM push_subscriptions WHERE user_id = ?').run(userId);
+  // M4 (ultrareview) : scanned_products n'a pas de FK vers users → jamais purgé.
+  // notification_prefs cascade via FK, mais on l'efface explicitement par sécurité.
+  try { await db.prepare('DELETE FROM scanned_products WHERE user_id = ?').run(userId); } catch (_) {}
+  try { await db.prepare('DELETE FROM notification_prefs WHERE user_id = ?').run(userId); } catch (_) {}
   await db.prepare('DELETE FROM profiles WHERE user_id = ?').run(userId);
   await db.prepare('DELETE FROM users WHERE id = ?').run(userId);
 

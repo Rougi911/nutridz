@@ -346,8 +346,9 @@ router.get('/stats/weekly', auth, async (req, res) => {
   const best_day  = sortedByBalance[0]?.date || null;
   const worst_day = sortedByBalance[sortedByBalance.length - 1]?.date || null;
 
-  // Projected weekly weight change: avg_balance * 7 / 3500 (fat) or / 2800 (muscle)
-  const projected_weight_change = parseFloat((avg_balance * 7 / 3500).toFixed(2));
+  // M3 (ultrareview) : 7700 kcal/kg de graisse (le frontend affiche des kg). L'ancien 3500
+  // était la règle US en kcal/LIVRE → surestimation ×2,2. Aligné sur bodyComposition.js.
+  const projected_weight_change = parseFloat((avg_balance * 7 / 7700).toFixed(2));
 
   res.json({
     days,
@@ -426,7 +427,8 @@ router.get('/stats/monthly', auth, async (req, res) => {
   const best_day  = sorted[0]?.date || null;
   const worst_day = sorted[sorted.length - 1]?.date || null;
 
-  const projected_weight_change = parseFloat((avg_balance * lastDay / 3500).toFixed(2));
+  // M3 : 7700 kcal/kg (voir /stats/weekly).
+  const projected_weight_change = parseFloat((avg_balance * lastDay / 7700).toFixed(2));
 
   res.json({
     year, month, days, target_kcal, goal,

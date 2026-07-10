@@ -354,11 +354,15 @@ origin/main contient du travail de restyling antérieur (0e1f544, 8919112, bfd07
 Avant chaque tâche de restyling d'écran (Tasks 9-15), vérifier si l'écran est déjà
 partiellement restylé — ne pas écraser, merger intelligemment.
 
-## Dépendances de test — règle absolue
-@testing-library/jest-dom, @testing-library/react et @testing-library/user-event (v13)
-sont déjà embarqués par react-scripts 5.0.1. Ne jamais les ajouter en devDependencies.
-Ne jamais créer ni modifier package.json ou package-lock.json dans ce projet.
-user-event utilisé dans ce projet = v13 (API synchrone, userEvent.click() sans await).
+## Dépendances de test — règle corrigée (ultrareview M13)
+⚠️ CORRECTION : react-scripts 5.0.1 n'embarque PAS @testing-library/* (prémisse erronée
+de l'ancienne règle). Sans ces libs déclarées, `react-scripts test` échoue
+(« Cannot find module '@testing-library/jest-dom' ») et la CI ne pouvait pas exécuter le
+frontend. Elles sont désormais en **devDependencies** du frontend, versions compatibles
+React 18 / react-scripts 5 : jest-dom ^5.17, react ^13.4, user-event ^13.5.
+- user-event = **v13** (API synchrone, `userEvent.click()` sans await) — ne pas passer en v14.
+- Lancer les tests frontend en CI : `npm run test:ci` (cross-env CI=true, sans watch).
+- Ne pas bump ces libs sans vérifier la compat react-scripts 5.
 
 ## Boucle de dev autonome (déclencheur : « lance la boucle »)
 Quand l'utilisateur dit « lance la boucle » (ou équivalent), exécuter ceci sans redemander :

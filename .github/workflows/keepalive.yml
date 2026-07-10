@@ -31,22 +31,16 @@ jobs:
         run: |
           BACK="https://nutridz-2.onrender.com/health"
           FRONT="https://nutrivita-v0.onrender.com/"
+          OK=0; TOTAL=0
           ping() {
             local url="$1"; local code
             code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 "$url" || echo "000")
             echo "$(date -u +%H:%M:%S) $url -> HTTP $code"
+            TOTAL=$((TOTAL+1))
+            # Succès = 2xx/3xx (un service éveillé). Tout le reste (000/4xx/5xx) = échec.
+            case "$code" in 2??|3??) OK=$((OK+1));; esac
           }
           # 9 itérations espacées de 90 s ≈ 12 min de couverture par run.
-          #
-          # BUG corrigé : `[ "$i" -lt 9 ] && sleep 90` en dernière ligne de boucle
-          # renvoyait le code de sortie du test `[ ... ]`, qui est FAUX (exit 1)
-          # à la toute dernière itération (i=9). Ce code 1 devenait le code de
-          # sortie du script entier → le job échouait à CHAQUE run, même quand
-          # tous les pings réussissaient (constat : échec systématique après
-          # ~13 min, soit la durée de la boucle complète). Le `if/then/fi`
-          # renvoie toujours 0 quand la condition est fausse et qu'il n'y a pas
-          # de `else` — plus de fuite de code de sortie. `exit 0` final en filet
-          # de sécurité (le ping reste "best effort", cf. commentaire plus haut).
           for i in $(seq 1 9); do
             ping "$BACK"
             ping "$FRONT"
@@ -54,4 +48,12 @@ jobs:
               sleep 90
             fi
           done
+          # M12 (ultrareview) : rester "best effort" (les blips transitoires ne cassent
+          # pas le job) MAIS échouer si AUCUN ping n'a réussi de tout le run — signe que
+          # le keep-alive ne protège plus rien (URL renommée, service supprimé…).
+          echo "Bilan : $OK/$TOTAL pings OK"
+          if [ "$OK" -eq 0 ]; then
+            echo "::error::Keep-alive : 0/$TOTAL ping réussi — vérifier les URLs Render ($BACK, $FRONT)"
+            exit 1
+          fi
           exit 0

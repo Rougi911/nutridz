@@ -151,11 +151,14 @@ router.get('/evolution', auth, async (req, res) => {
   const end = new Date(today);
   while (d <= end) {
     const dateStr = d.toISOString().split('T')[0];
-    const kcal_consumed = journalMap[dateStr] || 0;
-    const act = activityMap[dateStr] || { kcal: 0, resistance_today: false };
-    // net = consumed - (tdee + extra activity burn)
-    const net_kcal = kcal_consumed - tdee - act.kcal;
-    nets.push({ date: dateStr, net_kcal, resistance_today: act.resistance_today });
+    // M6 (ultrareview) : n'estimer que les jours RÉELLEMENT journalisés. Un jour sans saisie
+    // comptait comme 0 kcal ingérées = déficit de tout le TDEE → perte de masse irréaliste.
+    if (journalMap[dateStr] != null) {
+      const kcal_consumed = journalMap[dateStr];
+      const act = activityMap[dateStr] || { kcal: 0, resistance_today: false };
+      const net_kcal = kcal_consumed - tdee - act.kcal;
+      nets.push({ date: dateStr, net_kcal, resistance_today: act.resistance_today });
+    }
     d.setDate(d.getDate() + 1);
   }
 
