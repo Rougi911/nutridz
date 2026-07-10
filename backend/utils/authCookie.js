@@ -12,7 +12,7 @@ const crypto = require('crypto');
 
 const TOKEN_COOKIE = 'token';
 const CSRF_COOKIE = 'csrf';
-const MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 j — aligné sur l'expiration JWT
+const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 j — aligné sur l'expiration JWT (E5 ultrareview)
 
 const isProd = () => process.env.NODE_ENV === 'production';
 

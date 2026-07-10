@@ -1,29 +1,59 @@
+# Blueprint Render — NutriVita
+# ⚠️ Les NOMS de services ci-dessous doivent correspondre EXACTEMENT à ceux du dashboard
+# Render. Les services de prod ont été créés manuellement ; ce Blueprint sert de référence
+# reproductible. Adapter `name:` si vos services diffèrent (backend, frontend).
 services:
-  # ─── Backend API ────────────────────────────────────────────────────────────
+  # ─── Backend API (Node/Express + PostgreSQL Neon) ────────────────────────────
   - type: web
     name: nutridz-api
     runtime: node
     rootDir: backend
     buildCommand: npm install
     startCommand: npm start
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NODE_VERSION
+        value: 20.11.0
       - key: JWT_SECRET
-        generateValue: true          # Render génère automatiquement une valeur sécurisée
-      - key: ANTHROPIC_API_KEY
-        sync: false                  # À renseigner manuellement dans le dashboard Render
+        generateValue: true          # Render génère une valeur sécurisée (rotation E5/C1)
+      # E9 (ultrareview) : DATABASE_URL est OBLIGATOIRE depuis la migration Postgres (S7) —
+      # db.js refuse de démarrer sans. Chaîne POOLED Neon (-pooler). sync:false = saisie manuelle.
+      - key: DATABASE_URL
+        sync: false
       - key: FRONTEND_URL
         fromService:
           name: nutridz-web
           type: web
-          property: host
-    disk:
-      name: sqlite-data
-      mountPath: /opt/render/project/src/data
-      sizeGB: 1
+          property: hostport         # host:port → URL complète pour les redirects Strava
+      # Clés réellement lues par le code (cf. .env.example). Toutes sync:false.
+      - key: GEMINI_API_KEY
+        sync: false                  # foodvision.js (analyse photo) — remplace Clarifai
+      - key: GEMINI_MODEL
+        sync: false
+      - key: USDA_API_KEY
+        sync: false
+      - key: STRAVA_CLIENT_ID
+        sync: false
+      - key: STRAVA_CLIENT_SECRET
+        sync: false
+      - key: STRAVA_REDIRECT_URI
+        sync: false
+      - key: STRAVA_VERIFY_TOKEN
+        sync: false                  # webhooks Strava
+      - key: VAPID_PUBLIC_KEY
+        sync: false                  # notifications push (optionnel)
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_EMAIL
+        sync: false
+      - key: SENTRY_DSN
+        sync: false                  # observabilité (optionnel)
+    # E9/M10 : plus de disque `sqlite-data` — la persistance est sur Neon Postgres depuis S7.
+    # Un disque attaché empêcherait le plan gratuit et les déploiements zéro-downtime.
 
-  # ─── Frontend React (PWA) ───────────────────────────────────────────────────
+  # ─── Frontend React (PWA, static site) ───────────────────────────────────────
   - type: web
     name: nutridz-web
     runtime: static
@@ -34,7 +64,7 @@ services:
     headers:
       - path: /sw.js
         name: Cache-Control
-        value: no-cache              # Le SW doit toujours être à jour
+        value: no-cache              # Le SW doit toujours être à jour (cf. C3)
       - path: /manifest.json
         name: Cache-Control
         value: public, max-age=3600
@@ -46,8 +76,7 @@ services:
         source: /*
         destination: /index.html    # SPA fallback
     envVars:
+      # M11 (ultrareview) : property:host renvoyait un hostname NU (sans https:// ni /api),
+      # inutilisable tel quel comme baseURL axios. On fixe l'URL complète explicitement.
       - key: REACT_APP_API_URL
-        fromService:
-          name: nutridz-api
-          type: web
-          property: host
+        value: https://nutridz-api.onrender.com/api

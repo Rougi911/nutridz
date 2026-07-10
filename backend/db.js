@@ -428,6 +428,13 @@ async function initDB() {
   ];
   for (const sql of addColumns) await db.exec(sql);
 
+  // E3 (ultrareview) — index unique partiel pour dédupliquer les activités Strava
+  // (webhook + sync) par (user_id, strava_id). Permet ON CONFLICT DO NOTHING fiable :
+  // un event Strava rejoué ne crée plus de doublon qui gonflait calories_burned.
+  await db.exec(
+    'CREATE UNIQUE INDEX IF NOT EXISTS uniq_activities_user_strava ON activities (user_id, strava_id) WHERE strava_id IS NOT NULL'
+  );
+
   // weight_history (legacy SQLite) n'existe pas sur Postgres frais — nettoyage idempotent.
   await db.exec('DROP TABLE IF EXISTS weight_history');
 

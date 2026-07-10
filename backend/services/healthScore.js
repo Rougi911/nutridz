@@ -96,7 +96,9 @@ function componentsForDates(dates, dailyMap, entries, targetKcal, profile, month
     const microEntries = dayEntries.map((e) => ({ name: e.name, grams: e.grams }));
     const defs = calcDeficiencies(microEntries, Math.max(1, dates.length), profile || {}, monthNum);
     if (defs && defs.length) {
-      micro = Math.round(defs.reduce((s, n) => s + Math.min(100, n.pct || 0), 0) / defs.length);
+      // E4 (ultrareview) : calcDeficiencies retourne `pct_reference`, pas `pct` —
+      // l'ancien `n.pct || 0` valait toujours 0 → 20% du score santé perdus.
+      micro = Math.round(defs.reduce((s, n) => s + Math.min(100, n.pct_reference || 0), 0) / defs.length);
     }
   } catch {
     micro = 0;

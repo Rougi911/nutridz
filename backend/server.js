@@ -11,6 +11,12 @@ if (!process.env.JWT_SECRET) {
 const { initSentry, setupErrorHandler } = require('./observability/sentry');
 initSentry();
 
+// E1 (ultrareview) — capture les rejets des handlers async et les route vers le
+// gestionnaire d'erreurs Express final. Sans ça, une erreur DB (timeout Neon après
+// spin-down) dans un handler async devient une unhandledRejection fatale sous Node 20
+// et la requête reste sans réponse. Doit être requis avant la définition des routes.
+require('express-async-errors');
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');

@@ -36,7 +36,7 @@ router.post('/register', [
     await db.prepare('UPDATE profiles SET consent_glucose_date = ?, consent_glucose_version = ? WHERE user_id = ?').run(consentDate, '1.0', userId);
   }
 
-  const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '30d' });
+  const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
   const csrfToken = setAuthCookies(res, token); // P0-2 : cookie httpOnly + csrf (rétro-compatible, token gardé dans le body)
   res.status(201).json({ token, csrfToken, user: { id: userId, email, name } });
 });
@@ -58,7 +58,7 @@ router.post('/login', [
   const valid = await bcrypt.compare(password, user.password_hash);
   if (!valid) return res.status(401).json({ error: 'Identifiants incorrects' });
 
-  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '30d' });
+  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
   const csrfToken = setAuthCookies(res, token); // P0-2 : cookie httpOnly + csrf (rétro-compatible)
   res.json({ token, csrfToken, user: { id: user.id, email: user.email, name: user.name } });
 });
@@ -71,7 +71,7 @@ router.post('/logout', (req, res) => {
 
 // POST /api/auth/refresh — réémet un token (sliding) + rafraîchit les cookies (P0-2)
 router.post('/refresh', auth, (req, res) => {
-  const token = jwt.sign({ userId: req.userId }, JWT_SECRET, { expiresIn: '30d' });
+  const token = jwt.sign({ userId: req.userId }, JWT_SECRET, { expiresIn: '7d' });
   const csrfToken = setAuthCookies(res, token);
   res.json({ token, csrfToken });
 });

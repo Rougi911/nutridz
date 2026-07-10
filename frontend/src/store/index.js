@@ -2,6 +2,21 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import api from '../utils/api';
 
+// M1 (ultrareview) — date métier au fuseau LOCAL (pas UTC). toISOString() renvoyait la
+// date UTC : à Alger/Paris avant 1h-2h du matin, le journal écrivait sur la veille.
+export function localDateStr(d = new Date()) {
+  const off = d.getTimezoneOffset() * 60000;
+  return new Date(d.getTime() - off).toISOString().split('T')[0];
+}
+
+// E6 (ultrareview) — purge complète des données utilisateur à la déconnexion.
+// Sans ça, profil santé/journal/réglages du compte précédent restaient en mémoire et
+// en localStorage (fuite entre utilisateurs sur appareil partagé + enjeu RGPD santé).
+const USER_LS_KEYS = ['nutridz-auth', 'nutridz-profile', 'nutrivita-settings', 'nutridz-onboarding-done'];
+function purgeUserData() {
+  try { USER_LS_KEYS.forEach((k) => localStorage.removeItem(k)); } catch { /* SSR/no-op */ }
+}
+
 // ─── Auth Store ───────────────────────────────────────────────────────────────
 export const useAuthStore = create(
   persist(
@@ -27,6 +42,14 @@ export const useAuthStore = create(
       logout: () => {
         set({ token: null, user: null, isAuthenticated: false });
         delete api.defaults.headers.common['Authorization'];
+        // Réinitialise les stores en mémoire + purge le localStorage utilisateur.
+        try {
+          useProfileStore.getState().resetProfile();
+          useJournalStore.setState({ meals: { pdej: [], dej: [], coll: [], diner: [] }, totals: { kcal: 0, glucides: 0, proteines: 0, lipides: 0, fibres: 0 }, history: [], date: localDateStr() });
+          useActivityStore.setState({ bilan: null, weeklyStats: null, monthlyStats: null, stravaConnected: false });
+          useProductsStore.setState({ products: [], total: 0, selectedProduct: null });
+        } catch { /* stores non montés */ }
+        purgeUserData();
       },
 
       initAuth: () => {
@@ -39,15 +62,19 @@ export const useAuthStore = create(
 );
 
 // ─── Profile Store ────────────────────────────────────────────────────────────
+const DEFAULT_PROFILE = {
+  age: 30, weight: 70, height: 170, sexe: 'h',
+  activity_level: 'light', sport: 'marche',
+  goal: 'maintien', pace: 'modere',
+  bmr: 1680, tdee: 2310, target_kcal: 2310, imc: 24.2
+};
+
 export const useProfileStore = create(
   persist(
     (set) => ({
-      profile: {
-        age: 30, weight: 70, height: 170, sexe: 'h',
-        activity_level: 'light', sport: 'marche',
-        goal: 'maintien', pace: 'modere',
-        bmr: 1680, tdee: 2310, target_kcal: 2310, imc: 24.2
-      },
+      profile: { ...DEFAULT_PROFILE },
+
+      resetProfile: () => set({ profile: { ...DEFAULT_PROFILE } }),
 
       fetchProfile: async () => {
         try {
@@ -70,7 +97,7 @@ export const useProfileStore = create(
 
 // ─── Journal Store ────────────────────────────────────────────────────────────
 export const useJournalStore = create((set, get) => ({
-  date: new Date().toISOString().split('T')[0],
+  date: localDateStr(),
   meals: { pdej: [], dej: [], coll: [], diner: [] },
   totals: { kcal: 0, glucides: 0, proteines: 0, lipides: 0, fibres: 0 },
   loading: false,
@@ -118,7 +145,7 @@ export const useActivityStore = create((set, get) => ({
   fetchBilan: async (date) => {
     set({ loading: true });
     try {
-      const d = date || new Date().toISOString().split('T')[0];
+      const d = date || localDateStr();
       const { data } = await api.get(`/activity/bilan/${d}`);
       set({ bilan: data, loading: false });
     } catch { set({ loading: false }); }
@@ -126,7 +153,7 @@ export const useActivityStore = create((set, get) => ({
 
   addActivity: async (activity) => {
     const { data } = await api.post('/activity/manual', activity);
-    const d = activity.date || new Date().toISOString().split('T')[0];
+    const d = activity.date || localDateStr();
     await get().fetchBilan(d);
     return data;
   },
@@ -136,7 +163,7 @@ export const useActivityStore = create((set, get) => ({
       const { data } = await api.get('/activity/strava/today');
       set({ stravaConnected: data.connected });
       if (data.connected) {
-        const d = new Date().toISOString().split('T')[0];
+        const d = localDateStr();
         await get().fetchBilan(d);
       }
       return data;

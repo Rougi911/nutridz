@@ -2,7 +2,7 @@ const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { getDB } = require('../db');
 const auth = require('../middleware/auth');
-const { getAuthUrl, exchangeCode, getTodayActivities } = require('../services/strava');
+const { getAuthUrl, exchangeCode, getTodayActivities, signState, verifyState } = require('../services/strava');
 
 const router = express.Router();
 
@@ -20,8 +20,8 @@ router.get('/strava/auth', auth, (req, res) => {
   if (!process.env.STRAVA_CLIENT_ID || !process.env.STRAVA_REDIRECT_URI) {
     return res.status(503).json({ error: 'Strava non configuré (STRAVA_CLIENT_ID manquant)' });
   }
-  // state = userId so the callback can identify the user without a JWT
-  const url = getAuthUrl(req.userId);
+  // E2 : state signé (JWT 10 min) au lieu du userId brut — anti-CSRF de liaison de compte
+  const url = getAuthUrl(signState(req.userId));
   res.json({ url });
 });
 
@@ -38,6 +38,12 @@ router.get('/strava/callback', async (req, res) => {
     return res.redirect(`${frontendUrl}/stats?strava=error&reason=missing_params`);
   }
 
+  // E2 : le state doit être un JWT signé valide → on en extrait le userId de confiance.
+  const userId = verifyState(state);
+  if (!userId) {
+    return res.redirect(`${frontendUrl}/stats?strava=error&reason=invalid_state`);
+  }
+
   try {
     const tokens = await exchangeCode(code);
     const db = getDB();
@@ -45,7 +51,7 @@ router.get('/strava/callback', async (req, res) => {
     const athleteName = [tokens.athlete?.firstname, tokens.athlete?.lastname]
       .filter(Boolean).join(' ') || 'Athlète Strava';
 
-    const uid = `${String(state).substring(0, 4)}…`;
+    const uid = `${String(userId).substring(0, 4)}…`;
     console.log(`[Strava callback] uid=${uid} athlete="${athleteName}" expires_at=${tokens.expires_at}`);
 
     await db.prepare(`
@@ -62,7 +68,7 @@ router.get('/strava/callback', async (req, res) => {
       String(tokens.athlete?.id || ''),
       tokens.expires_at,
       athleteName,
-      state   // state was set to userId in getAuthUrl
+      userId   // userId vérifié depuis le state signé
     );
 
     console.log(`[Strava callback] Token saved successfully for uid=${uid}`);
