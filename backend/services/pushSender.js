@@ -36,16 +36,16 @@ function buildReminderMessages(prefsRows, hhmm) {
   const out = [];
   for (const p of prefsRows || []) {
     if (p.journal_enabled && p.journal_time === hhmm) {
-      out.push({ user_id: p.user_id, type: 'journal', title: 'NutriVita', body: 'Prends 5 min pour remplir ton journal du jour.', url: '/journal' });
+      out.push({ user_id: p.user_id, type: 'journal', title: 'NutraLance', body: 'Prends 5 min pour remplir ton journal du jour.', url: '/journal' });
     }
     if (p.glucose_enabled && p.glucose_time === hhmm) {
-      out.push({ user_id: p.user_id, type: 'glucose', title: 'NutriVita', body: "C'est le moment de noter ta glycémie.", url: '/' });
+      out.push({ user_id: p.user_id, type: 'glucose', title: 'NutraLance', body: "C'est le moment de noter ta glycémie.", url: '/' });
     }
     if (p.hydration_enabled && hhmm === FIXED.hydration) {
-      out.push({ user_id: p.user_id, type: 'hydration', title: 'NutriVita', body: "Pense à t'hydrater.", url: '/' });
+      out.push({ user_id: p.user_id, type: 'hydration', title: 'NutraLance', body: "Pense à t'hydrater.", url: '/' });
     }
     if (p.deficiency_enabled && hhmm === FIXED.deficiency) {
-      out.push({ user_id: p.user_id, type: 'deficiency', title: 'NutriVita', body: 'Des aliments de saison pour varier tes apports.', url: '/bilan' });
+      out.push({ user_id: p.user_id, type: 'deficiency', title: 'NutraLance', body: 'Des aliments de saison pour varier tes apports.', url: '/bilan' });
     }
   }
   return out;

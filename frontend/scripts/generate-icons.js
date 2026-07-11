@@ -13,7 +13,7 @@ const path = require('path');
 const OUT_DIR = path.join(__dirname, '../public/icons');
 const SIZES = [72, 96, 128, 144, 152, 192, 384, 512];
 
-// Icône SVG NutriDZ (feuille verte avec "N")
+// Icône SVG NutraLance (feuille verte avec "N")
 const SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <rect width="512" height="512" rx="100" fill="#1A6B3C"/>
   <text x="256" y="340" text-anchor="middle" font-family="Arial,sans-serif"

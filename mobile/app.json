@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "NutriDZ",
+    "name": "NutraLance",
     "slug": "nutridz",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -15,8 +15,8 @@
       "supportsTablet": false,
       "bundleIdentifier": "dz.nutridz.app",
       "infoPlist": {
-        "NSCameraUsageDescription": "NutriDZ utilise votre caméra pour scanner les codes-barres et les étiquettes nutritionnelles.",
-        "NSPhotoLibraryUsageDescription": "NutriDZ accède à vos photos pour analyser les étiquettes nutritionnelles."
+        "NSCameraUsageDescription": "NutraLance utilise votre caméra pour scanner les codes-barres et les étiquettes nutritionnelles.",
+        "NSPhotoLibraryUsageDescription": "NutraLance accède à vos photos pour analyser les étiquettes nutritionnelles."
       }
     },
     "android": {
@@ -31,8 +31,8 @@
       ]
     },
     "plugins": [
-      ["expo-camera", { "cameraPermission": "Autoriser NutriDZ à utiliser la caméra pour scanner." }],
-      ["expo-image-picker", { "photosPermission": "Autoriser NutriDZ à accéder aux photos." }]
+      ["expo-camera", { "cameraPermission": "Autoriser NutraLance à utiliser la caméra pour scanner." }],
+      ["expo-image-picker", { "photosPermission": "Autoriser NutraLance à accéder aux photos." }]
     ]
   }
 }

@@ -32,8 +32,12 @@ const router = express.Router();
 
 // GET /api/scanned?limit=N&offset=M
 router.get('/', auth, async (req, res) => {
-  const limit  = Math.min(parseInt(req.query.limit  || '50',  10), 200);
-  const offset = Math.max(parseInt(req.query.offset || '0',   10), 0);
+  // L (ultrareview) : parseInt('abc') = NaN et NaN passait dans LIMIT (→ 500). On borne
+  // avec un repli numérique explicite (Number.isFinite) avant clamp.
+  const limRaw = parseInt(req.query.limit, 10);
+  const offRaw = parseInt(req.query.offset, 10);
+  const limit  = Math.min(Number.isFinite(limRaw) ? limRaw : 50, 200);
+  const offset = Math.max(Number.isFinite(offRaw) ? offRaw : 0, 0);
 
   const db = getDB();
   const rows = await db.prepare(`

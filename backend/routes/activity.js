@@ -2,7 +2,7 @@ const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { getDB } = require('../db');
 const auth = require('../middleware/auth');
-const { getAuthUrl, exchangeCode, getTodayActivities } = require('../services/strava');
+const { getAuthUrl, exchangeCode, getTodayActivities, signState, verifyState } = require('../services/strava');
 
 const router = express.Router();
 
@@ -20,8 +20,8 @@ router.get('/strava/auth', auth, (req, res) => {
   if (!process.env.STRAVA_CLIENT_ID || !process.env.STRAVA_REDIRECT_URI) {
     return res.status(503).json({ error: 'Strava non configuré (STRAVA_CLIENT_ID manquant)' });
   }
-  // state = userId so the callback can identify the user without a JWT
-  const url = getAuthUrl(req.userId);
+  // E2 : state signé (JWT 10 min) au lieu du userId brut — anti-CSRF de liaison de compte
+  const url = getAuthUrl(signState(req.userId));
   res.json({ url });
 });
 
@@ -35,7 +35,13 @@ router.get('/strava/callback', async (req, res) => {
   }
 
   if (!code || !state) {
-    return res.redirect(`${frontendUrl}/bilan?strava=error&reason=missing_params`);
+    return res.redirect(`${frontendUrl}/stats?strava=error&reason=missing_params`);
+  }
+
+  // E2 : le state doit être un JWT signé valide → on en extrait le userId de confiance.
+  const userId = verifyState(state);
+  if (!userId) {
+    return res.redirect(`${frontendUrl}/stats?strava=error&reason=invalid_state`);
   }
 
   try {
@@ -45,7 +51,7 @@ router.get('/strava/callback', async (req, res) => {
     const athleteName = [tokens.athlete?.firstname, tokens.athlete?.lastname]
       .filter(Boolean).join(' ') || 'Athlète Strava';
 
-    const uid = `${String(state).substring(0, 4)}…`;
+    const uid = `${String(userId).substring(0, 4)}…`;
     console.log(`[Strava callback] uid=${uid} athlete="${athleteName}" expires_at=${tokens.expires_at}`);
 
     await db.prepare(`
@@ -62,14 +68,14 @@ router.get('/strava/callback', async (req, res) => {
       String(tokens.athlete?.id || ''),
       tokens.expires_at,
       athleteName,
-      state   // state was set to userId in getAuthUrl
+      userId   // userId vérifié depuis le state signé
     );
 
     console.log(`[Strava callback] Token saved successfully for uid=${uid}`);
-    res.redirect(`${frontendUrl}/bilan?strava=ok&athlete=${encodeURIComponent(athleteName)}`);
+    res.redirect(`${frontendUrl}/stats?strava=ok&athlete=${encodeURIComponent(athleteName)}`);
   } catch (err) {
     console.error('[Strava callback] Error:', err.message);
-    res.redirect(`${frontendUrl}/bilan?strava=error&reason=exchange_failed`);
+    res.redirect(`${frontendUrl}/stats?strava=error&reason=exchange_failed`);
   }
 });
 
@@ -340,8 +346,9 @@ router.get('/stats/weekly', auth, async (req, res) => {
   const best_day  = sortedByBalance[0]?.date || null;
   const worst_day = sortedByBalance[sortedByBalance.length - 1]?.date || null;
 
-  // Projected weekly weight change: avg_balance * 7 / 3500 (fat) or / 2800 (muscle)
-  const projected_weight_change = parseFloat((avg_balance * 7 / 3500).toFixed(2));
+  // M3 (ultrareview) : 7700 kcal/kg de graisse (le frontend affiche des kg). L'ancien 3500
+  // était la règle US en kcal/LIVRE → surestimation ×2,2. Aligné sur bodyComposition.js.
+  const projected_weight_change = parseFloat((avg_balance * 7 / 7700).toFixed(2));
 
   res.json({
     days,
@@ -420,7 +427,8 @@ router.get('/stats/monthly', auth, async (req, res) => {
   const best_day  = sorted[0]?.date || null;
   const worst_day = sorted[sorted.length - 1]?.date || null;
 
-  const projected_weight_change = parseFloat((avg_balance * lastDay / 3500).toFixed(2));
+  // M3 : 7700 kcal/kg (voir /stats/weekly).
+  const projected_weight_change = parseFloat((avg_balance * lastDay / 7700).toFixed(2));
 
   res.json({
     year, month, days, target_kcal, goal,

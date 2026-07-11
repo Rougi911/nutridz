@@ -1,8 +1,8 @@
-# NutriVita — Contexte du projet
+# NutraLance — Contexte du projet
 
 ## Vue d'ensemble
 
-NutriVita est une application de nutrition intelligente déployée en PWA, ciblant le marché français puis algérien. Anciennement nommée NutriDZ, rebaptisée NutriVita.
+NutraLance est une application de nutrition intelligente déployée en PWA, ciblant le marché français puis algérien. Historique des noms : NutriDZ → NutriVita → **NutraLance** (nom actuel). Les identifiants techniques (dépôt `nutridz`, services Render `nutridz-*`/`nutrivita-v0`, clés localStorage `nutridz-*`/`nutrivita-settings`, URLs `*.onrender.com`) conservent l'ancien nommage pour ne pas casser l'infra ni déconnecter les utilisateurs — seule la marque visible a changé.
 
 **Tagline** : Your Daily Wellness Companion
 
@@ -42,7 +42,7 @@ NutriVita est une application de nutrition intelligente déployée en PWA, cibla
 NODE_ENV=production
 NODE_VERSION=20.11.0
 DATABASE_URL=postgresql://...-pooler.../neondb?sslmode=require  # PostgreSQL Neon (chaîne POOLED). Requis depuis S7.
-JWT_SECRET=MonAppNutriDZAlgerie2024SecretKey!
+JWT_SECRET=...                        # ⚠️ JAMAI
 FRONTEND_URL=https://nutridz-web.onrender.com
 CLARIFAI_API_KEY=...                  # Reconnaissance d'aliments par photo
 USDA_API_KEY=...                      # Base nutritionnelle USDA FoodData
@@ -100,7 +100,7 @@ nutridz/
 │
 └── frontend/
     ├── public/
-    │   ├── manifest.json             # PWA NutriVita
+    │   ├── manifest.json             # PWA NutraLance
     │   ├── index.html                # Meta PWA + Apple touch icons
     │   ├── sw.js                     # Service Worker cache offline
     │   ├── sw-push.js                # Service Worker push events (push + notificationclick)
@@ -306,7 +306,7 @@ Réponse attendue : `{"status":"ok","version":"1.0.0"}`
 5. **Utiliser des fichiers .txt** sur le Bureau pour les longs prompts au lieu de coller dans le terminal
 6. **Demander à Claude Code de NE PAS relire les fichiers** s'il les a déjà vus dans la session
 
-## Workflow superpowers — restylage frontend (NutriVita)
+## Workflow superpowers — restylage frontend (NutraLance)
 
 ### Objectif courant
 Appliquer le design de nutrivita-v0 au frontend React (frontend/) SANS régression.
@@ -354,16 +354,20 @@ origin/main contient du travail de restyling antérieur (0e1f544, 8919112, bfd07
 Avant chaque tâche de restyling d'écran (Tasks 9-15), vérifier si l'écran est déjà
 partiellement restylé — ne pas écraser, merger intelligemment.
 
-## Dépendances de test — règle absolue
-@testing-library/jest-dom, @testing-library/react et @testing-library/user-event (v13)
-sont déjà embarqués par react-scripts 5.0.1. Ne jamais les ajouter en devDependencies.
-Ne jamais créer ni modifier package.json ou package-lock.json dans ce projet.
-user-event utilisé dans ce projet = v13 (API synchrone, userEvent.click() sans await).
+## Dépendances de test — règle corrigée (ultrareview M13)
+⚠️ CORRECTION : react-scripts 5.0.1 n'embarque PAS @testing-library/* (prémisse erronée
+de l'ancienne règle). Sans ces libs déclarées, `react-scripts test` échoue
+(« Cannot find module '@testing-library/jest-dom' ») et la CI ne pouvait pas exécuter le
+frontend. Elles sont désormais en **devDependencies** du frontend, versions compatibles
+React 18 / react-scripts 5 : jest-dom ^5.17, react ^13.4, user-event ^13.5.
+- user-event = **v13** (API synchrone, `userEvent.click()` sans await) — ne pas passer en v14.
+- Lancer les tests frontend en CI : `npm run test:ci` (cross-env CI=true, sans watch).
+- Ne pas bump ces libs sans vérifier la compat react-scripts 5.
 
 ## Boucle de dev autonome (déclencheur : « lance la boucle »)
 Quand l'utilisateur dit « lance la boucle » (ou équivalent), exécuter ceci sans redemander :
 
-1. Lire `C:\AppliSanteNutriVita\BACKLOG.md` et appliquer les **règles de la boucle** en tête de ce fichier.
+1. Lire `C:\AppliSanteNutraLance\BACKLOG.md` et appliquer les **règles de la boucle** en tête de ce fichier.
 2. Travailler **uniquement dans le repo nutridz (backend)**.
 3. Prendre la **première tâche non cochée** de ce périmètre → implémenter → `npm test` →
    si vert : `git add` (fichiers touchés) + commit conventionnel + `git push` → mettre à jour le

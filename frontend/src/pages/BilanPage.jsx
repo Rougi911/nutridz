@@ -325,10 +325,10 @@ export default function BilanPage({ embedded = false, activeTabOverride }) {
       toast.success(`✅ ${athlete} connecté à Strava !`);
       fetchBilan(today);
       fetchWeeklyStats();
-      window.history.replaceState({}, '', '/bilan');
+      window.history.replaceState({}, '', '/stats');
     } else if (strava === 'error') {
       toast.error(`Échec connexion Strava (${params.get('reason') || ''})`);
-      window.history.replaceState({}, '', '/bilan');
+      window.history.replaceState({}, '', '/stats');
     }
   }, []);
 

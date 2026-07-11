@@ -42,6 +42,13 @@ router.post('/import-csv', auth, async (req, res) => {
 
   if (parsed.length === 0) return res.json({ imported_count: 0, skipped_count: 0 });
 
+  // L (ultrareview) : plafonner le nombre de lignes importées (anti petit DoS par
+  // INSERT séquentiels). 20 000 lectures ≈ plusieurs mois de capteur — largement suffisant.
+  const MAX_ROWS = 20000;
+  if (parsed.length > MAX_ROWS) {
+    return res.status(413).json({ error: `CSV trop volumineux (max ${MAX_ROWS} lignes)` });
+  }
+
   const db = getDB();
   let imported_count = 0;
   let skipped_count = 0;

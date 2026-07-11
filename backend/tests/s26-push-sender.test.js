@@ -24,7 +24,7 @@ describe('S26 — buildReminderMessages', () => {
     const m = buildReminderMessages(rows, '07:30');
     expect(m).toHaveLength(1);
     expect(m[0].type).toBe('glucose');
-    expect(m[0].title).toBe('NutriVita'); // payload neutre
+    expect(m[0].title).toBe('NutraLance'); // payload neutre
   });
 
   test('hydratation : heure fixe 14:00', () => {

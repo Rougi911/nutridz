@@ -44,7 +44,10 @@ export default function JournalPage() {
         api.get(`/weight?from=${today}&to=${today}`),
         api.get(`/weight?from=${yesterday}&to=${yesterday}`),
       ]);
-      setTodayWeight(todayRes.data.length > 0 ? todayRes.data[0].weight_kg : '');
+      // E7 (ultrareview) : afficher dans l'unité choisie. L'input est ré-interprété en lbs
+      // par handleWeightSubmit ; sans conversion, 70 kg affiché était re-sauvé comme 31,75 kg.
+      const rawToday = todayRes.data.length > 0 ? todayRes.data[0].weight_kg : null;
+      setTodayWeight(rawToday != null ? (weightUnit === 'lbs' ? kgToLbs(rawToday) : rawToday) : '');
       setYesterdayWeight(yesterdayRes.data.length > 0 ? yesterdayRes.data[0].weight_kg : null);
     } catch (err) {
       console.error('Weight fetch error:', err);
@@ -69,11 +72,14 @@ export default function JournalPage() {
     try {
       const yesterday = format(subDays(parseISO(date), 1), 'yyyy-MM-dd');
       const res = await api.get(`/journal?date=${yesterday}`);
-      if (!res.data || res.data.length === 0) {
+      // E8 (ultrareview) : GET /journal renvoie { date, entries, meals, totals } — itérer
+      // res.data.entries (l'ancien res.data.length / for..of res.data levait une TypeError).
+      const entries = res.data?.entries || [];
+      if (entries.length === 0) {
         toast.error(t('journal.noMealsYesterday'));
         return;
       }
-      for (const entry of res.data) {
+      for (const entry of entries) {
         await api.post('/journal', {
           product_id: entry.product_id,
           meal_type: entry.meal_type,
@@ -81,7 +87,7 @@ export default function JournalPage() {
           date,
         });
       }
-      toast.success(`${res.data.length} ${t('journal.duplicated')}`);
+      toast.success(`${entries.length} ${t('journal.duplicated')}`);
       fetchJournal();
     } catch (err) {
       console.error(err);

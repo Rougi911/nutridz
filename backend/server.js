@@ -11,6 +11,12 @@ if (!process.env.JWT_SECRET) {
 const { initSentry, setupErrorHandler } = require('./observability/sentry');
 initSentry();
 
+// E1 (ultrareview) — capture les rejets des handlers async et les route vers le
+// gestionnaire d'erreurs Express final. Sans ça, une erreur DB (timeout Neon après
+// spin-down) dans un handler async devient une unhandledRejection fatale sous Node 20
+// et la requête reste sans réponse. Doit être requis avant la définition des routes.
+require('express-async-errors');
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -78,6 +84,21 @@ const authLimiter = rateLimit({
   message: { error: 'Trop de tentatives. Réessayez dans quelques minutes.' },
 });
 app.use('/api/auth', authLimiter);
+
+// M8 (ultrareview) — limiteur dédié aux endpoints IA coûteux (Gemini/vision payants,
+// corps jusqu'à 15 Mo) : empêche un compte authentifié d'épuiser les quotas API
+// (DoS financier). 30 requêtes / 15 min par IP, en plus du limiteur global.
+const aiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.method === 'OPTIONS',
+  message: { error: 'Trop d\'analyses IA. Réessayez dans quelques minutes.' },
+});
+app.use('/api/interpret', aiLimiter);
+app.use('/api/vision', aiLimiter);
+app.use('/api/scan', aiLimiter);
 
 // Route-specific large body limit for /api/interpret (base64 image in JSON payload).
 // Must be mounted BEFORE the global express.json() so body-parser picks up this limit first.
@@ -159,7 +180,7 @@ app.use((err, req, res, next) => {
 if (require.main === module) {
   initDB()
     .then(() => app.listen(PORT, () => {
-      console.log(`NutriDZ API v2 démarrée sur le port ${PORT}`);
+      console.log(`NutraLance API v2 démarrée sur le port ${PORT}`);
       console.log(`CORS origines autorisées : ${allowedOrigins.join(', ')}`);
     }))
     .then(() => {

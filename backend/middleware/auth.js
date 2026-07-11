@@ -22,7 +22,8 @@ function authMiddleware(req, res, next) {
 
   let decoded;
   try {
-    decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // L (ultrareview) : épingler l'algorithme HS256 — écarte toute confusion d'algorithme.
+    decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
   } catch {
     return res.status(403).json({ error: 'Token invalide' });
   }

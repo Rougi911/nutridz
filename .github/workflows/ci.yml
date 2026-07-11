@@ -48,3 +48,23 @@ jobs:
           JWT_SECRET: ci-test-secret-not-real
           # Migration S7 : tests d'intégration sur Postgres (DB/schéma isolé par worker Jest).
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/nutridz_test
+
+  # M13 (ultrareview) : les suites RTL du frontend (garde-fous de non-régression du
+  # restylage) ne tournaient jamais en CI — désormais exécutées sur chaque push/PR.
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Run frontend tests
+        run: npm run test:ci

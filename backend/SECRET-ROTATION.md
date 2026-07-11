@@ -1,4 +1,4 @@
-# Rotation des secrets — NutriVita backend
+# Rotation des secrets — NutraLance backend
 
 > Procédure pour le **propriétaire**. Les étapes 🔒 (purge d'historique git,
 > rotation effective sur Render) ne sont **jamais** exécutées par la boucle de dev :

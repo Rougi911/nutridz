@@ -243,12 +243,14 @@ router.post('/webhook', async (req, res) => {
       const distKm  = activity.distance ? parseFloat((activity.distance / 1000).toFixed(2)) : 0;
       const date    = (activity.start_date_local || new Date().toISOString()).slice(0, 10);
 
+      // E3 : insérer strava_id (= object_id) et dédupliquer sur (user_id, strava_id).
+      // Un event Strava rejoué ne crée plus de doublon (les calories ne sont plus comptées deux fois).
       const { v4: uuidv4 } = require('uuid');
       await db.prepare(`
-        INSERT INTO activities (id, user_id, date, type, duration_min, distance_km, calories_burned, name, source)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'strava')
-        ON CONFLICT (id) DO NOTHING
-      `).run(uuidv4(), userId, date, type, durMin, distKm, kcal, activity.name || type);
+        INSERT INTO activities (id, user_id, date, type, duration_min, distance_km, calories_burned, name, source, strava_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'strava', ?)
+        ON CONFLICT (user_id, strava_id) DO NOTHING
+      `).run(uuidv4(), userId, date, type, durMin, distKm, kcal, activity.name || type, String(object_id));
 
     } catch (err) {
       console.error('[Strava webhook POST] Erreur traitement:', err.message);

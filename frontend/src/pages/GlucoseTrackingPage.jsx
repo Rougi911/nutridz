@@ -32,7 +32,11 @@ function DistributionBar({ label, pct, count, color }) {
 export default function GlucoseTrackingPage() {
   const { t, lang } = useTranslation();
   const { glucoseUnit } = useSettingsStore();
-  const thresholds = glucoseThresholds(glucoseUnit);
+  const thresholds = glucoseThresholds(glucoseUnit); // en unité d'affichage (pour les axes/lignes)
+  // M16 (ultrareview) : la valeur brute r.glucose_mg_dl est TOUJOURS en mg/dL. Les couleurs
+  // doivent la comparer à des seuils mg/dL, jamais aux seuils convertis en mmol/L (sinon
+  // toute lecture normale ~100 mg/dL passait « trop élevée » en mode mmol/L).
+  const MGDL = { low: 70, targetHigh: 180 };
   const [readings, setReadings]   = useState([]);
   const [metrics, setMetrics]     = useState(null);
   const [period, setPeriod]       = useState(14);
@@ -254,7 +258,7 @@ export default function GlucoseTrackingPage() {
                     shape={(props) => {
                       const { cx, cy, payload } = props;
                       const g = payload.glucose_mg_dl;
-                      const color = g < thresholds.low ? '#ef4444' : g > thresholds.targetHigh ? '#f59e0b' : '#10b981';
+                      const color = g < MGDL.low ? '#ef4444' : g > MGDL.targetHigh ? '#f59e0b' : '#10b981';
                       return <circle cx={cx} cy={cy} r={5} fill={color} fillOpacity={0.85} />;
                     }}
                   />
@@ -275,8 +279,8 @@ export default function GlucoseTrackingPage() {
               <div style={{ maxHeight: '280px', overflowY: 'auto' }}>
                 {readings.slice(0, 20).map((r) => {
                   const g = r.glucose_mg_dl;
-                  const outBg    = g < thresholds.low ? '#fee2e2' : g > thresholds.targetHigh ? '#fef3c7' : '#dcfce7';
-                  const outColor = g < thresholds.low ? '#dc2626' : g > thresholds.targetHigh ? '#d97706' : '#10b981';
+                  const outBg    = g < MGDL.low ? '#fee2e2' : g > MGDL.targetHigh ? '#fef3c7' : '#dcfce7';
+                  const outColor = g < MGDL.low ? '#dc2626' : g > MGDL.targetHigh ? '#d97706' : '#10b981';
                   return (
                     <div key={r.id} style={{ padding: '0.55rem 0', borderBottom: '1px solid var(--bg-tertiary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>

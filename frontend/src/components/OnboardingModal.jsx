@@ -5,7 +5,7 @@ import { calcBMR, calcTDEE, calcTarget } from '../utils/api';
 import api from '../utils/api';
 
 const STEPS = [
-  { title: 'Bienvenue sur NutriVita ! 🎉', description: 'Votre compagnon nutrition intelligent. Commençons par quelques informations de base.' },
+  { title: 'Bienvenue sur NutraLance ! 🎉', description: 'Votre compagnon nutrition intelligent. Commençons par quelques informations de base.' },
   { title: 'Vos informations 📝', description: 'Ces données permettent de calculer vos besoins caloriques.' },
   { title: 'Votre objectif 🎯', description: 'Que souhaitez-vous accomplir ?' },
   { title: "C'est parti ! 🚀", description: '' },

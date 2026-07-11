@@ -20,7 +20,7 @@ export default function LandingPage() {
       {/* Hero */}
       <div className="gradient-header gradient-hero" style={{ padding: '48px 24px 56px', textAlign: 'center', color: '#fff', borderRadius: '0 0 var(--radius-2xl) var(--radius-2xl)' }}>
         <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>🥗</div>
-        <h1 style={{ fontSize: '2.5rem', margin: '0 0 1rem', fontWeight: '800' }}>NutriVita</h1>
+        <h1 style={{ fontSize: '2.5rem', margin: '0 0 1rem', fontWeight: '800' }}>NutraLance</h1>
         <p style={{ fontSize: '1.2rem', margin: '0 0 2rem', opacity: 0.9 }}>
           {t('landing.tagline')}
         </p>

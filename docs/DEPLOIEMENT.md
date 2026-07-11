@@ -1,10 +1,15 @@
-# 🌿 NutriDZ — Guide de déploiement complet
+# 🌿 NutraLance — Guide de déploiement complet
+
+> ⚠️ **MAJ ultrareview (07/2026)** : depuis la migration S7, la base est **PostgreSQL (Neon)**,
+> plus SQLite. `DATABASE_URL` (chaîne pooled Neon) est **obligatoire** au démarrage du backend.
+> Les mentions « SQLite » / sauvegarde de fichier `.db` ci-dessous sont **obsolètes** — la
+> persistance et les sauvegardes sont gérées côté Neon. Déploiement réel : Render (voir `render.yaml`).
 
 ## Architecture de l'application
 
 ```
 nutridz/
-├── backend/          → API Node.js + Express + SQLite
+├── backend/          → API Node.js + Express + PostgreSQL (Neon)
 │   ├── server.js     → Point d'entrée
 │   ├── db.js         → Base de données + seed produits
 │   ├── routes/

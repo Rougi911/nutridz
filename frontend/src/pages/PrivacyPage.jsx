@@ -20,7 +20,7 @@ export default function PrivacyPage() {
         <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)', marginBottom: 'var(--space-section)' }}>Dernière mise à jour : janvier 2025</p>
 
         <Section title="1. Données collectées">
-          <p>NutriVita collecte les données suivantes dans le cadre de la fourniture de son service :</p>
+          <p>NutraLance collecte les données suivantes dans le cadre de la fourniture de son service :</p>
           <ul style={{ paddingLeft: '18px', marginTop: '6px' }}>
             <li><strong>Données d'identification</strong> : adresse email, prénom et nom</li>
             <li><strong>Données de santé</strong> : poids, taille, âge, sexe, indice de masse corporelle (IMC)</li>
@@ -46,7 +46,7 @@ export default function PrivacyPage() {
         </Section>
 
         <Section title="4. Partenaires et sous-traitants">
-          <p>NutriVita fait appel aux sous-traitants suivants :</p>
+          <p>NutraLance fait appel aux sous-traitants suivants :</p>
           <ul style={{ paddingLeft: '18px', marginTop: '6px' }}>
             <li><strong>Render.com</strong> (USA) — hébergement des serveurs et base de données. Données stockées aux États-Unis, couvertes par les clauses contractuelles types de l'UE.</li>
             <li><strong>Strava Inc.</strong> (USA) — synchronisation des activités sportives (optionnel, uniquement si vous connectez votre compte Strava).</li>
@@ -77,7 +77,7 @@ export default function PrivacyPage() {
         </Section>
 
         <Section title="7. Cookies">
-          <p>NutriVita utilise des cookies strictement nécessaires au fonctionnement du service (session, langue). Des cookies analytics (Google Analytics) peuvent être déposés uniquement avec votre consentement explicite, que vous pouvez retirer à tout moment.</p>
+          <p>NutraLance utilise des cookies strictement nécessaires au fonctionnement du service (session, langue). Des cookies analytics (Google Analytics) peuvent être déposés uniquement avec votre consentement explicite, que vous pouvez retirer à tout moment.</p>
         </Section>
       </div>
     </div>

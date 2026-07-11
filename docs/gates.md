@@ -1,4 +1,4 @@
-# NutriVita — Journal des Gates (Cycle en V)
+# NutraLance — Journal des Gates (Cycle en V)
 
 | Date | Gate | Verdict | Détail | Ecarts différés |
 |------|------|---------|--------|-----------------|

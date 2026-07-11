@@ -1,5 +1,5 @@
 /**
- * ScannerScreen.jsx — Scanner de produits NutriDZ
+ * ScannerScreen.jsx — Scanner de produits NutraLance
  *
  * Flux complet :
  *  1. Scan code-barres  → lookup API → produit trouvé ✓
@@ -378,7 +378,7 @@ export default function ScannerScreen() {
           <View style={styles.sourcePill}>
             <Text style={styles.sourceText}>
               {product.source === 'ocr_claude' ? '📷 Scanné via IA' :
-               product.source === 'openfoodfacts' ? '🌐 OpenFoodFacts' : '🗂️ Base NutriDZ'}
+               product.source === 'openfoodfacts' ? '🌐 OpenFoodFacts' : '🗂️ Base NutraLance'}
             </Text>
           </View>
 

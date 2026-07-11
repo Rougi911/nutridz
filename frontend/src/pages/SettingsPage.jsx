@@ -308,7 +308,7 @@ export default function SettingsPage() {
 
       {/* À propos */}
       <Section title="À propos" icon="ℹ️">
-        <SettingRow label="Version" last={false}><span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>NutriVita v1.0.0</span></SettingRow>
+        <SettingRow label="Version" last={false}><span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>NutraLance v1.0.0</span></SettingRow>
         <SettingRow label="Backend" last={false}><span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontFamily: 'monospace' }}>nutridz.onrender.com</span></SettingRow>
         <SettingRow label="Base alimentaire" last><span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>CIQUAL + USDA</span></SettingRow>
       </Section>

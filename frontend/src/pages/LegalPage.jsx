@@ -19,7 +19,7 @@ export default function LegalPage() {
       <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-xl)', padding: '20px', boxShadow: '0 1px 4px var(--shadow)' }}>
 
         <Section title="Éditeur de l'application">
-          <p><strong>NutriVita</strong></p>
+          <p><strong>NutraLance</strong></p>
           <p>Application de suivi nutritionnel et de bien-être</p>
           <p style={{ marginTop: 'var(--space-xs)' }}>Contact : <a href="mailto:contact@nutrivita.app" style={{ color: 'var(--accent-green)' }}>contact@nutrivita.app</a></p>
           <p>Délégué à la Protection des Données : <a href="mailto:dpo@nutrivita.app" style={{ color: 'var(--accent-green)' }}>dpo@nutrivita.app</a></p>
@@ -32,16 +32,16 @@ export default function LegalPage() {
         </Section>
 
         <Section title="Propriété intellectuelle">
-          <p>L'application NutriVita, son contenu et ses fonctionnalités sont protégés par le droit de la propriété intellectuelle. Toute reproduction, même partielle, est interdite sans autorisation préalable.</p>
+          <p>L'application NutraLance, son contenu et ses fonctionnalités sont protégés par le droit de la propriété intellectuelle. Toute reproduction, même partielle, est interdite sans autorisation préalable.</p>
         </Section>
 
         <Section title="Données de santé">
-          <p>NutriVita traite des données de santé (poids, calories, activités physiques) avec le consentement explicite des utilisateurs, conformément au RGPD (Règlement UE 2016/679) et à la loi Informatique et Libertés.</p>
+          <p>NutraLance traite des données de santé (poids, calories, activités physiques) avec le consentement explicite des utilisateurs, conformément au RGPD (Règlement UE 2016/679) et à la loi Informatique et Libertés.</p>
           <p style={{ marginTop: 'var(--space-xs)' }}>Pour exercer vos droits : <a href="mailto:dpo@nutrivita.app" style={{ color: 'var(--accent-green)' }}>dpo@nutrivita.app</a></p>
         </Section>
 
         <Section title="Limitation de responsabilité">
-          <p>Les informations nutritionnelles fournies par NutriVita sont données à titre indicatif et ne constituent pas un avis médical. Consultez un professionnel de santé pour tout suivi médical.</p>
+          <p>Les informations nutritionnelles fournies par NutraLance sont données à titre indicatif et ne constituent pas un avis médical. Consultez un professionnel de santé pour tout suivi médical.</p>
         </Section>
 
         <Section title="Droit applicable">
