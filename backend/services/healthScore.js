@@ -1,5 +1,5 @@
 // P1-5 backend — Score Santé hebdomadaire (fonctions pures, testables).
-// Agrège les richesses déjà calculées par NutriVita : adhérence calorique,
+// Agrège les richesses déjà calculées par NutraLance : adhérence calorique,
 // qualité produits (additifs EFSA classés), micronutriments vs VNR ANSES,
 // équilibre macros. Aucune requête DB ici : la route fournit les données brutes.
 //

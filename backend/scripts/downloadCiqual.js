@@ -52,7 +52,7 @@ async function main() {
     const response = await axios.get(XLS_URL, {
       responseType: 'arraybuffer',
       timeout: 90000,
-      headers: { 'User-Agent': 'Mozilla/5.0 NutriVita/1.0' },
+      headers: { 'User-Agent': 'Mozilla/5.0 NutraLance/1.0' },
     });
     buffer = Buffer.from(response.data);
     fs.writeFileSync(CACHE, buffer);

@@ -1,4 +1,4 @@
-# 🌿 NutriDZ — Guide de déploiement complet
+# 🌿 NutraLance — Guide de déploiement complet
 
 > ⚠️ **MAJ ultrareview (07/2026)** : depuis la migration S7, la base est **PostgreSQL (Neon)**,
 > plus SQLite. `DATABASE_URL` (chaîne pooled Neon) est **obligatoire** au démarrage du backend.

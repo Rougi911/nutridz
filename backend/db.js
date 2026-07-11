@@ -562,7 +562,7 @@ async function seedCondiments() {
     const r = await stmt.run({
       barcode: `cond:${cdt.key}`,
       name: cdt.name_fr,
-      brand: 'NutriVita',
+      brand: 'NutraLance',
       kcal_per100: cdt.kcal_per_100g,
       glucides: cdt.glucides,
       proteines: cdt.proteines,

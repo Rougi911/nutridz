@@ -1,7 +1,7 @@
 {
   "name": "nutridz-backend",
   "version": "1.1.0",
-  "description": "NutriDZ API - Application nutritionnelle pour le marché algérien",
+  "description": "NutraLance API - Application nutritionnelle pour le marché algérien",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

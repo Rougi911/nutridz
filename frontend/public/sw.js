@@ -1,4 +1,4 @@
-/* Service Worker NutriVita.
+/* Service Worker NutraLance.
  * Stratégie :
  *  - Navigations / index.html : NETWORK-FIRST (jamais de HTML périmé après déploiement).
  *  - Assets hashés /static/ (immutables CRA) : CACHE-FIRST.

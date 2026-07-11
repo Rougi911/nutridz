@@ -1,15 +1,15 @@
-# NutriVita — Spec de restyling frontend
+# NutraLance — Spec de restyling frontend
 
 **Date :** 2026-06-10
 **Périmètre :** `frontend/` uniquement — `backend/` et `mobile/` intacts.
-**Source de vérité design :** `DesignApp/NutriVita/v0design/` (Next.js + Tailwind + shadcn, lecture seule).
+**Source de vérité design :** `DesignApp/NutraLance/v0design/` (Next.js + Tailwind + shadcn, lecture seule).
 **Stack cible :** Create React App + CSS custom properties + ThemeContext (pas de migration Tailwind, pas de framer-motion).
 
 ---
 
 ## Objectif
 
-Adopter le design NutriVita du v0design dans le frontend React existant, sans régression fonctionnelle et avec une couverture de tests user-event par écran.
+Adopter le design NutraLance du v0design dans le frontend React existant, sans régression fonctionnelle et avec une couverture de tests user-event par écran.
 
 ---
 
@@ -17,7 +17,7 @@ Adopter le design NutriVita du v0design dans le frontend React existant, sans r�
 
 ### DES-01 — Tokens CSS
 
-Les tokens de `src/index.css` doivent correspondre au thème NutriVita de `v0design/app/globals.css`.
+Les tokens de `src/index.css` doivent correspondre au thème NutraLance de `v0design/app/globals.css`.
 
 **Light mode :** tokens déjà alignés — aucune modification.
 

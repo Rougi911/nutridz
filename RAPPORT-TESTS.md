@@ -1,4 +1,4 @@
-# Rapport de tests — mise en conformité ultrareview NutriVita
+# Rapport de tests — mise en conformité ultrareview NutraLance
 
 **Date** : 10 juillet 2026
 **Branche** : `fix/ultrareview` (5 commits, base `origin/main` @ `c07caf6`)

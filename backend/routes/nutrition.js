@@ -94,7 +94,7 @@ router.get('/stats', auth, async (req, res) => {
     const usda   = await usdaStats();
 
     res.json({
-      local:  { count: local?.cnt || 0,  source: 'local',  label: 'NutriVita DB' },
+      local:  { count: local?.cnt || 0,  source: 'local',  label: 'NutraLance DB' },
       ciqual: { count: ciqual.count,      source: 'ciqual', label: 'CIQUAL ANSES' },
       usda:   { count: usda.count,        source: 'usda',   label: 'USDA FoodData' },
     });

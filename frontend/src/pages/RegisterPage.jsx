@@ -67,7 +67,7 @@ export default function RegisterPage() {
             <input type="checkbox" checked={consentHealth} onChange={e => setConsentHealth(e.target.checked)}
               style={{ marginTop: '2px', accentColor: 'var(--accent-green)', flexShrink: 0 }} />
             <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-              J'accepte que NutriVita traite mes données de santé (poids, calories, activités) pour me fournir le service
+              J'accepte que NutraLance traite mes données de santé (poids, calories, activités) pour me fournir le service
             </span>
           </label>
           {/* REG-01 Art.9 RGPD — consentement glycémie séparé, opt-in, décoché par défaut */}

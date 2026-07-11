@@ -180,7 +180,7 @@ app.use((err, req, res, next) => {
 if (require.main === module) {
   initDB()
     .then(() => app.listen(PORT, () => {
-      console.log(`NutriDZ API v2 démarrée sur le port ${PORT}`);
+      console.log(`NutraLance API v2 démarrée sur le port ${PORT}`);
       console.log(`CORS origines autorisées : ${allowedOrigins.join(', ')}`);
     }))
     .then(() => {

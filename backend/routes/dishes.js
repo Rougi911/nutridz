@@ -175,12 +175,12 @@ router.post('/:id/log', auth, async (req, res) => {
   }
 
   // Reuse or create a product entry for this dish so journal_entries FK is satisfied
-  let product = await db.prepare('SELECT * FROM products WHERE name = ? AND brand = ?').get(dish.name, 'Plat NutriVita');
+  let product = await db.prepare('SELECT * FROM products WHERE name = ? AND brand = ?').get(dish.name, 'Plat NutraLance');
   if (!product) {
     const per100 = defaultPortion > 0 ? 100 / defaultPortion : 1;
     const ins = await db.prepare(`
       INSERT INTO products (name, brand, emoji, score, kcal_per100, glucides, proteines, lipides, fibres, category, is_algerian)
-      VALUES (?, 'Plat NutriVita', ?, 'B', ?, ?, ?, ?, ?, ?, 0)
+      VALUES (?, 'Plat NutraLance', ?, 'B', ?, ?, ?, ?, ?, ?, 0)
     `).run(
       dish.name, dish.emoji || '🍽️',
       Math.round(dish.kcal_per_portion * per100),

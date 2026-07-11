@@ -1,4 +1,4 @@
-# HANDOFF — NutriVita
+# HANDOFF — NutraLance
 _Dernière mise à jour : 2026-07-10 — mise en conformité ultrareview_
 
 ## Phase en cours

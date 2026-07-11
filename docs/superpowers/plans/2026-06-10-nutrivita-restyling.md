@@ -1,8 +1,8 @@
-# NutriVita Frontend Restyling Implementation Plan
+# NutraLance Frontend Restyling Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Restyle `frontend/` to match the NutriVita v0design (indigo/emerald palette, gradient headers, pill nav, card layouts) without any functional regression.
+**Goal:** Restyle `frontend/` to match the NutraLance v0design (indigo/emerald palette, gradient headers, pill nav, card layouts) without any functional regression.
 
 **Architecture:** Approach A — Foundation first (CSS tokens + utility classes + 3 reusable components), then navigation restructuring (9→5 tabs + StatsPage), then pre-restyling REG tests written and verified green, then screen-by-screen restyling with tests re-verified after each screen.
 
@@ -2253,5 +2253,5 @@ Expected: `Compiled successfully.` — no TypeScript/ESLint errors.
 
 ```bash
 git add -A
-git commit -m "chore: NutriVita frontend restyling complete — DES-01→05 + REG-01→11 all green"
+git commit -m "chore: NutraLance frontend restyling complete — DES-01→05 + REG-01→11 all green"
 ```

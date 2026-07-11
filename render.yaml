@@ -1,4 +1,4 @@
-# Blueprint Render — NutriVita
+# Blueprint Render — NutraLance
 # ⚠️ Les NOMS de services ci-dessous doivent correspondre EXACTEMENT à ceux du dashboard
 # Render. Les services de prod ont été créés manuellement ; ce Blueprint sert de référence
 # reproductible. Adapter `name:` si vos services diffèrent (backend, frontend).

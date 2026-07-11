@@ -51,7 +51,7 @@ export default function CookieBanner() {
       zIndex: 200, border: '0.5px solid rgba(0,0,0,0.08)',
     }}>
       <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)', margin: '0 0 var(--space-tight)', lineHeight: 1.5 }}>
-        NutriVita utilise des cookies pour améliorer votre expérience.{' '}
+        NutraLance utilise des cookies pour améliorer votre expérience.{' '}
         <Link to="/confidentialite" style={{ color: 'var(--accent-green)', fontWeight: 600 }}>
           Politique de confidentialité
         </Link>.

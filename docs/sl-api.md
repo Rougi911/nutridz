@@ -1,6 +1,6 @@
-# SL-API — Spécification Logicielle Backend NutriVita
+# SL-API — Spécification Logicielle Backend NutraLance
 
-**Document** : Annexe SL-API du Cycle en V NutriVita  
+**Document** : Annexe SL-API du Cycle en V NutraLance  
 **Référence cadre** : `docs/cycle-v-nutrivita.md`  
 **Statut** : Brouillon — en cours de gate SL-API  
 **Date de production** : 2026-06-12
@@ -534,7 +534,7 @@ Route **sans authentification JWT** (appelée par les serveurs Strava).
 
 **Traitement** :
 1. Ignorer si `object_type != "activity"` ou `aspect_type != "create"`.
-2. Retrouver l'utilisateur NutriVita lié à `owner_id` (Strava athlete_id) via `profiles.strava_athlete_id`.
+2. Retrouver l'utilisateur NutraLance lié à `owner_id` (Strava athlete_id) via `profiles.strava_athlete_id`.
 3. Si aucun utilisateur trouvé : répondre 200 (silencieux — ne pas révéler l'existence d'utilisateurs).
 4. Récupérer les détails de l'activité via l'API Strava : `GET /activities/{object_id}`.
 5. Calculer les kcal (AL-02) :

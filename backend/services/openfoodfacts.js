@@ -5,7 +5,7 @@ const OFF_SEARCH = 'https://world.openfoodfacts.org/cgi/search.pl';
 
 /**
  * Recherche un produit par code-barres sur OpenFoodFacts
- * Retourne un objet normalisé NutriDZ ou null si non trouvé
+ * Retourne un objet normalisé NutraLance ou null si non trouvé
  */
 async function lookupBarcode(barcode) {
   try {
@@ -68,7 +68,7 @@ async function searchOFF(query, limit, country) {
 }
 
 /**
- * Normalise un produit OpenFoodFacts vers le format NutriDZ
+ * Normalise un produit OpenFoodFacts vers le format NutraLance
  */
 function normalizeOFFProduct(p, barcode = null) {
   const n = p.nutriments || {};

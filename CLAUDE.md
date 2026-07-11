@@ -1,8 +1,8 @@
-# NutriVita — Contexte du projet
+# NutraLance — Contexte du projet
 
 ## Vue d'ensemble
 
-NutriVita est une application de nutrition intelligente déployée en PWA, ciblant le marché français puis algérien. Anciennement nommée NutriDZ, rebaptisée NutriVita.
+NutraLance est une application de nutrition intelligente déployée en PWA, ciblant le marché français puis algérien. Historique des noms : NutriDZ → NutriVita → **NutraLance** (nom actuel). Les identifiants techniques (dépôt `nutridz`, services Render `nutridz-*`/`nutrivita-v0`, clés localStorage `nutridz-*`/`nutrivita-settings`, URLs `*.onrender.com`) conservent l'ancien nommage pour ne pas casser l'infra ni déconnecter les utilisateurs — seule la marque visible a changé.
 
 **Tagline** : Your Daily Wellness Companion
 
@@ -100,7 +100,7 @@ nutridz/
 │
 └── frontend/
     ├── public/
-    │   ├── manifest.json             # PWA NutriVita
+    │   ├── manifest.json             # PWA NutraLance
     │   ├── index.html                # Meta PWA + Apple touch icons
     │   ├── sw.js                     # Service Worker cache offline
     │   ├── sw-push.js                # Service Worker push events (push + notificationclick)
@@ -306,7 +306,7 @@ Réponse attendue : `{"status":"ok","version":"1.0.0"}`
 5. **Utiliser des fichiers .txt** sur le Bureau pour les longs prompts au lieu de coller dans le terminal
 6. **Demander à Claude Code de NE PAS relire les fichiers** s'il les a déjà vus dans la session
 
-## Workflow superpowers — restylage frontend (NutriVita)
+## Workflow superpowers — restylage frontend (NutraLance)
 
 ### Objectif courant
 Appliquer le design de nutrivita-v0 au frontend React (frontend/) SANS régression.
@@ -367,7 +367,7 @@ React 18 / react-scripts 5 : jest-dom ^5.17, react ^13.4, user-event ^13.5.
 ## Boucle de dev autonome (déclencheur : « lance la boucle »)
 Quand l'utilisateur dit « lance la boucle » (ou équivalent), exécuter ceci sans redemander :
 
-1. Lire `C:\AppliSanteNutriVita\BACKLOG.md` et appliquer les **règles de la boucle** en tête de ce fichier.
+1. Lire `C:\AppliSanteNutraLance\BACKLOG.md` et appliquer les **règles de la boucle** en tête de ce fichier.
 2. Travailler **uniquement dans le repo nutridz (backend)**.
 3. Prendre la **première tâche non cochée** de ce périmètre → implémenter → `npm test` →
    si vert : `git add` (fichiers touchés) + commit conventionnel + `git push` → mettre à jour le

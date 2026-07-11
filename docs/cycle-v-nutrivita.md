@@ -56,7 +56,7 @@ REG-04 Disclaimers santé OBLIGATOIRES et non supprimables sur : carences ("esti
        ne remplace pas un bilan sanguin"), composition corporelle ("estimation par formule"),
        glycémie ("ne remplace pas un avis médical ; en cas d'hypoglycémie, suivez le protocole de
        votre médecin").
-REG-05 FRONTIERE DISPOSITIF MEDICAL (UE MDR 2017/745) : NutriVita reste une app de bien-être tant
+REG-05 FRONTIERE DISPOSITIF MEDICAL (UE MDR 2017/745) : NutraLance reste une app de bien-être tant
        qu'elle AFFICHE des mesures et tendances sans émettre de recommandation thérapeutique.
        INTERDIT sans marquage CE : calcul de dose d'insuline, recommandation de traitement,
        interprétation diagnostique ("vous êtes diabétique"). Toute fonctionnalité approchant cette

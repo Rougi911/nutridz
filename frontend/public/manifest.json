@@ -1,6 +1,6 @@
 {
-  "name": "NutriVita",
-  "short_name": "NutriVita",
+  "name": "NutraLance",
+  "short_name": "NutraLance",
   "description": "Your Daily Wellness Companion",
   "start_url": "/",
   "display": "standalone",
